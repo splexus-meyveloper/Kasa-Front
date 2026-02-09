@@ -601,6 +601,22 @@ function showConfirmToast(message, onConfirm){
 }
 
 
+document.addEventListener("DOMContentLoaded", () => {
+
+    const username = localStorage.getItem("username");
+
+if(username){
+    const name =
+        username.charAt(0).toUpperCase() +
+        username.slice(1).toLowerCase();
+
+    document.getElementById("welcomeText").innerText =
+        "Hoş Geldin " + name;
+}
+
+
+});
+
 
 
 

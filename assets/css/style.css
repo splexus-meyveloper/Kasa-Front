@@ -13007,6 +13007,30 @@ body.skin-dark .cus-radio.light .icon::before {
     color:white;
 }
 
+.welcome-box{
+    background:#1e2637;
+    color:white;
+    padding:30px;
+    margin:20px;
+    border-radius:12px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.3);
+
+    text-align:center;
+    font-family: 'Poppins', sans-serif;
+}
+
+.welcome-box h3{
+    font-size:28px;
+    font-weight:600;
+    margin-bottom:10px;
+}
+
+.welcome-box p{
+    font-size:16px;
+    opacity:0.9;
+}
+
+
 
 
 
