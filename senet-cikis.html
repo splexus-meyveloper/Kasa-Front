@@ -1,0 +1,107 @@
+<!-- PAGE HEAD -->
+<div class="row justify-content-between align-items-center mb-10">
+    <div class="col-12 col-lg-auto mb-20">
+        <div class="page-heading">
+            <h3>Senetler <span>/ Çıkış</span></h3>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="box">
+            <div class="box-head">
+                <h3 class="title">Senet Çıkışı</h3>
+            </div>
+
+            <div class="box-body">
+                <form>
+
+                    <div class="row">
+
+                        <div class="col-md-6 mb-20">
+                            <label>Senet No</label>
+                            <input type="text" class="form-control" placeholder="Senet Numarası">
+                        </div>
+
+                        <div class="col-md-6 mb-20">
+                            <label>Vade Tarihi</label>
+                            <input type="date" class="form-control">
+                        </div>
+
+                        <div class="col-md-6 mb-20">
+                            <label>Tutar</label>
+                            <input type="text" id="tutar" class="form-control" placeholder="Tutar giriniz">
+                        </div>
+
+                        <div class="col-md-12 mb-20">
+                            <label>Açıklama</label>
+                            <textarea class="form-control" placeholder="Açıklama"></textarea>
+                        </div>
+
+                        <div class="col-12">
+                            <button type="button" class="button button-primary">
+                                Kaydet
+                            </button>
+                        </div>
+
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const input = document.getElementById("tutar");
+
+function formatCurrency(value) {
+    value = value.replace(/[^0-9,]/g, "");
+
+    const parts = value.split(",");
+    if (parts.length > 2) {
+        value = parts[0] + "," + parts.slice(1).join("");
+    }
+
+    let [integerPart, decimalPart] = value.split(",");
+
+    integerPart = integerPart.replace(/\./g, "");
+    integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+    if (decimalPart !== undefined) {
+        decimalPart = decimalPart.substring(0, 2);
+        return integerPart + "," + decimalPart + " TL";
+    } else {
+        return integerPart + " TL";
+    }
+}
+
+input.addEventListener("input", function () {
+    const start = this.selectionStart;
+    const oldLength = this.value.length;
+
+    this.value = formatCurrency(this.value.replace(" TL", ""));
+
+    const newLength = this.value.length;
+    const diff = newLength - oldLength;
+
+    this.setSelectionRange(start + diff, start + diff);
+});
+
+input.addEventListener("blur", function () {
+    let val = this.value.replace(" TL", "").replace(/\./g, "").replace(",", ".");
+    if (!val) return;
+
+    const num = parseFloat(val);
+    if (isNaN(num)) {
+        this.value = "";
+        return;
+    }
+
+    this.value = num.toLocaleString("tr-TR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }) + " TL";
+});
+</script>

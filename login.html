@@ -1,0 +1,129 @@
+<!doctype html>
+<html class="no-js" lang="tr">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Giriş Yap</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="shortcut icon" type="image/x-icon" href="assets/images/favicon.ico">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="assets/css/vendor/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/vendor/material-design-iconic-font.min.css">
+    <link rel="stylesheet" href="assets/css/plugins/plugins.css">
+    <link rel="stylesheet" href="assets/css/helper.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link id="cus-style" rel="stylesheet" href="assets/css/style-primary.css">
+    
+</head>
+
+<body class="skin-dark">
+
+<div class="main-wrapper">
+
+    <div class="content-body m-0 p-0">
+
+        <div class="login-register-wrap">
+            <div class="row">
+
+                <div class="d-flex align-self-center justify-content-center col-lg-5 col-12">
+                    <div class="login-register-form-wrap">
+
+                        <div class="content">
+                            <h1>Giriş Yap</h1>
+                            <p>Yönetim paneline giriş yapın</p>
+                        </div>
+
+                        <div class="login-register-form">
+                            <form id="loginForm">
+                                <div class="row">
+                                    <div class="col-12 mb-20">
+                                        <input class="form-control" type="text" id="username" placeholder="Kullanıcı Adı">
+                                    </div>
+                                    <div class="col-12 mb-20">
+                                        <input class="form-control" type="password" id="password" placeholder="Şifre (4 haneli)">
+                                    </div>
+
+                                    <div class="col-12 mt-10">
+                                        <button type="submit" class="button button-primary button-outline">
+                                            Giriş Yap
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="login-register-bg col-lg-7 col-12">
+                    <div class="content">
+                        <h1>Finans Panel</h1>
+                        <p>Güvenli giriş sistemi</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- JS -->
+<script src="assets/js/vendor/jquery-3.3.1.min.js"></script>
+<script src="assets/js/vendor/bootstrap.min.js"></script>
+<script src="assets/js/main-v2.js"></script>
+
+<script>
+document.getElementById("loginForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    if (!username || !password) {
+        alert("Kullanıcı adı ve şifre giriniz!");
+        return;
+    }
+
+    try {
+        const res = await fetch("http://localhost:8080/api/auth/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password
+            })
+        });
+
+        if (!res.ok) {
+            const err = await res.text();
+            alert("Giriş başarısız: " + err);
+            return;
+        }
+
+        const data = await res.json();
+
+        // 🔐 GERÇEK BİLGİLERİ SAKLA
+        localStorage.setItem("token", data.token);
+localStorage.setItem("username", data.username);
+localStorage.setItem("role", data.role);
+localStorage.setItem("permissions", JSON.stringify(data.permissions));
+
+window.location.href = "layout.html";
+
+    } catch (err) {
+        console.error(err);
+        alert("Sunucuya bağlanılamadı!");
+    }
+});
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,110 @@
+<div class="row mb-20">
+    <div class="col-12">
+        <div class="page-heading">
+            <h3 id="baslik">Kredi Detay</h3>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+
+    <div class="col-xl-6 col-12 mb-30">
+        <div class="box">
+            <div class="box-head">
+                <h4 class="title">Kredi Bilgileri</h4>
+            </div>
+            <div class="box-body">
+
+                <p><b>Banka:</b> <span id="banka"></span></p>
+                <p><b>Toplam Borç:</b> <span id="toplam"></span></p>
+                <p><b>Kalan Borç:</b> <span id="kalan" style="color:#dc3545"></span></p>
+                <p><b>Aylık Taksit:</b> <span id="taksit"></span></p>
+
+                <div class="progess mt-20">
+                    <div id="bar" class="progess-bar bg-success" style="width:0%"></div>
+                </div>
+                <small id="oranText"></small>
+
+                <div class="mt-30">
+                    <button class="button button-success" onclick="odemeYap()">
+                        Bu Ayın Taksidi Ödendi
+                    </button>
+
+                    <button class="button button-secondary" onclick="loadPage('krediler.html')">
+                        ← Geri Dön
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+/* ================================
+   DEMO DATA
+================================ */
+const krediler = [
+    { id:1, banka:"Ziraat Bankası", toplam:500000, kalan:350000, taksit:12500 },
+    { id:2, banka:"İş Bankası", toplam:300000, kalan:180000, taksit:9500 },
+    { id:3, banka:"Garanti BBVA", toplam:200000, kalan:60000, taksit:8000 },
+    { id:4, banka:"Ziraat Bankası", toplam:150000, kalan:150000, taksit:5200 }
+];
+
+/* ================================
+   URL PARAM
+================================ */
+const params = new URLSearchParams(window.location.search);
+const id = parseInt(params.get("id"));
+
+let kredi = krediler.find(k => k.id === id);
+if (!kredi) {
+    alert("Kredi bulunamadı");
+    loadPage("krediler.html");
+}
+
+/* ================================
+   FORMAT
+================================ */
+function formatTL(n) {
+    return n.toLocaleString("tr-TR", {
+        minimumFractionDigits: 2
+    }) + " TL";
+}
+
+/* ================================
+   RENDER
+================================ */
+function render() {
+    document.getElementById("baslik").innerText = kredi.banka + " - Kredi Detayı";
+    document.getElementById("banka").innerText = kredi.banka;
+    document.getElementById("toplam").innerText = formatTL(kredi.toplam);
+    document.getElementById("kalan").innerText = formatTL(kredi.kalan);
+    document.getElementById("taksit").innerText = formatTL(kredi.taksit);
+
+    const odenen = kredi.toplam - kredi.kalan;
+    const yuzde = Math.round((odenen / kredi.toplam) * 100);
+
+    document.getElementById("bar").style.width = yuzde + "%";
+    document.getElementById("oranText").innerText = "%" + yuzde + " ödendi";
+}
+
+/* ================================
+   ÖDEME
+================================ */
+function odemeYap() {
+    if (kredi.kalan <= 0) {
+        alert("Bu kredi zaten bitmiş.");
+        return;
+    }
+
+    kredi.kalan -= kredi.taksit;
+    if (kredi.kalan < 0) kredi.kalan = 0;
+
+    render();
+    alert("Taksit ödendi.");
+}
+
+render();
+</script>

@@ -1,0 +1,80 @@
+<div class="row mb-20">
+    <div class="col-12">
+        <div class="page-heading">
+            <h3>Krediler <span>/ Tüm Krediler</span></h3>
+        </div>
+    </div>
+</div>
+
+<div class="row" id="krediListesi"></div>
+
+<style>
+.kredi-card {
+    cursor: pointer;
+    transition: 0.2s;
+}
+.kredi-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+</style>
+
+<script>
+/* ================================
+   DEMO VERİ
+================================ */
+const krediler = [
+    { id:1, banka:"Ziraat Bankası", toplam:500000, kalan:350000, taksit:12500 },
+    { id:2, banka:"İş Bankası", toplam:300000, kalan:180000, taksit:9500 },
+    { id:3, banka:"Garanti BBVA", toplam:200000, kalan:60000, taksit:8000 },
+    { id:4, banka:"Ziraat Bankası", toplam:150000, kalan:150000, taksit:5200 }
+];
+
+/* ================================
+   FORMAT
+================================ */
+function formatTL(n) {
+    return n.toLocaleString("tr-TR", {
+        minimumFractionDigits: 2
+    }) + " TL";
+}
+
+/* ================================
+   KARTLARI BAS
+================================ */
+const container = document.getElementById("krediListesi");
+container.innerHTML = "";
+
+krediler.forEach(kredi => {
+    const odenen = kredi.toplam - kredi.kalan;
+    const yuzde = Math.round((odenen / kredi.toplam) * 100);
+
+    container.innerHTML += `
+        <div class="col-xl-3 col-md-6 col-12 mb-30">
+            <div class="top-report kredi-card" onclick="goDetay(${kredi.id})">
+                <div class="head">
+                    <h4>${kredi.banka}</h4>
+                </div>
+                <div class="content">
+                    <p>Toplam: <b>${formatTL(kredi.toplam)}</b></p>
+                    <p>Kalan: <b style="color:#dc3545">${formatTL(kredi.kalan)}</b></p>
+                    <p>Taksit: <b>${formatTL(kredi.taksit)}</b></p>
+                </div>
+                <div class="footer">
+                    <div class="progess">
+                        <div class="progess-bar bg-success" style="width:${yuzde}%"></div>
+                    </div>
+                    <small>%${yuzde} ödendi</small>
+                </div>
+            </div>
+        </div>
+    `;
+});
+
+/* ================================
+   DETAY
+================================ */
+function goDetay(id){
+    loadPage("kredi-detay.html?id=" + id);
+}
+</script>

@@ -1,0 +1,148 @@
+<h3 class="mb-30">Tüm Hareketler</h3>
+
+<div class="row">
+
+    <div class="col-12 mb-30">
+        <div class="box">
+
+            <div class="box-head">
+                <h4 class="title">Tüm Hareketler</h4>
+            </div>
+
+            <div class="box-body">
+
+                <!-- FİLTRE ALANI -->
+                <div class="row mb-20">
+
+                    <div class="col-md-3">
+                        <label>Başlangıç Tarihi</label>
+                        <input type="date" id="filterStartDate" class="form-control">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label>Bitiş Tarihi</label>
+                        <input type="date" id="filterEndDate" class="form-control">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label>İşlem Türü</label>
+                        <select id="filterType" class="form-control">
+                            <option value="">Tümü</option>
+                            <option value="Kasa Giriş">Kasa Giriş</option>
+                            <option value="Kasa Çıkış">Kasa Çıkış</option>
+                            <option value="Masraf">Masraf</option>
+                            <option value="Çek Giriş">Çek Giriş</option>
+                            <option value="Çek Çıkış">Çek Çıkış</option>
+                            <option value="Senet Giriş">Senet Giriş</option>
+                            <option value="Senet Çıkış">Senet Çıkış</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label>Kullanıcı</label>
+                        <select id="filterUser" class="form-control">
+                            <option value="">Tümü</option>
+                            <option value="Ahmet">Ahmet</option>
+                            <option value="Mehmet">Mehmet</option>
+                            <option value="Ayşe">Ayşe</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 mt-15">
+                        <button type="button" class="button button-primary" onclick="applyFilter()">Filtrele</button>
+                        <button type="button" class="button button-secondary" onclick="clearFilter()">Temizle</button>
+                    </div>
+
+                </div>
+
+                <!-- TABLO -->
+                <table id="kasaTable" class="table table-striped table-bordered w-100">
+                    <thead>
+                        <tr>
+                            <th>Tarih</th>
+                            <th>Kullanıcı</th>
+                            <th>İşlem Türü</th>
+                            <th>Açıklama</th>
+                            <th>Tutar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <tr>
+                            <td>2026-01-21</td>
+                            <td>Ahmet</td>
+                            <td>Kasa Giriş</td>
+                            <td>Nakit tahsilat</td>
+                            <td class="text-success">+1.250,00 TL</td>
+                        </tr>
+
+                        <tr>
+                            <td>2026-01-21</td>
+                            <td>Mehmet</td>
+                            <td>Masraf</td>
+                            <td>Yemek</td>
+                            <td class="text-danger">-350,00 TL</td>
+                        </tr>
+
+                        <tr>
+                            <td>2026-01-21</td>
+                            <td>Ayşe</td>
+                            <td>Kasa Çıkış</td>
+                            <td>Tedarikçi ödeme</td>
+                            <td class="text-danger">-5.000,00 TL</td>
+                        </tr>
+
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+function applyFilter() {
+    const startDate = document.getElementById("filterStartDate").value;
+    const endDate = document.getElementById("filterEndDate").value;
+    const type = document.getElementById("filterType").value;
+    const user = document.getElementById("filterUser").value;
+
+    const rows = document.querySelectorAll("#kasaTable tbody tr");
+
+    rows.forEach(row => {
+        const rowDate = row.children[0].innerText;
+        const rowUser = row.children[1].innerText;
+        const rowType = row.children[2].innerText;
+
+        let show = true;
+
+        if (startDate && rowDate < startDate) show = false;
+        if (endDate && rowDate > endDate) show = false;
+        if (type && rowType !== type) show = false;
+        if (user && rowUser !== user) show = false;
+
+        row.style.display = show ? "" : "none";
+    });
+}
+
+function clearFilter() {
+    document.getElementById("filterStartDate").value = "";
+    document.getElementById("filterEndDate").value = "";
+    document.getElementById("filterType").value = "";
+    document.getElementById("filterUser").value = "";
+
+    document.querySelectorAll("#kasaTable tbody tr")
+        .forEach(row => row.style.display = "");
+}
+</script>
+
+<style>
+.table td, .table th {
+    color: #eaeaea;
+    font-weight: 500;
+}
+.table th {
+    font-weight: 600;
+}
+</style>

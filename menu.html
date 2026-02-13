@@ -1,0 +1,155 @@
+<!-- Side Header Start -->
+<div class="side-header show">
+    <button class="side-header-close">
+        <i class="zmdi zmdi-close"></i>
+    </button>
+
+    <div class="side-header-inner custom-scroll">
+        <nav class="side-header-menu">
+            <ul>
+
+                <!-- ANA SAYFA -->
+                <li>
+                    <a href="#" onclick="loadPage('index.html'); return false;">
+                        <i class="zmdi zmdi-home"></i>
+                        <span>Ana Sayfa</span>
+                    </a>
+                </li>
+
+                <!-- KASA -->
+                <li class="has-sub-menu" data-perm="KASA">
+                    <a href="#">
+                        <i class="zmdi zmdi-balance-wallet"></i>
+                        <span>Kasa</span>
+                    </a>
+                    <ul class="side-header-sub-menu">
+                        <li>
+                            <a href="#" onclick="loadPage('kasa-giris.html'); return false;">
+                                <i class="zmdi zmdi-plus-circle"></i>
+                                <span>Kasa Giriş</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" onclick="loadPage('kasa-cikis.html'); return false;">
+                                <i class="zmdi zmdi-minus-circle"></i>
+                                <span>Kasa Çıkış</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- MASRAF -->
+                <li class="has-sub-menu" data-perm="MASRAF">
+                    <a href="#">
+                        <i class="zmdi zmdi-receipt"></i>
+                        <span>Masraflar</span>
+                    </a>
+                    <ul class="side-header-sub-menu">
+                        <li>
+                            <a href="#" onclick="loadPage('masraflar.html'); return false;">
+                                <i class="zmdi zmdi-money"></i>
+                                <span>Masraf</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- ÇEK -->
+                <li class="has-sub-menu" data-perm="CEK">
+                    <a href="#">
+                        <i class="zmdi zmdi-collection-text"></i>
+                        <span>Çek</span>
+                    </a>
+                    <ul class="side-header-sub-menu">
+                        <li>
+                            <a href="#" onclick="loadPage('cekler.html'); return false;">
+                                <i class="zmdi zmdi-download"></i>
+                                <span>Çekler</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" onclick="loadPage('cek-giris.html'); return false;">
+                                <i class="zmdi zmdi-download"></i>
+                                <span>Çek Giriş</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" onclick="loadPage('cek-cikis.html'); return false;">
+                                <i class="zmdi zmdi-upload"></i>
+                                <span>Çek Çıkış</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- SENET -->
+                <li class="has-sub-menu" data-perm="SENET">
+                    <a href="#">
+                        <i class="zmdi zmdi-edit"></i>
+                        <span>Senet</span>
+                    </a>
+                    <ul class="side-header-sub-menu">
+                        <li>
+                            <a href="#" onclick="loadPage('senet-giris.html'); return false;">
+                                <i class="zmdi zmdi-download"></i>
+                                <span>Senet Giriş</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" onclick="loadPage('senet-cikis.html'); return false;">
+                                <i class="zmdi zmdi-upload"></i>
+                                <span>Senet Çıkış</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- BENİM İŞLEMLERİM -->
+                <li>
+                    <a href="#" onclick="loadPage('benim-islemlerim.html'); return false;">
+                        <i class="zmdi zmdi-view-list"></i>
+                        <span>Benim İşlemlerim</span>
+                    </a>
+                </li>
+
+                <!-- KREDİLER -->
+                <li data-perm="KREDILER">
+                    <a href="#" onclick="loadPage('krediler.html'); return false;">
+                        <i class="zmdi zmdi-money-box"></i>
+                        <span>Krediler</span>
+                    </a>
+                </li>
+
+                <!-- YÖNETİM -->
+                <li class="has-sub-menu" data-perm="KULLANICI_YONETIMI">
+                    <a href="#">
+                        <i class="zmdi zmdi-settings"></i>
+                        <span>Yönetim</span>
+                    </a>
+                    <ul class="side-header-sub-menu">
+                        <li>
+                            <a href="#" onclick="loadPage('admin-kasa-hareketleri.html'); return false;">
+                                <i class="zmdi zmdi-trending-up"></i>
+                                <span>Kasa Hareketleri</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" onclick="loadPage('kredi-olustur.html'); return false;">
+                                <i class="zmdi zmdi-plus-square"></i>
+                                <span>Kredi Oluştur</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" onclick="loadPage('kullanicilar.html'); return false;">
+                                <i class="zmdi zmdi-accounts"></i>
+                                <span>Kullanıcılar</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+            </ul>
+        </nav>
+    </div>
+</div>
+<!-- Side Header End -->

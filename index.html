@@ -1,0 +1,208 @@
+<!-- USER WELCOME -->
+<div id="userWelcome" style="display:none;">
+    <div class="row">
+        <div class="col-12">
+            <div class="box">
+                <div class="box-body text-center" style="padding:200px 20px;">
+                    <h2 style="margin-bottom:15px;">👋 Hoşgeldiniz</h2>
+
+                    <p style="font-size:18px; opacity:0.8;">
+                        Sol menüden <b>Kasa</b>, <b>Çek</b>, <b>Senet</b> ve <b>Masraf</b> işlemlerinizi yapabilirsiniz.
+                    </p>
+
+                    <p style="margin-top:10px; opacity:0.7;">
+                        Tüm hareketlerinizi <b>Benim İşlemlerim</b> ekranından takip edebilirsiniz.
+                    </p>
+
+                    <div style="margin-top:60px;">
+                        <i class="zmdi zmdi-balance" style="font-size:64px; opacity:0.3;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ADMIN DASHBOARD -->
+<div id="adminDashboard">
+
+    <div class="row mb-20">
+        <div class="col-12 col-lg-auto mb-20">
+            <div class="page-heading">
+                <h3>Ana Sayfa <span>/ Kasa Yönetimi</span></h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOP REPORT -->
+<div class="row">
+
+    <div class="col-xlg-3 col-md-6 col-12 mb-30">
+        <div class="top-report">
+            <div class="head"><h4>Günlük Giriş</h4></div>
+            <div class="content">
+                <h5>Bugün</h5>
+                <h2 id="gunlukGiris" class="text-success">0 TL</h2>
+            </div>
+            <div class="footer">
+                <div class="progess">
+                    <div id="barGunlukGiris" class="progess-bar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xlg-3 col-md-6 col-12 mb-30">
+        <div class="top-report">
+            <div class="head"><h4>Günlük Çıkış</h4></div>
+            <div class="content">
+                <h5>Bugün</h5>
+                <h2 id="gunlukCikis" class="text-danger">0 TL</h2>
+            </div>
+            <div class="footer">
+                <div class="progess">
+                    <div id="barGunlukCikis" class="progess-bar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xlg-3 col-md-6 col-12 mb-30">
+        <div class="top-report">
+            <div class="head"><h4>Aylık Net</h4></div>
+            <div class="content">
+                <h5>Bu Ay</h5>
+                <h2 id="aylikNet" class="text-info">0 TL</h2>
+            </div>
+            <div class="footer">
+                <div class="progess">
+                    <div id="barAylikGiris" class="progess-bar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xlg-3 col-md-6 col-12 mb-30">
+        <div class="top-report">
+            <div class="head"><h4>Kasa Bakiye</h4></div>
+            <div class="content">
+                <h5>Güncel</h5>
+                <h2 id="kasaBakiye" class="text-primary">0 TL</h2>
+            </div>
+            <div class="footer">
+                <div class="progess">
+                    <div id="barBakiye" class="progess-bar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔥 ELDeki Çekler ARTIK AYNI ROW İÇİNDE -->
+    <div class="col-xlg-3 col-md-6 col-12 mb-30">
+
+        <div class="top-report">
+
+            <div class="head">
+                <h4>Eldeki Çekler</h4>
+            </div>
+
+            <div class="content">
+
+                <div style="
+                    display:flex;
+                    justify-content:space-between;
+                    align-items:center;
+                ">
+                    <h5>Portföy</h5>
+
+                    <span id="cekAdet" style="
+                        opacity:0.8;
+                        font-size:13px;
+                    ">
+                        0 adet
+                    </span>
+                </div>
+
+                <h2 id="cekToplamTutar" class="text-warning">
+                    0 TL
+                </h2>
+
+            </div>
+
+            <div class="footer">
+                <div class="progess">
+                    <div id="barCekler" class="progess-bar"></div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+    <!-- GRAFIK -->
+    <div class="row mbn-30">
+        <div class="col-md-12 mb-30">
+            <div class="box">
+                <div class="box-head">
+                    <h4 class="title">İşlem Grafiği</h4>
+                </div>
+                <div class="box-body">
+                    <canvas id="chartjs-revenue-statistics-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SON 10 HAREKET -->
+    <div class="row">
+        <div class="col-12 mb-30">
+            <div class="box">
+                <div class="box-head">
+                    <h4 class="title">Son 10 Hareket</h4>
+                </div>
+                <div class="box-body table-responsive">
+                    <table class="table table-vertical-middle">
+                        <thead>
+                            <tr>
+                                <th>Tarih</th>
+                                <th>Kullanıcı</th>
+                                <th>İşlem Türü</th>
+                                <th>Açıklama</th>
+                                <th class="text-end">Tutar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>21.01.2026</td>
+                                <td>Ahmet</td>
+                                <td>Kasa Giriş</td>
+                                <td>Nakit tahsilat</td>
+                                <td class="text-end text-success">+1.250,00 TL</td>
+                            </tr>
+                            <tr>
+                                <td>21.01.2026</td>
+                                <td>Mehmet</td>
+                                <td>Masraf</td>
+                                <td>Yemek</td>
+                                <td class="text-end text-danger">-350,00 TL</td>
+                            </tr>
+                            <tr>
+                                <td>21.01.2026</td>
+                                <td>Ayşe</td>
+                                <td>Çek Giriş</td>
+                                <td>Firma çeki</td>
+                                <td class="text-end text-success">+8.000,00 TL</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</div>

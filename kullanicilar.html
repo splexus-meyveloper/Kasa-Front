@@ -1,0 +1,185 @@
+<h3 class="mb-30">Kullanıcı Yönetimi</h3>
+
+<!-- EKLE -->
+<div class="box mb-30">
+    <div class="box-head"><h4>Yeni Kullanıcı Ekle</h4></div>
+    <div class="box-body">
+        <div class="row">
+
+            <div class="col-md-4 mb-20">
+                <label>Kullanıcı Adı</label>
+                <input type="text" id="newUsername" class="form-control">
+            </div>
+
+            <div class="col-md-4 mb-20">
+                <label>Şifre (4 Haneli)</label>
+                <input type="text" id="newUserPassword" class="form-control" maxlength="4" placeholder="1234">
+            </div>
+
+            <div class="col-12">
+                <button class="button button-primary" onclick="addUser()">Kullanıcı Oluştur</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- LİSTE -->
+<div class="box mb-50">
+    <div class="box-head"><h4>Kullanıcılar</h4></div>
+    <div class="box-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>Kullanıcı</th>
+                    <th>Rol</th>
+                    <th style="width:80px">Sil</th>
+                </tr>
+                </thead>
+                <tbody id="userTable"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- DÜZENLE -->
+<div class="box" id="editUserBox" style="display:none;">
+    <div class="box-head"><h4 id="editUsernameTitle"></h4></div>
+    <div class="box-body">
+
+        <div class="row">
+            <div class="col-md-4"><label><input type="checkbox" id="edit_kasa"> Kasa</label></div>
+            <div class="col-md-4"><label><input type="checkbox" id="edit_cek"> Çek</label></div>
+            <div class="col-md-4"><label><input type="checkbox" id="edit_senet"> Senet</label></div>
+            <div class="col-md-4"><label><input type="checkbox" id="edit_masraf"> Masraf</label></div>
+            <div class="col-md-4"><label><input type="checkbox" id="edit_krediler"> Krediler</label></div>
+            <div class="col-md-4"><label><input type="checkbox" id="edit_kullanici"> Kullanıcı Yönetimi</label></div>
+        </div>
+
+        <button class="button button-primary mt-20" onclick="savePermissions()">
+            Yetkileri Kaydet
+        </button>
+
+    </div>
+</div>
+
+<style>
+.user-row {
+    cursor: pointer;
+}
+.user-row:hover {
+    background: rgba(255,255,255,0.05);
+}
+</style>
+
+<script>
+/* API BASE */
+const API_BASE = "http://localhost:8080";
+
+/* LOAD USERS */
+async function loadUsers() {
+    const res = await fetch(API_BASE + "/api/admin/profiles", {
+        headers: {
+            "Authorization": "Bearer " + localStorage.getItem("token")
+        }
+    });
+
+    if (!res.ok) {
+        alert("Kullanıcılar yüklenemedi");
+        return;
+    }
+
+    const users = await res.json();
+    const tbody = document.getElementById("userTable");
+    tbody.innerHTML = "";
+
+    users.forEach(u => {
+        const tr = document.createElement("tr");
+        tr.className = "user-row";
+
+        tr.innerHTML = `
+            <td>${u.username}</td>
+            <td>${u.role}</td>
+            <td>
+                <button class="button button-danger button-sm">Sil</button>
+            </td>
+        `;
+
+        tr.addEventListener("click", () => {
+            editUser(u.id, u.username);
+        });
+
+        tr.querySelector("button").addEventListener("click", e => {
+            e.stopPropagation();
+            deleteUser(u.id);
+        });
+
+        tbody.appendChild(tr);
+    });
+}
+
+let editingUserId = null;
+
+/* EDIT */
+async function editUser(id, username) {
+    editingUserId = id;
+    editUserBox.style.display = "block";
+    editUsernameTitle.innerText = username + " yetkileri";
+
+    const res = await fetch(`${API_BASE}/api/admin/users/${id}/permissions`, {
+        headers: {
+            "Authorization": "Bearer " + localStorage.getItem("token")
+        }
+    });
+
+    const perms = await res.json();
+
+    edit_kasa.checked = perms.includes("KASA");
+    edit_cek.checked = perms.includes("CEK");
+    edit_senet.checked = perms.includes("SENET");
+    edit_masraf.checked = perms.includes("MASRAF");
+    edit_krediler.checked = perms.includes("KREDILER");
+    edit_kullanici.checked = perms.includes("KULLANICI_YONETIMI");
+
+    editUserBox.scrollIntoView({ behavior: "smooth" });
+}
+
+/* SAVE */
+async function savePermissions() {
+    const perms = [];
+    if (edit_kasa.checked) perms.push("KASA");
+    if (edit_cek.checked) perms.push("CEK");
+    if (edit_senet.checked) perms.push("SENET");
+    if (edit_masraf.checked) perms.push("MASRAF");
+    if (edit_krediler.checked) perms.push("KREDILER");
+    if (edit_kullanici.checked) perms.push("KULLANICI_YONETIMI");
+
+    await fetch(`${API_BASE}/api/admin/users/${editingUserId}/permissions`, {
+        method: "PUT",
+        headers: {
+            "Authorization": "Bearer " + localStorage.getItem("token"),
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ permissions: perms })
+    });
+
+    alert("Yetkiler kaydedildi ✅");
+}
+
+/* DELETE */
+async function deleteUser(id) {
+    if (!confirm("Bu kullanıcıyı kaldırmak istiyor musun?")) return;
+
+    await fetch(`${API_BASE}/api/admin/users/${id}/deactivate`, {
+        method: "PUT",
+        headers: {
+            "Authorization": "Bearer " + localStorage.getItem("token")
+        }
+    });
+
+    loadUsers();
+}
+
+loadUsers();
+</script>

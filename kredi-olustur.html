@@ -1,0 +1,117 @@
+<div class="row justify-content-between align-items-center mb-20">
+    <div class="col-12 col-lg-auto">
+        <div class="page-heading">
+            <h3>Krediler</h3>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+<div class="col-12">
+    <div class="box">
+        <div class="box-head">
+            <h3 class="title">Yeni Kredi Oluştur</h3>
+        </div>
+        <div class="box-body">
+
+            <div class="row">
+
+                <div class="col-md-6 mb-20">
+                    <label>Banka</label>
+                    <select class="form-control" id="banka">
+                        <option value="">Banka Seçiniz</option>
+                        <option>Ziraat Bankası</option>
+                        <option>İş Bankası</option>
+                        <option>Garanti BBVA</option>
+                        <option>Akbank</option>
+                        <option>Halkbank</option>
+                        <option>Vakıfbank</option>
+                        <option>QNB</option>
+                        <option>TEB</option>
+                        <option>Denizbank</option>
+                        <option>Yapı Kredi</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6 mb-20">
+                    <label>Kredi Tutarı</label>
+                    <input type="text" id="krediTutar" class="form-control">
+                </div>
+
+                <div class="col-md-4 mb-20">
+                    <label>Aylık Taksit</label>
+                    <input type="text" id="aylikTaksit" class="form-control">
+                </div>
+
+                <div class="col-md-4 mb-20">
+                    <label>Ödeme Günü</label>
+                    <select class="form-control" id="odemeGunu"></select>
+                </div>
+
+                <div class="col-md-4 mb-20">
+                    <label>Bitiş Tarihi</label>
+                    <input type="date" class="form-control" id="bitisTarihi">
+                </div>
+
+                <div class="col-md-12 mb-20">
+                    <label>Açıklama</label>
+                    <textarea class="form-control"></textarea>
+                </div>
+
+                <div class="col-12">
+                    <button class="button button-primary" onclick="krediKaydet()">
+                        Krediyi Kaydet
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+</div>
+
+<script>
+/* ================================
+   PARA FORMAT
+================================ */
+function formatCurrency(value) {
+    value = value.replace(/[^0-9,]/g, "");
+    const parts = value.split(",");
+    if (parts.length > 2) value = parts[0] + "," + parts.slice(1).join("");
+
+    let [int, dec] = value.split(",");
+    int = int.replace(/\./g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+    return dec !== undefined
+        ? int + "," + dec.substring(0,2) + " TL"
+        : int + " TL";
+}
+
+function bindMoneyInput(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    el.addEventListener("input", () => {
+        el.value = formatCurrency(el.value.replace(" TL",""));
+    });
+}
+
+/* ================================
+   ÖDEME GÜNLERİ
+================================ */
+const gun = document.getElementById("odemeGunu");
+for (let i=1;i<=31;i++){
+    gun.innerHTML += `<option value="${i}">${i}</option>`;
+}
+
+bindMoneyInput("krediTutar");
+bindMoneyInput("aylikTaksit");
+
+/* ================================
+   KAYDET (ŞİMDİLİK DEMO)
+================================ */
+function krediKaydet(){
+    alert("Kredi kaydedilecek (backend bağlanacak)");
+}
+</script>
