@@ -13030,17 +13030,83 @@ body.skin-dark .cus-radio.light .icon::before {
     opacity:0.9;
 }
 
-<<<<<<< HEAD
-.top-report {
-  height: 190px;
+/* ================= HEADER USER AREA ================= */
+.header-notification-area {
+    display: flex;
+    align-items: center;
 }
-=======
->>>>>>> b3823d7743de6b5feb3ffa12bcb5bff3bb5c89a5
 
+.header-notification-area > li:last-child {
+    margin-left: auto;
+}
 
+.user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 
+.user .name {
+    font-weight: 600;
+    color: #fff;
+}
 
+.header-notification-area .avatar .status {
+    display: none;
+}
 
+/* ================= SIDEBAR ================= */
+.side-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 260px;
+    height: 100vh;
+    z-index: 1000;
+    transition: width 0.3s cubic-bezier(.4,0,.2,1);
+}
 
+.side-header.collapsed {
+    width: 70px !important;
+}
 
+/* Menü text smooth hide */
+.side-header-menu > ul > li > a span {
+    transition: opacity 0.2s ease;
+}
 
+.side-header.collapsed .side-header-menu > ul > li > a span {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ================= HEADER ================= */
+.header-section {
+    position: relative;
+    top: 0;
+    left: 260px;
+    width: calc(100% - 260px);
+    height: 120px;
+    z-index: 900;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: left 0.3s ease, width 0.3s ease;
+}
+
+/* ================= CONTENT ================= */
+.content-body {
+    margin-left: 260px;
+    margin-top: 70px;
+    width: calc(100% - 260px);
+    transition: margin-left 0.3s ease, width 0.3s ease;
+}
+
+/* ================= COLLAPSE STATE ================= */
+.side-header.collapsed ~ .header-section {
+    left: 70px;
+    width: calc(100% - 70px);
+}
+
+.side-header.collapsed ~ .content-body {
+    margin-left: 70px;
+    width: calc(100% - 70px);
+}

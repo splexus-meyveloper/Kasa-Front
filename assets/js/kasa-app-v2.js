@@ -918,5 +918,57 @@ async function loadCheckSummary(){
 
 }
 
+document.addEventListener("DOMContentLoaded", function () {
 
+    const username = localStorage.getItem("username");
 
+    const headerEl = document.getElementById("headerUserName");
+    const dropdownEl = document.getElementById("dropdownUserName");
+
+    if (username) {
+        if (headerEl) headerEl.textContent = username;
+        if (dropdownEl) dropdownEl.textContent = username;
+    }
+});
+
+document.addEventListener("click", function (e) {
+  const btn = e.target.closest(".side-header-toggle");
+  if (!btn) return;
+
+  const sidebar = document.querySelector(".side-header");
+  if (!sidebar) return;
+
+  // Mobil mi?
+  const isMobile = window.matchMedia("(max-width: 991.98px)").matches;
+
+  if (isMobile) {
+    // Mobilde show ile aç/kapa
+    sidebar.classList.toggle("show");
+  } else {
+    // Desktopta collapsed ile daralt/genişlet
+    sidebar.classList.toggle("collapsed");
+    localStorage.setItem("sidebarCollapsed", sidebar.classList.contains("collapsed"));
+  }
+});
+
+// Desktop state restore
+document.addEventListener("DOMContentLoaded", function () {
+  const sidebar = document.querySelector(".side-header");
+  if (!sidebar) return;
+
+  const isMobile = window.matchMedia("(max-width: 991.98px)").matches;
+  if (isMobile) return;
+
+  if (localStorage.getItem("sidebarCollapsed") === "true") {
+    sidebar.classList.add("collapsed");
+  }
+});
+
+// Mobil close butonu çalışsın
+document.addEventListener("click", function (e) {
+  const closeBtn = e.target.closest(".side-header-close");
+  if (!closeBtn) return;
+
+  const sidebar = document.querySelector(".side-header");
+  if (sidebar) sidebar.classList.remove("show");
+});
