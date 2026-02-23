@@ -65,12 +65,12 @@ function $sideHeaderClassToggle() {
 }
 $sideHeaderClassToggle();
 /*Side Header Toggle*/
-$sideHeaderToggle.on('click', function(){
-    if($sideHeader.hasClass('show')){
-        $sideHeader.removeClass('show').addClass('hide');
-    } else {
-        $sideHeader.removeClass('hide').addClass('show');
-    }
+d$(document).off('click', '.side-header-toggle');
+
+$(document).on('click', '.side-header-toggle', function(e){
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    document.body.classList.toggle("sidebar-collapsed");
 });
 /*Side Header Close (Visiable Only On Mobile)*/
 $sideHeaderClose.on('click', function(){

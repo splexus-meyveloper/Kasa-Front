@@ -13030,83 +13030,194 @@ body.skin-dark .cus-radio.light .icon::before {
     opacity:0.9;
 }
 
-/* ================= HEADER USER AREA ================= */
-.header-notification-area {
+/* ===== OVERRIDE ADOMX LAYOUT ===== */
+
+:root{
+  --sidebar-width: 260px;
+  --sidebar-mini: 70px;
+  --header-height: 110px;
+}
+
+/* HEADER */
+.header-section{
+  position: fixed !important;
+  top: 0 !important;
+  left: var(--sidebar-width) !important;
+  width: calc(100% - var(--sidebar-width)) !important;
+  height: var(--header-height) !important;
+  z-index: 2000 !important;
+}
+
+/* SIDEBAR */
+.side-header{
+  position: fixed !important;
+  top: 0 !important;               /* BURASI KRİTİK */
+  left: 0 !important;
+  height: 100vh !important;
+  width: var(--sidebar-width) !important;
+  z-index: 1500 !important;
+  transition: width .3s ease;
+}
+
+/* CONTENT */
+.content-body{
+  margin-top: var(--header-height) !important;
+  margin-left: var(--sidebar-width) !important;
+  width: calc(100% - var(--sidebar-width)) !important;
+  transition: margin-left .3s ease, width .3s ease;
+}
+
+/* COLLAPSED */
+body.sidebar-collapsed .side-header{
+  width: var(--sidebar-mini) !important;
+}
+
+body.sidebar-collapsed .header-section{
+  left: var(--sidebar-mini) !important;
+  width: calc(100% - var(--sidebar-mini)) !important;
+}
+
+body.sidebar-collapsed .content-body{
+  margin-left: var(--sidebar-mini) !important;
+  width: calc(100% - var(--sidebar-mini)) !important;
+}
+
+/* Yazıları gizle */
+body.sidebar-collapsed .side-header-menu > ul > li > a span{
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* SIDEBAR INNER SPACING */
+.side-header {
+    padding: 0 16px;   /* sağ-sol boşluk */
+}
+
+/* LOGO ALANI */
+.sidebar-logo {
+    height: 90px;      /* biraz daha ferah */
     display: flex;
     align-items: center;
+    justify-content: center;  /* tam ortala */
+    margin-bottom: 20px;
 }
 
-.header-notification-area > li:last-child {
-    margin-left: auto;
+/* Menü üst boşluğu */
+.side-header-menu {
+    margin-top: 20px;
+}
+.sidebar-logo img {
+    max-height: 42px;
 }
 
-.user {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+/* ===== UX POLISH (SAFE) ===== */
+
+/* 1) Sidebar iç boşluk + logo/menü arası mesafe */
+.side-header{
+  padding-left: 14px;
+  padding-right: 14px;
+  box-sizing: border-box;
 }
 
-.user .name {
-    font-weight: 600;
-    color: #fff;
+.sidebar-logo{
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px; /* logo ile menü arası */
 }
 
-.header-notification-area .avatar .status {
+.sidebar-logo img{
+  max-height: 40px;
+}
+
+/* Menü biraz aşağı insin */
+.side-header-menu{
+  margin-top: 8px;
+}
+
+/* 2) Header boşluk (flash) olmasın: arka plan + senkron transition */
+.header-section{
+  background: #1e1e1e; /* senin koyu temana yakın; gerekirse aynısını yaparız */
+  transition: left .3s ease, width .3s ease;
+  will-change: left, width;
+}
+
+/* Sidebar da aynı hızda aksın */
+.side-header{
+  transition: width .3s ease;
+  will-change: width;
+}
+
+/* Collapse sırasında header/content ile sidebar aynı anda animasyon görsün */
+body.sidebar-collapsed .header-section,
+body.sidebar-collapsed .content-body{
+  transition: left .3s ease, width .3s ease, margin-left .3s ease;
+}
+
+/* ===== MINI SIDEBAR CLEAN HOVER ===== */
+
+/* Sidebar dışına taşmaya izin */
+.side-header,
+.side-header-inner {
+    overflow: visible !important;
+}
+
+/* Mini modda yazıları gizle */
+body.sidebar-collapsed .side-header-menu > ul > li > a span {
     display: none;
 }
 
-/* ================= SIDEBAR ================= */
-.side-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 260px;
-    height: 100vh;
-    z-index: 1000;
-    transition: width 0.3s cubic-bezier(.4,0,.2,1);
+/* Submenu normalde kapalı */
+body.sidebar-collapsed .side-header-sub-menu {
+    display: none !important;
 }
 
-.side-header.collapsed {
-    width: 70px !important;
-}
-
-/* Menü text smooth hide */
-.side-header-menu > ul > li > a span {
-    transition: opacity 0.2s ease;
-}
-
-.side-header.collapsed .side-header-menu > ul > li > a span {
-    opacity: 0;
-    pointer-events: none;
-}
-
-/* ================= HEADER ================= */
-.header-section {
+/* Hover panel */
+body.sidebar-collapsed .side-header-menu > ul > li {
     position: relative;
+}
+
+/* Invisible hover bridge */
+body.sidebar-collapsed .side-header-menu > ul > li::after {
+    content: "";
+    position: absolute;
     top: 0;
-    left: 260px;
-    width: calc(100% - 260px);
-    height: 120px;
-    z-index: 900;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-    transition: left 0.3s ease, width 0.3s ease;
+    right: -15px;
+    width: 15px;
+    height: 100%;
 }
 
-/* ================= CONTENT ================= */
-.content-body {
-    margin-left: 260px;
-    margin-top: 70px;
-    width: calc(100% - 260px);
-    transition: margin-left 0.3s ease, width 0.3s ease;
+/* Panel */
+body.sidebar-collapsed .side-header-menu > ul > li:hover .side-header-sub-menu {
+    display: block !important;
+    position: absolute;
+    left: 85px;   /* 70 + 15 boşluk */
+    top: 0;
+    min-width: 200px;
+    background: #1f2430;
+    border-radius: 6px;
+    padding: 10px 0;
+    box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    z-index: 5000;
 }
 
-/* ================= COLLAPSE STATE ================= */
-.side-header.collapsed ~ .header-section {
-    left: 70px;
-    width: calc(100% - 70px);
+/* ===== MINI MODE FLOAT PANEL ===== */
+
+.mini-float {
+    position: fixed;
+    min-width: 220px;
+    background: #2a3042; /* header / box rengine yakın yap */
+    border-radius: 8px;
+    padding: 10px 0;
+    box-shadow: 0 12px 28px rgba(0,0,0,.4);
+    opacity: 0;
+    transform: translateX(10px);
+    transition: all .18s ease;
+    z-index: 9999;
 }
 
-.side-header.collapsed ~ .content-body {
-    margin-left: 70px;
-    width: calc(100% - 70px);
+.mini-float.show {
+    opacity: 1;
+    transform: translateX(0);
 }

@@ -931,44 +931,79 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
-document.addEventListener("click", function (e) {
-  const btn = e.target.closest(".side-header-toggle");
-  if (!btn) return;
+(function () {
+  if (!window.$) return;
 
-  const sidebar = document.querySelector(".side-header");
-  if (!sidebar) return;
+  // main-v2.js'in toggle'ını devre dışı bırak
+  $('.side-header-toggle').off('click');
+  $(document).off('click', '.side-header-toggle');
 
-  // Mobil mi?
-  const isMobile = window.matchMedia("(max-width: 991.98px)").matches;
+  // bizim mini-collapse toggle
+  $(document).on('click', '.side-header-toggle', function (e) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    document.body.classList.toggle('sidebar-collapsed');
+  });
+})();
 
-  if (isMobile) {
-    // Mobilde show ile aç/kapa
-    sidebar.classList.toggle("show");
-  } else {
-    // Desktopta collapsed ile daralt/genişlet
-    sidebar.classList.toggle("collapsed");
-    localStorage.setItem("sidebarCollapsed", sidebar.classList.contains("collapsed"));
-  }
-});
+// ===== MINI MODE PROFESSIONAL HOVER =====
 
-// Desktop state restore
-document.addEventListener("DOMContentLoaded", function () {
-  const sidebar = document.querySelector(".side-header");
-  if (!sidebar) return;
+let floatPanel;
+let hideTimer;
 
-  const isMobile = window.matchMedia("(max-width: 991.98px)").matches;
-  if (isMobile) return;
+function initMiniHover(){
 
-  if (localStorage.getItem("sidebarCollapsed") === "true") {
-    sidebar.classList.add("collapsed");
-  }
-});
+    if(!floatPanel){
+        floatPanel = document.createElement("div");
+        floatPanel.className = "mini-float";
+        document.body.appendChild(floatPanel);
 
-// Mobil close butonu çalışsın
-document.addEventListener("click", function (e) {
-  const closeBtn = e.target.closest(".side-header-close");
-  if (!closeBtn) return;
+        floatPanel.addEventListener("mouseenter", () => {
+            clearTimeout(hideTimer);
+        });
 
-  const sidebar = document.querySelector(".side-header");
-  if (sidebar) sidebar.classList.remove("show");
-});
+        floatPanel.addEventListener("mouseleave", () => {
+            scheduleHide();
+        });
+    }
+
+    document.addEventListener("mouseover", function(e){
+
+        if(!document.body.classList.contains("sidebar-collapsed")) return;
+
+        const li = e.target.closest(".side-header-menu > ul > li");
+        if(!li) return;
+
+        const submenu = li.querySelector(".side-header-sub-menu");
+        if(!submenu) return;
+
+        clearTimeout(hideTimer);
+
+        floatPanel.innerHTML = submenu.innerHTML;
+
+        const rect = li.getBoundingClientRect();
+
+        floatPanel.style.top = rect.top + "px";
+        floatPanel.style.left = rect.right + 8 + "px";
+
+        floatPanel.classList.add("show");
+    });
+
+    document.addEventListener("mouseout", function(e){
+
+        if(!document.body.classList.contains("sidebar-collapsed")) return;
+
+        const li = e.target.closest(".side-header-menu > ul > li");
+        if(!li) return;
+
+        scheduleHide();
+    });
+
+    function scheduleHide(){
+        hideTimer = setTimeout(() => {
+            floatPanel.classList.remove("show");
+        }, 150);
+    }
+}
+
+initMiniHover();
