@@ -13155,7 +13155,7 @@ body.sidebar-collapsed .content-body{
   transition: left .3s ease, width .3s ease, margin-left .3s ease;
 }
 
-/* ===== MINI SIDEBAR CLEAN HOVER ===== */
+/* ===== MINI SIDEBAR STABLE HOVER ===== */
 
 /* Sidebar dışına taşmaya izin */
 .side-header,
@@ -13163,36 +13163,36 @@ body.sidebar-collapsed .content-body{
     overflow: visible !important;
 }
 
-/* Mini modda yazıları gizle */
+/* Mini modda yazı gizle */
 body.sidebar-collapsed .side-header-menu > ul > li > a span {
     display: none;
 }
 
 /* Submenu normalde kapalı */
 body.sidebar-collapsed .side-header-sub-menu {
-    display: none !important;
+    display: none;
 }
 
-/* Hover panel */
+/* Her li hover alanı */
 body.sidebar-collapsed .side-header-menu > ul > li {
     position: relative;
 }
 
-/* Invisible hover bridge */
-body.sidebar-collapsed .side-header-menu > ul > li::after {
+/* Invisible hover bridge (BOŞLUĞU KAPSAR) */
+body.sidebar-collapsed .side-header-menu > ul > li::before {
     content: "";
     position: absolute;
     top: 0;
-    right: -15px;
-    width: 15px;
+    left: 100%;
+    width: 25px;        /* boşluk genişliği */
     height: 100%;
 }
 
 /* Panel */
 body.sidebar-collapsed .side-header-menu > ul > li:hover .side-header-sub-menu {
-    display: block !important;
+    display: block;
     position: absolute;
-    left: 85px;   /* 70 + 15 boşluk */
+    left: calc(100% + 25px);  /* boşluk kadar uzak */
     top: 0;
     min-width: 200px;
     background: #1f2430;
@@ -13202,22 +13202,60 @@ body.sidebar-collapsed .side-header-menu > ul > li:hover .side-header-sub-menu {
     z-index: 5000;
 }
 
-/* ===== MINI MODE FLOAT PANEL ===== */
-
-.mini-float {
-    position: fixed;
-    min-width: 220px;
-    background: #2a3042; /* header / box rengine yakın yap */
-    border-radius: 8px;
-    padding: 10px 0;
-    box-shadow: 0 12px 28px rgba(0,0,0,.4);
-    opacity: 0;
-    transform: translateX(10px);
-    transition: all .18s ease;
-    z-index: 9999;
+.permission-row td {
+    background: transparent;
 }
 
-.mini-float.show {
+.permission-content {
+    background: rgba(255,255,255,0.03);
+    padding: 0 20px;
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-5px);
+    transition: 
+        max-height 0.35s ease,
+        opacity 0.25s ease,
+        transform 0.25s ease,
+        padding 0.25s ease;
+}
+
+/* Açık state */
+.permission-row.show .permission-content {
+    padding: 20px;
+    max-height: 300px;
     opacity: 1;
-    transform: translateX(0);
+    transform: translateY(0);
+}
+
+.permission-content label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.permission-content input[type="checkbox"] {
+    accent-color: #4cafef;
+}
+
+/* MINI MODDA SUBMENU SIDEBAR İÇİNDE GÖRÜNMEZ */
+body.sidebar-collapsed .side-header-sub-menu {
+    position: absolute;
+    left: 100%;
+    top: 0;
+    min-width: 220px;
+
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+
+    transition: opacity 0.2s ease;
+}
+
+body.sidebar-collapsed .has-sub-menu:hover > .side-header-sub-menu {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
 }

@@ -65,13 +65,46 @@ function $sideHeaderClassToggle() {
 }
 $sideHeaderClassToggle();
 /*Side Header Toggle*/
-d$(document).off('click', '.side-header-toggle');
+$(document).off('click', '.side-header-toggle');
 
-$(document).on('click', '.side-header-toggle', function(e){
+$(document).on('click', '.side-header-toggle', function (e) {
     e.preventDefault();
     e.stopImmediatePropagation();
-    document.body.classList.toggle("sidebar-collapsed");
+
+    document.body.classList.toggle('sidebar-collapsed');
+
+    // Her toggle'da tüm submenüleri sıfırla
+    closeAllSubMenus();
 });
+
+function closeAllSubMenus() {
+
+    // jQuery yoksa sessizce çık
+    if (!window.jQuery) return;
+
+    // Açık animasyonları öldür + tamamen kapat (inline style izlerini temizler)
+    $('.side-header-sub-menu').stop(true, true).slideUp(0);
+
+    // Class + ikon reset
+    $('.has-sub-menu')
+        .removeClass('open active')
+        .find('.menu-expand i')
+        .removeClass('zmdi-chevron-up')
+        .addClass('zmdi-chevron-down');
+}
+
+// ✅ Mini modda submenu click toggle’u blokla (capture ile)
+document.addEventListener("click", function (e) {
+  if (!document.body.classList.contains("sidebar-collapsed")) return;
+
+  const a = e.target.closest(".has-sub-menu > a, .has-sub-menu .menu-expand");
+  if (!a) return;
+
+  // mini modda aşağı doğru açılmayı tamamen engelle
+  e.preventDefault();
+  e.stopPropagation();
+  if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
+}, true);
 /*Side Header Close (Visiable Only On Mobile)*/
 $sideHeaderClose.on('click', function(){
     $sideHeader.removeClass('show').addClass('hide');
@@ -91,15 +124,49 @@ $sideHeaderSubMenu.slideUp();
 
 /*Category Sub Menu Toggle*/
 $sideHeaderNav.on('click', 'li a, li .menu-expand', function(e) {
+
+    if (document.body.classList.contains("sidebar-collapsed")) {
+        return;
+    }
+
     var $this = $(this);
-    if ( $this.parent('li').hasClass('has-sub-menu') || ($this.attr('href') === '#' || $this.hasClass('menu-expand')) ) {
+
+    if ( $this.parent('li').hasClass('has-sub-menu') || 
+         ($this.attr('href') === '#' || $this.hasClass('menu-expand')) ) {
+
         e.preventDefault();
+
         if ($this.siblings('ul:visible').length){
-            $this.parent('li').removeClass('active').children('ul').slideUp().siblings('a').find('.menu-expand i').removeClass('zmdi-chevron-up').addClass('zmdi-chevron-down');
-            $this.parent('li').siblings('li').removeClass('active').find('ul:visible').slideUp().siblings('a').find('.menu-expand i').removeClass('zmdi-chevron-up').addClass('zmdi-chevron-down');
+
+            $this.parent('li')
+                .removeClass('active')
+                .children('ul')
+                .slideUp()
+                .siblings('a')
+                .find('.menu-expand i')
+                .removeClass('zmdi-chevron-up')
+                .addClass('zmdi-chevron-down');
+
         } else {
-            $this.parent('li').addClass('active').children('ul').slideDown().siblings('a').find('.menu-expand i').removeClass('zmdi-chevron-down').addClass('zmdi-chevron-up');
-            $this.parent('li').siblings('li').removeClass('active').find('ul:visible').slideUp().siblings('a').find('.menu-expand i').removeClass('zmdi-chevron-up').addClass('zmdi-chevron-down');
+
+            $this.parent('li')
+                .addClass('active')
+                .children('ul')
+                .slideDown()
+                .siblings('a')
+                .find('.menu-expand i')
+                .removeClass('zmdi-chevron-down')
+                .addClass('zmdi-chevron-up');
+
+            $this.parent('li')
+                .siblings('li')
+                .removeClass('active')
+                .find('ul:visible')
+                .slideUp()
+                .siblings('a')
+                .find('.menu-expand i')
+                .removeClass('zmdi-chevron-up')
+                .addClass('zmdi-chevron-down');
         }
     }
 });

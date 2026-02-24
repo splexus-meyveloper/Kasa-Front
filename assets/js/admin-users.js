@@ -156,48 +156,121 @@ async function addUser() {
 
 
 async function editUser(id, username) {
+
     editingUserId = id;
 
-    document.getElementById("editUserBox").style.display = "block";
-    document.getElementById("editUsernameTitle").innerText = username + " yetkileri";
+    const tbody = document.getElementById("userTable");
+    const rows = tbody.querySelectorAll("tr");
 
+    // Önce açık permission satırı varsa kapat
+    const existing = document.querySelector(".permission-row");
+
+if (existing) {
+
+    const sameUser = existing.dataset.userid == id;
+
+    // animasyonu başlat
+    existing.classList.remove("show");
+
+    setTimeout(() => {
+        existing.remove();
+
+        // Eğer aynı kullanıcıya tıklanmışsa sadece kapat
+        if (sameUser) return;
+
+        // Eğer farklı kullanıcıysa yeni panel açılacak
+        createPermissionRow();
+    }, 300);
+
+    return;
+}
+
+    // Yetkileri getir
     const res = await fetch(`${API_BASE}/api/admin/users/${id}/permissions`, {
         headers: authHeaders()
     });
 
     const perms = await res.json();
 
-    setCheck("edit_kasa", perms.includes("KASA"));
-    setCheck("edit_cek", perms.includes("CEK"));
-    setCheck("edit_senet", perms.includes("SENET"));
-    setCheck("edit_masraf", perms.includes("MASRAF"));
-    setCheck("edit_krediler", perms.includes("KREDILER"));
-    setCheck("edit_kullanici", perms.includes("KULLANICI_YONETIMI"));
-}
-
-function setCheck(id, val) {
-    const el = document.getElementById(id);
-    if (el) el.checked = val;
-}
-
-async function savePermissions() {
-    if (!editingUserId) return;
-
-    const perms = [];
-    if (edit_kasa.checked) perms.push("KASA");
-    if (edit_cek.checked) perms.push("CEK");
-    if (edit_senet.checked) perms.push("SENET");
-    if (edit_masraf.checked) perms.push("MASRAF");
-    if (edit_krediler.checked) perms.push("KREDILER");
-    if (edit_kullanici.checked) perms.push("KULLANICI_YONETIMI");
-
-    await fetch(`${API_BASE}/api/admin/users/${editingUserId}/permissions`, {
-        method: "PUT",
-        headers: authHeaders(),
-        body: JSON.stringify({ permissions: perms })
+    // Kullanıcı satırını bul
+    let targetRow = null;
+    rows.forEach(r => {
+        if (r.querySelector("td")?.innerText === username) {
+            targetRow = r;
+        }
     });
 
-    showToast("Yetkiler kaydedildi.","success");
+    if (!targetRow) return;
+
+    // Yeni permission satırı oluştur
+    const permRow = document.createElement("tr");
+    permRow.className = "permission-row";
+    permRow.dataset.userid = id;
+
+    permRow.innerHTML = `
+    <td colspan="3" style="padding:0; border:none;">
+        <div class="permission-content">
+
+            ${checkbox("KASA", perms)}
+            ${checkbox("CEK", perms)}
+            ${checkbox("SENET", perms)}
+            ${checkbox("MASRAF", perms)}
+            ${checkbox("KREDILER", perms)}
+            ${checkbox("KULLANICI_YONETIMI", perms)}
+
+            <div style="margin-top:15px;">
+                <button class="button button-primary button-sm">
+                    Yetkileri Kaydet
+                </button>
+            </div>
+
+        </div>
+    </td>
+`;
+
+    targetRow.after(permRow);
+
+    setTimeout(() => {
+    permRow.classList.add("show");
+}, 10);
+
+    permRow.querySelector("button").addEventListener("click", async () => {
+
+        const selected = [];
+        permRow.querySelectorAll("input[type=checkbox]").forEach(cb => {
+            if (cb.checked) selected.push(cb.value);
+        });
+
+        await fetch(`${API_BASE}/api/admin/users/${id}/permissions`, {
+            method: "PUT",
+            headers: authHeaders(),
+            body: JSON.stringify({ permissions: selected })
+        });
+
+        showToast("Yetkiler kaydedildi.","success");
+    });
+}
+
+function checkbox(code, perms) {
+
+    const permissionLabels = {
+        "KASA": "Kasa",
+        "CEK": "Çek",
+        "SENET": "Senet",
+        "MASRAF": "Masraf",
+        "KREDILER": "Krediler",
+        "KULLANICI_YONETIMI": "Kullanıcı Yönetimi"
+    };
+
+    const checked = perms.includes(code) ? "checked" : "";
+    const label = permissionLabels[code] || code;
+
+    return `
+        <label style="margin-right:25px;">
+            <input type="checkbox" value="${code}" ${checked}>
+            ${label}
+        </label>
+    `;
 }
 
 async function deleteUser(id){
