@@ -931,79 +931,71 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
-(function () {
-  if (!window.$) return;
+// ===============================
+// MINI SIDEBAR CLEAN FLYOUT SYSTEM
+// ===============================
 
-  // main-v2.js'in toggle'ını devre dışı bırak
-  $('.side-header-toggle').off('click');
-  $(document).off('click', '.side-header-toggle');
+function initMiniSidebarFlyout() {
+  // zaten kurulduysa tekrar kurma
+  if (window.__miniFlyoutInited) return;
+  window.__miniFlyoutInited = true;
 
-  // bizim mini-collapse toggle
-  $(document).on('click', '.side-header-toggle', function (e) {
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    document.body.classList.toggle('sidebar-collapsed');
+  let flyout = null;
+  let closeTimer = null;
+
+  function ensureFlyout() {
+    if (flyout) return flyout;
+    flyout = document.createElement("div");
+    flyout.className = "mini-flyout";
+    flyout.style.display = "none";
+    document.body.appendChild(flyout);
+
+    flyout.addEventListener("mouseenter", () => {
+      if (closeTimer) clearTimeout(closeTimer);
+    });
+    flyout.addEventListener("mouseleave", scheduleClose);
+
+    return flyout;
+  }
+
+  function scheduleClose() {
+    if (closeTimer) clearTimeout(closeTimer);
+    closeTimer = setTimeout(() => {
+      if (flyout) flyout.style.display = "none";
+    }, 120);
+  }
+
+  // Delegation: menu sonradan yüklense bile çalışır
+  document.addEventListener("mouseover", (e) => {
+    if (!document.body.classList.contains("sidebar-collapsed")) return;
+
+    const li = e.target.closest(".side-header-menu .has-sub-menu");
+    if (!li) return;
+
+    const ul = li.querySelector(":scope > .side-header-sub-menu");
+    if (!ul) return;
+
+    const f = ensureFlyout();
+    if (closeTimer) clearTimeout(closeTimer);
+
+    // İçeriği kopyala (ul değil, sadece içini) → ekranı kaplama bug’ı biter
+    f.innerHTML = `<ul class="side-header-sub-menu">${ul.innerHTML}</ul>`;
+
+    const rect = li.getBoundingClientRect();
+    f.style.top = rect.top + "px";
+    f.style.left = "84px"; // 70 + 14
+    f.style.display = "block";
   });
-})();
 
-// ===== MINI MODE PROFESSIONAL HOVER =====
-
-let floatPanel;
-let hideTimer;
-
-function initMiniHover(){
-
-    if(!floatPanel){
-        floatPanel = document.createElement("div");
-        floatPanel.className = "mini-float";
-        document.body.appendChild(floatPanel);
-
-        floatPanel.addEventListener("mouseenter", () => {
-            clearTimeout(hideTimer);
-        });
-
-        floatPanel.addEventListener("mouseleave", () => {
-            scheduleHide();
-        });
+  document.addEventListener("mousemove", (e) => {
+    if (!document.body.classList.contains("sidebar-collapsed")) {
+      if (flyout) flyout.style.display = "none";
+      return;
     }
 
-    document.addEventListener("mouseover", function(e){
-
-        if(!document.body.classList.contains("sidebar-collapsed")) return;
-
-        const li = e.target.closest(".side-header-menu > ul > li");
-        if(!li) return;
-
-        const submenu = li.querySelector(".side-header-sub-menu");
-        if(!submenu) return;
-
-        clearTimeout(hideTimer);
-
-        floatPanel.innerHTML = submenu.innerHTML;
-
-        const rect = li.getBoundingClientRect();
-
-        floatPanel.style.top = rect.top + "px";
-        floatPanel.style.left = rect.right + 8 + "px";
-
-        floatPanel.classList.add("show");
-    });
-
-    document.addEventListener("mouseout", function(e){
-
-        if(!document.body.classList.contains("sidebar-collapsed")) return;
-
-        const li = e.target.closest(".side-header-menu > ul > li");
-        if(!li) return;
-
-        scheduleHide();
-    });
-
-    function scheduleHide(){
-        hideTimer = setTimeout(() => {
-            floatPanel.classList.remove("show");
-        }, 150);
-    }
+    // mouse ne sidebar item’ında ne flyout’taysa kapat
+    const onLi = e.target.closest(".side-header-menu .has-sub-menu");
+    const onFlyout = e.target.closest(".mini-flyout");
+    if (!onLi && !onFlyout) scheduleClose();
+  });
 }
-
-initMiniHover();

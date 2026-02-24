@@ -13030,12 +13030,13 @@ body.skin-dark .cus-radio.light .icon::before {
     opacity:0.9;
 }
 
-/* ===== OVERRIDE ADOMX LAYOUT ===== */
+/* ===== OVERRIDE ADOMX LAYOUT (CLEAN) ===== */
 
 :root{
   --sidebar-width: 260px;
   --sidebar-mini: 70px;
   --header-height: 110px;
+  --mini-submenu-gap: 14px;
 }
 
 /* HEADER */
@@ -13046,17 +13047,33 @@ body.skin-dark .cus-radio.light .icon::before {
   width: calc(100% - var(--sidebar-width)) !important;
   height: var(--header-height) !important;
   z-index: 2000 !important;
+  background: #1e1e1e;
+  transition: left .3s ease, width .3s ease;
+  will-change: left, width;
 }
 
 /* SIDEBAR */
 .side-header{
   position: fixed !important;
-  top: 0 !important;               /* BURASI KRİTİK */
+  top: 0 !important;
   left: 0 !important;
   height: 100vh !important;
   width: var(--sidebar-width) !important;
   z-index: 1500 !important;
   transition: width .3s ease;
+  will-change: width;
+  box-sizing: border-box;
+  padding: 0 14px;
+  overflow-x: visible !important; /* mini submenu dışarı taşabilsin */
+  overflow-y: hidden;
+}
+
+/* SIDEBAR SCROLL AREA */
+.side-header-inner{
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: visible;
+  position: relative;
 }
 
 /* CONTENT */
@@ -13082,180 +13099,74 @@ body.sidebar-collapsed .content-body{
   width: calc(100% - var(--sidebar-mini)) !important;
 }
 
-/* Yazıları gizle */
-body.sidebar-collapsed .side-header-menu > ul > li > a span{
-  opacity: 0;
-  pointer-events: none;
-}
-
-/* SIDEBAR INNER SPACING */
-.side-header {
-    padding: 0 16px;   /* sağ-sol boşluk */
-}
-
-/* LOGO ALANI */
-.sidebar-logo {
-    height: 90px;      /* biraz daha ferah */
-    display: flex;
-    align-items: center;
-    justify-content: center;  /* tam ortala */
-    margin-bottom: 20px;
-}
-
-/* Menü üst boşluğu */
-.side-header-menu {
-    margin-top: 20px;
-}
-.sidebar-logo img {
-    max-height: 42px;
-}
-
-/* ===== UX POLISH (SAFE) ===== */
-
-/* 1) Sidebar iç boşluk + logo/menü arası mesafe */
-.side-header{
-  padding-left: 14px;
-  padding-right: 14px;
-  box-sizing: border-box;
-}
-
+/* Logo + menu spacing */
 .sidebar-logo{
   height: 90px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 16px; /* logo ile menü arası */
+  margin-bottom: 16px;
+}
+.sidebar-logo img{ max-height: 40px; }
+.side-header-menu{ margin-top: 8px; }
+
+/* Collapsed: yazıları gizle */
+body.sidebar-collapsed .side-header-menu > ul > li > a span{
+  display: none;
 }
 
-.sidebar-logo img{
-  max-height: 40px;
+/* ===== Permission dropdown (senin modül) ===== */
+.permission-row td{ background: transparent; }
+
+.permission-content{
+  background: rgba(255,255,255,0.03);
+  padding: 0 20px;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-5px);
+  transition: max-height 0.35s ease, opacity 0.25s ease, transform 0.25s ease, padding 0.25s ease;
 }
 
-/* Menü biraz aşağı insin */
-.side-header-menu{
-  margin-top: 8px;
+.permission-row.show .permission-content{
+  padding: 20px;
+  max-height: 300px;
+  opacity: 1;
+  transform: translateY(0);
 }
 
-/* 2) Header boşluk (flash) olmasın: arka plan + senkron transition */
-.header-section{
-  background: #1e1e1e; /* senin koyu temana yakın; gerekirse aynısını yaparız */
-  transition: left .3s ease, width .3s ease;
-  will-change: left, width;
+.permission-content label{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  cursor: pointer;
 }
 
-/* Sidebar da aynı hızda aksın */
-.side-header{
-  transition: width .3s ease;
-  will-change: width;
+.permission-content input[type="checkbox"]{ accent-color: #4cafef; }
+
+/* Mini modda sidebar içindeki gerçek submenu kesin kapalı */
+body.sidebar-collapsed .side-header .side-header-sub-menu{
+  display: none !important;
 }
 
-/* Collapse sırasında header/content ile sidebar aynı anda animasyon görsün */
-body.sidebar-collapsed .header-section,
-body.sidebar-collapsed .content-body{
-  transition: left .3s ease, width .3s ease, margin-left .3s ease;
+/* Flyout container */
+.mini-flyout{
+  position: fixed;
+  z-index: 999999;
+  min-width: 220px;
+  max-width: 320px;
+  background: #1f2430;
+  border-radius: 6px;
+  padding: 10px 0;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
 }
 
-/* ===== MINI SIDEBAR STABLE HOVER ===== */
-
-/* Sidebar dışına taşmaya izin */
-.side-header,
-.side-header-inner {
-    overflow: visible !important;
-}
-
-/* Mini modda yazı gizle */
-body.sidebar-collapsed .side-header-menu > ul > li > a span {
-    display: none;
-}
-
-/* Submenu normalde kapalı */
-body.sidebar-collapsed .side-header-sub-menu {
-    display: none;
-}
-
-/* Her li hover alanı */
-body.sidebar-collapsed .side-header-menu > ul > li {
-    position: relative;
-}
-
-/* Invisible hover bridge (BOŞLUĞU KAPSAR) */
-body.sidebar-collapsed .side-header-menu > ul > li::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 100%;
-    width: 25px;        /* boşluk genişliği */
-    height: 100%;
-}
-
-/* Panel */
-body.sidebar-collapsed .side-header-menu > ul > li:hover .side-header-sub-menu {
-    display: block;
-    position: absolute;
-    left: calc(100% + 25px);  /* boşluk kadar uzak */
-    top: 0;
-    min-width: 200px;
-    background: #1f2430;
-    border-radius: 6px;
-    padding: 10px 0;
-    box-shadow: 0 10px 30px rgba(0,0,0,.35);
-    z-index: 5000;
-}
-
-.permission-row td {
-    background: transparent;
-}
-
-.permission-content {
-    background: rgba(255,255,255,0.03);
-    padding: 0 20px;
-    overflow: hidden;
-    max-height: 0;
-    opacity: 0;
-    transform: translateY(-5px);
-    transition: 
-        max-height 0.35s ease,
-        opacity 0.25s ease,
-        transform 0.25s ease,
-        padding 0.25s ease;
-}
-
-/* Açık state */
-.permission-row.show .permission-content {
-    padding: 20px;
-    max-height: 300px;
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.permission-content label {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-weight: 500;
-    cursor: pointer;
-}
-
-.permission-content input[type="checkbox"] {
-    accent-color: #4cafef;
-}
-
-/* MINI MODDA SUBMENU SIDEBAR İÇİNDE GÖRÜNMEZ */
-body.sidebar-collapsed .side-header-sub-menu {
-    position: absolute;
-    left: 100%;
-    top: 0;
-    min-width: 220px;
-
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-
-    transition: opacity 0.2s ease;
-}
-
-body.sidebar-collapsed .has-sub-menu:hover > .side-header-sub-menu {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
+/* Adomx'un submenu default stillerini flyout içinde resetle (EKRANI KAPLAMA BUG'I BURADA ÇÖZÜLÜR) */
+.mini-flyout .side-header-sub-menu{
+  display: block !important;
+  float: none !important;
+  width: auto !important;
+  padding-left: 0 !important;
+  margin: 0 !important;
 }

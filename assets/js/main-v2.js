@@ -68,29 +68,36 @@ $sideHeaderClassToggle();
 $(document).off('click', '.side-header-toggle');
 
 $(document).on('click', '.side-header-toggle', function (e) {
-    e.preventDefault();
-    e.stopImmediatePropagation();
+  e.preventDefault();
+  e.stopImmediatePropagation();
 
-    document.body.classList.toggle('sidebar-collapsed');
+  document.body.classList.toggle('sidebar-collapsed');
 
-    // Her toggle'da tüm submenüleri sıfırla
-    closeAllSubMenus();
+  // sadece collapse'e girerken hard reset
+  if (document.body.classList.contains('sidebar-collapsed')) {
+    closeAllSubMenusHard();
+  }
 });
 
-function closeAllSubMenus() {
+function closeAllSubMenusHard() {
 
-    // jQuery yoksa sessizce çık
-    if (!window.jQuery) return;
+  // Animasyonları durdur
+  $('.side-header-sub-menu').stop(true, true);
 
-    // Açık animasyonları öldür + tamamen kapat (inline style izlerini temizler)
-    $('.side-header-sub-menu').stop(true, true).slideUp(0);
+  // Class temizle
+  $('.has-sub-menu').removeClass('active open');
 
-    // Class + ikon reset
-    $('.has-sub-menu')
-        .removeClass('open active')
-        .find('.menu-expand i')
-        .removeClass('zmdi-chevron-up')
-        .addClass('zmdi-chevron-down');
+  // Icon reset
+  $('.has-sub-menu .menu-expand i')
+    .removeClass('zmdi-chevron-up')
+    .addClass('zmdi-chevron-down');
+
+  // INLINE STYLE TEMİZLE
+  document.querySelectorAll('.side-header-sub-menu').forEach(ul => {
+    ul.style.display = "";
+    ul.style.height = "";
+    ul.style.overflow = "";
+  });
 }
 
 // ✅ Mini modda submenu click toggle’u blokla (capture ile)
@@ -119,10 +126,14 @@ var $sideHeaderNav = $('.side-header-menu'),
 /*Add Toggle Button in Off Canvas Sub Menu*/
 $sideHeaderSubMenu.siblings('a').append('<span class="menu-expand"><i class="zmdi zmdi-chevron-down"></i></span>');
 
-/*Close Off Canvas Sub Menu*/
-$sideHeaderSubMenu.slideUp();
 
 /*Category Sub Menu Toggle*/
+if (document.body.classList.contains("sidebar-collapsed")) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    return;
+}
+
 $sideHeaderNav.on('click', 'li a, li .menu-expand', function(e) {
 
     if (document.body.classList.contains("sidebar-collapsed")) {
