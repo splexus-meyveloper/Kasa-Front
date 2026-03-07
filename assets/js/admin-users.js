@@ -19,22 +19,43 @@ function authHeaders() {
  * SPA PAGE LOADER
  *********************************/
 async function loadPage(page) {
+
     const content = document.getElementById("pageContent");
     if (!content) return;
 
+    /* önce eski sayfayı temizle */
+    if (typeof currentPageDestroy === "function") {
+        try {
+            currentPageDestroy();
+        } catch (err) {
+            console.warn("Page destroy error:", err);
+        }
+        currentPageDestroy = null;
+    }
+
+    /* fade out */
     content.style.opacity = "0";
 
     const res = await fetch(page);
     const html = await res.text();
+
+    /* yeni sayfayı yükle */
     content.innerHTML = html;
 
+    /* fade in */
     requestAnimationFrame(() => {
         content.style.opacity = "1";
     });
 
-    // Sayfaya özel init
-    if (page.includes("kullanicilar")) initUsersPage();
-    if (page.includes("krediler")) initKredilerPage();
+    /* sayfa init */
+    if (page.includes("kullanicilar")) {
+        currentPageDestroy = initUsersPage();
+    }
+
+    if (page.includes("krediler")) {
+        currentPageDestroy = initKredilerPage();
+    }
+
 }
 
 /*********************************
@@ -52,22 +73,6 @@ async function loadMenuOnce() {
 
     menuLoaded = true;
 }
-function bindMenuEvents() {
-
-    // SUB MENU AÇ / KAPA
-    document.querySelectorAll(".has-sub-menu > a").forEach(a => {
-        a.addEventListener("click", e => {
-            e.preventDefault();
-            const li = a.parentElement;
-            li.classList.toggle("open");
-
-            const sub = li.querySelector(".side-header-sub-menu");
-            if (sub) {
-                sub.style.display =
-                    sub.style.display === "block" ? "none" : "block";
-            }
-        });
-    });
 
     // 🔁 SPA LINKLER
     document.querySelectorAll("a[data-page]").forEach(a => {
@@ -76,16 +81,21 @@ function bindMenuEvents() {
             loadPage(a.getAttribute("data-page"));
         });
     });
-}
+
 
 
 /*********************************
  * USERS
  *********************************/
-let editingUserId = null;
-
 function initUsersPage() {
+
     loadUsers();
+
+    return function destroyUsersPage() {
+        const tbody = document.getElementById("userTable");
+        if (tbody) tbody.innerHTML = "";
+    };
+
 }
 
 async function loadUsers() {
@@ -109,12 +119,18 @@ async function loadUsers() {
         tr.className = "user-row";
 
         tr.innerHTML = `
-            <td>${u.username}</td>
-            <td>${u.role}</td>
-            <td>
-                <button class="button button-danger button-sm">Sil</button>
-            </td>
-        `;
+<td class="user-name">${u.username}</td>
+
+<td>
+<span class="role-badge ${u.role === "ADMIN" ? "role-admin" : "role-user"}">
+${u.role}
+</span>
+</td>
+
+<td>
+<button class="button button-danger button-sm">Sil</button>
+</td>
+`;
 
         tr.addEventListener("click", () => editUser(u.id, u.username));
 
@@ -208,24 +224,30 @@ if (existing) {
     permRow.dataset.userid = id;
 
     permRow.innerHTML = `
-    <td colspan="3" style="padding:0; border:none;">
-        <div class="permission-content">
+<td colspan="3" style="padding:0; border:none;">
 
-            ${checkbox("KASA", perms)}
-            ${checkbox("CEK", perms)}
-            ${checkbox("SENET", perms)}
-            ${checkbox("MASRAF", perms)}
-            ${checkbox("KREDILER", perms)}
-            ${checkbox("KULLANICI_YONETIMI", perms)}
+<div class="permission-content">
 
-            <div style="margin-top:15px;">
-                <button class="button button-primary button-sm">
-                    Yetkileri Kaydet
-                </button>
-            </div>
+    <div class="permission-grid">
 
-        </div>
-    </td>
+        ${checkbox("KASA", perms)}
+        ${checkbox("CEK", perms)}
+        ${checkbox("SENET", perms)}
+        ${checkbox("MASRAF", perms)}
+        ${checkbox("KREDILER", perms)}
+        ${checkbox("KULLANICI_YONETIMI", perms)}
+
+    </div>
+
+    <div class="permission-actions">
+        <button class="button button-primary button-sm">
+            Yetkileri Kaydet
+        </button>
+    </div>
+
+</div>
+
+</td>
 `;
 
     targetRow.after(permRow);

@@ -161,18 +161,23 @@ function afterMenuLoaded() {
   applyPermissionsFromToken();
 
   // submenu click (jQuery varsa)
-  if (window.$) {
-    $(".side-header-menu")
-      .find(".has-sub-menu > a")
-      .off("click")
-      .on("click", function (e) {
-        e.preventDefault();
-        const parent = $(this).parent();
-        parent.toggleClass("open");
-        parent.children(".side-header-sub-menu").slideToggle(300);
-      });
+  $(".side-header-menu")
+  .find(".has-sub-menu > a")
+  .off("click")
+  .on("click", function (e) {
+    if (document.body.classList.contains("sidebar-collapsed")) {
+      return;
+    }
+
+    e.preventDefault();
+
+    const parent = $(this).parent();
+
+    parent.toggleClass("open");
+    parent.children(".side-header-sub-menu").slideToggle(300);
+  });
   }
-}
+
 
 function loadMenu() {
   const menuContainer = document.getElementById("menuContainer");
@@ -999,3 +1004,6 @@ function initMiniSidebarFlyout() {
     if (!onLi && !onFlyout) scheduleClose();
   });
 }
+
+permRow.classList.add("show");
+existing.classList.remove("show");

@@ -38,11 +38,11 @@
 <div class="row">
 
     <div class="col-xlg-3 col-md-6 col-12 mb-30">
-        <div class="top-report">
+        <div class="top-report dashboard-card">
             <div class="head"><h4>Günlük Giriş</h4></div>
             <div class="content">
                 <h5>Bugün</h5>
-                <h2 id="gunlukGiris" class="text-success">0 TL</h2>
+                <h2 id="gunlukGiris" class="text-end money-plus">0 TL</h2>
             </div>
             <div class="footer">
                 <div class="progess">
@@ -53,11 +53,11 @@
     </div>
 
     <div class="col-xlg-3 col-md-6 col-12 mb-30">
-        <div class="top-report">
+        <div class="top-report dashboard-card">
             <div class="head"><h4>Günlük Çıkış</h4></div>
             <div class="content">
                 <h5>Bugün</h5>
-                <h2 id="gunlukCikis" class="text-danger">0 TL</h2>
+                <h2 id="gunlukCikis" class="text-end money-minus">0 TL</h2>
             </div>
             <div class="footer">
                 <div class="progess">
@@ -68,7 +68,7 @@
     </div>
 
     <div class="col-xlg-3 col-md-6 col-12 mb-30">
-        <div class="top-report">
+        <div class="top-report dashboard-card">
             <div class="head"><h4>Aylık Net</h4></div>
             <div class="content">
                 <h5>Bu Ay</h5>
@@ -83,7 +83,7 @@
     </div>
 
     <div class="col-xlg-3 col-md-6 col-12 mb-30">
-        <div class="top-report">
+        <div class="top-report dashboard-card">
             <div class="head"><h4>Kasa Bakiye</h4></div>
             <div class="content">
                 <h5>Güncel</h5>
@@ -100,7 +100,7 @@
     <!-- 🔥 ELDeki Çekler ARTIK AYNI ROW İÇİNDE -->
     <div class="col-xlg-3 col-md-6 col-12 mb-30">
 
-        <div class="top-report">
+        <div class="top-report dashboard-card">
 
             <div class="head">
                 <h4>Eldeki Çekler</h4>
@@ -144,23 +144,28 @@
 
 
     <!-- GRAFIK -->
-    <div class="row mbn-30">
-        <div class="col-md-12 mb-30">
-            <div class="box">
-                <div class="box-head">
-                    <h4 class="title">İşlem Grafiği</h4>
-                </div>
-                <div class="box-body">
-                    <canvas id="chartjs-revenue-statistics-chart"></canvas>
-                </div>
-            </div>
-        </div>
+<div class="row mbn-30">
+  <div class="col-md-12 mb-30">
+
+    <div class="box chart-panel">
+
+      <div class="box-head">
+        <h4 class="title">İşlem Grafiği</h4>
+      </div>
+
+      <div class="box-body">
+        <canvas id="chartjs-revenue-statistics-chart"></canvas>
+      </div>
+
     </div>
+
+  </div>
+</div>
 
     <!-- SON 10 HAREKET -->
     <div class="row">
         <div class="col-12 mb-30">
-            <div class="box">
+            <div class="box dashboard-card">
                 <div class="box-head">
                     <h4 class="title">Son 10 Hareket</h4>
                 </div>
