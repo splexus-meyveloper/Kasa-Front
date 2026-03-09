@@ -9,109 +9,135 @@
 <div class="row">
 <div class="col-12">
     <div class="box">
+
         <div class="box-head">
             <h3 class="title">Yeni Kredi Oluştur</h3>
         </div>
+
         <div class="box-body">
 
             <div class="row">
 
+                <!-- BANKA -->
                 <div class="col-md-6 mb-20">
                     <label>Banka</label>
-                    <select class="form-control" id="banka">
+                    <select class="form-control" id="krediBanka">
+
                         <option value="">Banka Seçiniz</option>
-                        <option>Ziraat Bankası</option>
-                        <option>İş Bankası</option>
-                        <option>Garanti BBVA</option>
-                        <option>Akbank</option>
-                        <option>Halkbank</option>
-                        <option>Vakıfbank</option>
-                        <option>QNB</option>
-                        <option>TEB</option>
-                        <option>Denizbank</option>
-                        <option>Yapı Kredi</option>
+
+                        <option value="ZIRAAT">Ziraat Bankası</option>
+                        <option value="IS_BANKASI">İş Bankası</option>
+                        <option value="GARANTI_BBVA">Garanti BBVA</option>
+                        <option value="AKBANK">Akbank</option>
+                        <option value="YAPI_KREDI">Yapı Kredi</option>
+                        <option value="HALKBANK">Halkbank</option>
+                        <option value="VAKIFBANK">Vakıfbank</option>
+                        <option value="QNB_FINANSBANK">QNB Finansbank</option>
+                        <option value="DENIZBANK">Denizbank</option>
+                        <option value="TEB">TEB</option>
+                        <option value="DIGER">Diğer</option>
+
                     </select>
                 </div>
 
+                <!-- KREDİ TUTARI -->
                 <div class="col-md-6 mb-20">
                     <label>Kredi Tutarı</label>
-                    <input type="text" id="krediTutar" class="form-control">
+                    <input
+                        type="text"
+                        class="form-control money-input"
+                        id="krediTutar">
                 </div>
 
+                <!-- TAKSİT SAYISI -->
+                <div class="col-md-4 mb-20">
+                    <label>Taksit Sayısı</label>
+                    <input
+                        type="number"
+                        class="form-control"
+                        id="krediTaksit">
+                </div>
+
+                <!-- AYLIK TAKSİT -->
                 <div class="col-md-4 mb-20">
                     <label>Aylık Taksit</label>
-                    <input type="text" id="aylikTaksit" class="form-control">
+                    <input
+                        type="text"
+                        class="form-control money-input"
+                        id="krediAylik">
                 </div>
 
+                <!-- ÖDEME GÜNÜ -->
                 <div class="col-md-4 mb-20">
                     <label>Ödeme Günü</label>
-                    <select class="form-control" id="odemeGunu"></select>
+                    <select
+                        class="form-control"
+                        id="krediOdemeGunu">
+
+                        <option value="">Seçiniz</option>
+
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                        <option value="13">13</option>
+                        <option value="14">14</option>
+                        <option value="15">15</option>
+                        <option value="16">16</option>
+                        <option value="17">17</option>
+                        <option value="18">18</option>
+                        <option value="19">19</option>
+                        <option value="20">20</option>
+                        <option value="21">21</option>
+                        <option value="22">22</option>
+                        <option value="23">23</option>
+                        <option value="24">24</option>
+                        <option value="25">25</option>
+                        <option value="26">26</option>
+                        <option value="27">27</option>
+                        <option value="28">28</option>
+                        <option value="29">29</option>
+                        <option value="30">30</option>
+                        <option value="31">31</option>
+
+                    </select>
                 </div>
 
-                <div class="col-md-4 mb-20">
+                <!-- BİTİŞ TARİHİ -->
+                <div class="col-md-6 mb-20">
                     <label>Bitiş Tarihi</label>
-                    <input type="date" class="form-control" id="bitisTarihi">
+                    <input
+                        type="date"
+                        class="form-control"
+                        id="krediBitis">
                 </div>
 
-                <div class="col-md-12 mb-20">
-                    <label>Açıklama</label>
-                    <textarea class="form-control"></textarea>
-                </div>
-
+                <!-- BUTON -->
                 <div class="col-12">
-                    <button class="button button-primary" onclick="krediKaydet()">
-                        Krediyi Kaydet
-                    </button>
+
+                    <button
+    type="button"
+    class="button button-primary"
+    id="krediKaydetBtn">
+
+    Krediyi Kaydet
+
+</button>
+
                 </div>
 
             </div>
 
         </div>
+
     </div>
 </div>
 </div>
-
-<script>
-/* ================================
-   PARA FORMAT
-================================ */
-function formatCurrency(value) {
-    value = value.replace(/[^0-9,]/g, "");
-    const parts = value.split(",");
-    if (parts.length > 2) value = parts[0] + "," + parts.slice(1).join("");
-
-    let [int, dec] = value.split(",");
-    int = int.replace(/\./g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-
-    return dec !== undefined
-        ? int + "," + dec.substring(0,2) + " TL"
-        : int + " TL";
-}
-
-function bindMoneyInput(id) {
-    const el = document.getElementById(id);
-    if (!el) return;
-
-    el.addEventListener("input", () => {
-        el.value = formatCurrency(el.value.replace(" TL",""));
-    });
-}
-
-/* ================================
-   ÖDEME GÜNLERİ
-================================ */
-const gun = document.getElementById("odemeGunu");
-for (let i=1;i<=31;i++){
-    gun.innerHTML += `<option value="${i}">${i}</option>`;
-}
-
-bindMoneyInput("krediTutar");
-bindMoneyInput("aylikTaksit");
-
-/* ================================
-   KAYDET (ŞİMDİLİK DEMO)
-================================ */
-function krediKaydet(){
-    alert("Kredi kaydedilecek (backend bağlanacak)");
-}
-</script>
