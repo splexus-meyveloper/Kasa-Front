@@ -23,21 +23,11 @@
     </div>
 </div>
 
-<!-- ADMIN DASHBOARD -->
-<div id="adminDashboard">
-
-    <div class="row mb-20">
-        <div class="col-12 col-lg-auto mb-20">
-            <div class="page-heading">
-                <h3>Ana Sayfa <span>/ Kasa Yönetimi</span></h3>
-            </div>
-        </div>
-    </div>
-
-    <!-- TOP REPORT -->
+<!-- TOP REPORT -->
 <div class="row">
 
-    <div class="col-xlg-3 col-md-6 col-12 mb-30">
+    <!-- Günlük Giriş -->
+    <div class="col-xl-3 col-md-6 col-12 mb-30">
         <div class="top-report dashboard-card">
             <div class="head"><h4>Günlük Giriş</h4></div>
             <div class="content">
@@ -52,7 +42,8 @@
         </div>
     </div>
 
-    <div class="col-xlg-3 col-md-6 col-12 mb-30">
+    <!-- Günlük Çıkış -->
+    <div class="col-xl-3 col-md-6 col-12 mb-30">
         <div class="top-report dashboard-card">
             <div class="head"><h4>Günlük Çıkış</h4></div>
             <div class="content">
@@ -67,7 +58,8 @@
         </div>
     </div>
 
-    <div class="col-xlg-3 col-md-6 col-12 mb-30">
+    <!-- Aylık Net -->
+    <div class="col-xl-3 col-md-6 col-12 mb-30">
         <div class="top-report dashboard-card">
             <div class="head"><h4>Aylık Net</h4></div>
             <div class="content">
@@ -82,7 +74,8 @@
         </div>
     </div>
 
-    <div class="col-xlg-3 col-md-6 col-12 mb-30">
+    <!-- Kasa Bakiye -->
+    <div class="col-xl-3 col-md-6 col-12 mb-30">
         <div class="top-report dashboard-card">
             <div class="head"><h4>Kasa Bakiye</h4></div>
             <div class="content">
@@ -97,50 +90,45 @@
         </div>
     </div>
 
-    <!-- 🔥 ELDeki Çekler ARTIK AYNI ROW İÇİNDE -->
-    <div class="col-xlg-3 col-md-6 col-12 mb-30">
-
+    <!-- Eldeki Çekler -->
+    <div class="col-xl-3 col-md-6 col-12 mb-30">
         <div class="top-report dashboard-card">
-
-            <div class="head">
-                <h4>Eldeki Çekler</h4>
-            </div>
-
+            <div class="head"><h4>Eldeki Çekler</h4></div>
             <div class="content">
-
-                <div style="
-                    display:flex;
-                    justify-content:space-between;
-                    align-items:center;
-                ">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
                     <h5>Portföy</h5>
-
-                    <span id="cekAdet" style="
-                        opacity:0.8;
-                        font-size:13px;
-                    ">
-                        0 adet
-                    </span>
+                    <span id="cekAdet" style="opacity:0.8;font-size:13px;">0 adet</span>
                 </div>
-
-                <h2 id="cekToplamTutar" class="text-warning">
-                    0 TL
-                </h2>
-
+                <h2 id="cekToplamTutar" class="text-warning">0 TL</h2>
             </div>
-
             <div class="footer">
                 <div class="progess">
                     <div id="barCekler" class="progess-bar"></div>
                 </div>
             </div>
-
         </div>
+    </div>
 
+    <!-- Eldeki Senetler -->
+    <div class="col-xl-3 col-md-6 col-12 mb-30">
+        <div class="top-report dashboard-card">
+            <div class="head"><h4>Eldeki Senetler</h4></div>
+            <div class="content">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <h5>Portföy</h5>
+                    <span id="senetAdet" style="opacity:0.8;font-size:13px;">0 adet</span>
+                </div>
+                <h2 id="senetToplamTutar" class="text-info">0 TL</h2>
+            </div>
+            <div class="footer">
+                <div class="progess">
+                    <div id="barSenetler" class="progess-bar"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
 </div>
-
 
 
     <!-- GRAFIK -->

@@ -26,46 +26,98 @@
 <!-- MENU -->
 <div id="menuContainer"></div>
 
-<!-- HEADER -->
 <div class="header-section">
   <div class="container-fluid h-100 d-flex align-items-center">
 
-    <!-- SOL: TOGGLE -->
-    <button class="side-header-toggle"
-            style="background:none;border:none;cursor:pointer;">
-      <i class="zmdi zmdi-menu" style="font-size:22px;"></i>
-    </button>
+    <!-- SOL -->
+    <div class="d-flex align-items-center gap-20">
 
-    <!-- SAĞ: USER -->
+      <!-- SIDEBAR TOGGLE -->
+      <button class="side-header-toggle header-btn">
+        <i class="zmdi zmdi-menu"></i>
+      </button>
+
+      <!-- SAYFA BAŞLIĞI -->
+      <div class="header-title">
+        <h4 id="pageTitle">Kasa Yönetimi</h4>
+      </div>
+
+    </div>
+
+
+    <!-- ORTA: ARAMA -->
+    <div class="header-search d-none d-lg-block">
+      <input type="text" placeholder="İşlem, kullanıcı veya kasa ara...">
+      <i class="zmdi zmdi-search"></i>
+    </div>
+
+
+    <!-- SAĞ -->
     <ul class="header-notification-area d-flex align-items-center mb-0 ms-auto">
+
+      <!-- HIZLI EKLE -->
+      <li>
+        <button class="header-action-btn">
+          <i class="zmdi zmdi-plus-circle"></i>
+        </button>
+      </li>
+
+      <!-- BİLDİRİM -->
+      <li>
+        <button class="header-action-btn">
+          <i class="zmdi zmdi-notifications"></i>
+        </button>
+      </li>
+
+      <!-- USER -->
       <li class="adomx-dropdown">
+
         <a class="toggle" href="#">
           <span class="user d-flex align-items-center">
+
             <span class="avatar">
-              <img src="assets/images/avatar/avatar-1.png" alt="">
+              <img src="assets/images/avatar/avatar-1.png">
             </span>
+
             <span class="name ms-2" id="headerUserName"></span>
+
+            <i class="zmdi zmdi-chevron-down ms-1"></i>
+
           </span>
         </a>
 
         <div class="adomx-dropdown-menu dropdown-menu-user">
+
           <div class="head">
             <h5 class="name">
               <a href="#" id="dropdownUserName"></a>
             </h5>
           </div>
+
           <div class="body">
             <ul>
+
               <li>
-                <a href="javascript:void(0)" onclick="logout()">
-                  <i class="zmdi zmdi-lock-open"></i> Çıkış Yap
+                <a href="#">
+                  <i class="zmdi zmdi-account"></i>
+                  Profil
                 </a>
               </li>
+
+              <li>
+                <a href="javascript:void(0)" onclick="logout()">
+                  <i class="zmdi zmdi-lock-open"></i>
+                  Çıkış Yap
+                </a>
+              </li>
+
             </ul>
           </div>
+
         </div>
 
       </li>
+
     </ul>
 
   </div>

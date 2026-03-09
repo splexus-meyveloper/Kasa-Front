@@ -455,6 +455,7 @@ function tryInitDashboard(){
     loadDashboard();
     loadChart();
     loadCheckSummary();
+    loadNotesDashboard();
 
 }
 
@@ -778,7 +779,58 @@ async function loadChecks(){
 
   container.innerHTML = "";
 
+  function getDueStatus(dueDate){
+
+  const today = new Date();
+  const due = new Date(dueDate);
+
+  today.setHours(0,0,0,0);
+  due.setHours(0,0,0,0);
+
+  const diffDays =
+    Math.ceil((due - today) / (1000 * 60 * 60 * 24));
+
+  if(diffDays < 0)
+    return {class:"due-over", text:"Vadesi Geçti"};
+
+  if(diffDays === 0)
+    return {class:"due-today", text:"Bugün"};
+
+  if(diffDays <= 3)
+    return {class:"due-critical", text:`${diffDays} gün kaldı`};
+
+  if(diffDays <= 7)
+    return {class:"due-warning", text:`${diffDays} gün kaldı`};
+
+  return null;
+
+}
+
   checks.forEach(c => {
+
+    const due = getDueStatus(c.dueDate);
+    let dueClass = "";
+
+if(due){
+  dueClass = due.class;
+}
+
+const dueBadge = due
+  ? `<span class="due-badge ${due.class}">
+       ${due.text}
+     </span>`
+  : "";
+    
+    let statusClass = "status-portfolio";
+let statusText = "Portföyde";
+
+if (c.status === "TAHSIL_EDILDI") {
+  statusClass = "status-collected";
+  statusText = "Tahsil Edildi";
+} else if (c.status === "CIRO_EDILDI") {
+  statusClass = "status-endorsed";
+  statusText = "Ciro Edildi";
+}
 
     const amount =
       Number(c.amount)
@@ -788,23 +840,69 @@ async function loadChecks(){
     const card = `
 <div class="col-xl-4 col-md-6 mb-30">
 
-  <div class="box">
+  <div class="box check-card ${statusClass} ${dueClass}">
 
-    <div class="box-head">
-      <h4 class="title">${formatBank(c.bank)}</h4>
+    <div class="box-head d-flex justify-content-between align-items-center">
+
+  <h5 class="title mb-0">${formatBank(c.bank)}</h5>
+
+  <div class="check-actions">
+
+    ${dueBadge}
+
+    <span class="check-status ${statusClass}">
+      ${statusText}
+    </span>
+
+        <div class="check-menu">
+
+          <button class="check-menu-btn">
+            <i class="zmdi zmdi-more-vert"></i>
+          </button>
+
+          <div class="check-menu-dropdown">
+
+            <button onclick="collectCheck('${c.checkNo}','${c.bank}','${c.dueDate}')">
+              <i class="zmdi zmdi-money"></i>
+              Tahsil Et
+            </button>
+
+            <button onclick="endorseCheck('${c.checkNo}','${c.bank}','${c.dueDate}')">
+              <i class="zmdi zmdi-share"></i>
+              Ciro Et
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
     </div>
 
     <div class="box-body">
 
-      <p><b>Çek No:</b> ${c.checkNo}</p>
-      <p><b>Vade:</b> ${c.dueDate}</p>
-      <p>${c.description || "-"}</p>
+      <div class="check-info">
 
-      <hr>
+        <div class="check-row">
+          <span class="label">Çek No</span>
+          <span class="value">${c.checkNo}</span>
+        </div>
 
-      <h3 class="text-success" style="text-align:right;">
+        <div class="check-row">
+          <span class="label">Vade</span>
+          <span class="value">${c.dueDate}</span>
+        </div>
+
+        <div class="check-description">
+          ${c.description || "-"}
+        </div>
+
+      </div>
+
+      <div class="check-amount">
         ${amount} TL
-      </h3>
+      </div>
 
     </div>
 
@@ -819,55 +917,69 @@ async function loadChecks(){
 
 }
 
-// ÇEK ÇIKIŞ
-document.addEventListener("click", async function (e) {
-
-  const btn = e.target.closest("#btnCheckOut");
-  if(!btn) return;
-
-  e.preventDefault();
-
-  const payload = {
-    checkNo:
-      document.getElementById("checkNo").value,
-
-    bank:
-      document.getElementById("bank").value,
-
-    dueDate:
-      document.getElementById("dueDate").value,
-
-    description:
-      document.getElementById("description").value
-  };
+async function collectCheck(checkNo, bank, dueDate){
 
   const res = await fetch(
-    "http://localhost:8080/api/checks/out",
+    "http://localhost:8080/api/checks/collect",
     {
       method:"POST",
       headers:{
         "Content-Type":"application/json",
-        "Authorization":
-          "Bearer " + localStorage.getItem("token")
+        "Authorization":"Bearer " + localStorage.getItem("token")
       },
-      body: JSON.stringify(payload)
+      body:JSON.stringify({
+        checkNo,
+        bank,
+        dueDate
+      })
     }
   );
 
   if(res.ok){
 
-    showToast("Çek çıkışı yapıldı","success");
+    showToast(`Çek tahsil edildi • ${checkNo}`, "success");
 
-    setTimeout(()=>{
-      loadPage("cekler.html"); // portföye dön
-      loadChecks();
-    },1000);
+    loadChecks();
 
-  } else {
-    showToast("Hata oluştu","error");
+  }else{
+
+    showToast("Tahsil işlemi başarısız", "error");
+
   }
 
-});
+}
+
+async function endorseCheck(checkNo, bank, dueDate){
+
+  const res = await fetch(
+    "http://localhost:8080/api/checks/endorse",
+    {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "Authorization":"Bearer " + localStorage.getItem("token")
+      },
+      body:JSON.stringify({
+        checkNo,
+        bank,
+        dueDate
+      })
+    }
+  );
+
+  if(res.ok){
+
+    showToast(`Çek ciro edildi • ${checkNo}`, "success");
+
+    loadChecks();
+
+  }else{
+
+    showToast("Ciro işlemi başarısız", "error");
+
+  }
+
+}
 
 async function loadCheckSummary(){
 
@@ -1005,5 +1117,384 @@ function initMiniSidebarFlyout() {
   });
 }
 
-permRow.classList.add("show");
-existing.classList.remove("show");
+// TUTAR FORMATLAMA
+document.addEventListener("input", function(e){
+
+  if(e.target.id !== "tutar") return;
+
+  let value = e.target.value;
+
+  // TL ve nokta temizle
+  value = value.replace(" TL","").replace(/\./g,"");
+
+  // sadece rakam bırak
+  value = value.replace(/\D/g,"");
+
+  if(!value){
+    e.target.value = "";
+    return;
+  }
+
+  // formatla
+  e.target.value = Number(value)
+    .toLocaleString("tr-TR") + " TL";
+
+});
+
+
+// SENET KART FONSİYONU
+
+function createFinancialCard(data, type){
+
+  const amount =
+    Number(data.amount)
+      .toLocaleString("tr-TR",{minimumFractionDigits:2});
+
+  const due = getDueStatus(data.dueDate);
+  const dueClass = due ? due.class : "";
+
+  const dueBadge = due
+    ? `<span class="due-badge ${due.class}">${due.text}</span>`
+    : "";
+
+  let title = "";
+  let numberLabel = "";
+  let numberValue = "";
+
+  if(type === "check"){
+    title = formatBank(data.bank);
+    numberLabel = "Çek No";
+    numberValue = data.checkNo;
+  }
+
+  if(type === "note"){
+    title = data.debtor;
+    numberLabel = "Senet No";
+    numberValue = data.noteNo;
+  }
+
+  return `
+<div class="col-xl-4 col-md-6 mb-30">
+
+  <div class="box check-card ${dueClass}">
+
+    <div class="box-head d-flex justify-content-between align-items-center">
+
+      <h5 class="title mb-0">${title}</h5>
+
+      <div class="check-actions">
+
+        ${dueBadge}
+
+        <span class="check-status status-portfolio">
+          Portföyde
+        </span>
+
+        <div class="check-menu">
+
+          <button class="check-menu-btn">
+            <i class="zmdi zmdi-more-vert"></i>
+          </button>
+
+          <div class="check-menu-dropdown">
+
+            <button onclick="collect${type === "check" ? "Check" : "Note"}('${numberValue}','${data.dueDate}')">
+              <i class="zmdi zmdi-money"></i>
+              Tahsil Et
+            </button>
+
+            <button onclick="endorse${type === "check" ? "Check" : "Note"}('${numberValue}','${data.dueDate}')">
+              <i class="zmdi zmdi-share"></i>
+              Ciro Et
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="box-body">
+
+      <div class="check-info">
+
+        <div class="check-row">
+          <span class="label">${numberLabel}</span>
+          <span class="value">${numberValue}</span>
+        </div>
+
+        <div class="check-row">
+          <span class="label">Vade</span>
+          <span class="value">${data.dueDate}</span>
+        </div>
+
+        <div class="check-description">
+          ${data.description || "-"}
+        </div>
+
+      </div>
+
+      <div class="check-amount">
+        ${amount} TL
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+`;
+
+}
+
+async function loadNotes(){
+
+  const container = document.getElementById("noteContainer");
+  if(!container) return;
+
+  const res = await fetch(
+    "http://localhost:8080/api/notes/portfolio",
+    {
+      headers:{
+        "Authorization":"Bearer " + localStorage.getItem("token")
+      }
+    }
+  );
+
+  if(!res.ok) return;
+
+  const notes = await res.json();
+
+  container.innerHTML = "";
+
+  notes.forEach(n => {
+
+    const card = createFinancialCard(n,"note");
+
+    container.insertAdjacentHTML("beforeend",card);
+
+  });
+
+}
+
+function getDueStatus(dueDate){
+
+  const today = new Date();
+  const due = new Date(dueDate);
+
+  today.setHours(0,0,0,0);
+  due.setHours(0,0,0,0);
+
+  const diffDays =
+    Math.ceil((due - today) / (1000 * 60 * 60 * 24));
+
+  if(diffDays < 0)
+    return {class:"due-over", text:"Vadesi Geçti"};
+
+  if(diffDays === 0)
+    return {class:"due-today", text:"Bugün"};
+
+  if(diffDays <= 3)
+    return {class:"due-critical", text:`${diffDays} gün kaldı`};
+
+  if(diffDays <= 7)
+    return {class:"due-warning", text:`${diffDays} gün kaldı`};
+
+  return null;
+
+}
+
+
+// ===============================
+// SENET GİRİŞ
+// ===============================
+
+document.body.addEventListener("click", async function(e){
+
+    const btn = e.target.closest("#btnNoteIn");
+    if(!btn) return;
+
+    e.preventDefault();
+
+    const noteNo = document.getElementById("noteNo");
+    const dueDate = document.getElementById("dueDate");
+    const tutarInput = document.getElementById("tutar");
+    const description = document.getElementById("description");
+
+    if(!noteNo || !dueDate || !tutarInput){
+        showToast("Form alanları bulunamadı","error");
+        return;
+    }
+
+    let tutar = tutarInput.value;
+
+    tutar = tutar
+        .replace(" TL","")
+        .replace(/\./g,"")
+        .replace(",", ".");
+
+    const amount = parseFloat(tutar);
+
+    if(!noteNo.value || !dueDate.value || !amount){
+        showToast("Tüm alanları doldurun","error");
+        return;
+    }
+
+    const payload = {
+        noteNo: noteNo.value,
+        dueDate: dueDate.value,
+        amount: amount,
+        description: description ? description.value : ""
+    };
+
+    const res = await fetch(
+        "http://localhost:8080/api/notes/in",
+        {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json",
+                "Authorization":"Bearer " + localStorage.getItem("token")
+            },
+            body: JSON.stringify(payload)
+        }
+    );
+
+    if(res.ok){
+
+        showToast("Senet giriş yapıldı","success");
+
+        setTimeout(()=>{
+            loadPage("senetler.html");
+        },1000);
+
+    }else{
+
+        showToast("Senet kaydedilemedi","error");
+
+    }
+
+});
+
+if (pageContent) {
+    new MutationObserver(() => {
+
+        tryInitDashboard();
+
+        loadChecks();
+
+        loadNotes(); // 🔥 senetleri yükle
+
+    }).observe(pageContent, {
+        childList: true
+    });
+}
+
+async function collectNote(noteNo, dueDate){
+
+  const res = await fetch(
+    "http://localhost:8080/api/notes/collect",
+    {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "Authorization":"Bearer " + localStorage.getItem("token")
+      },
+      body: JSON.stringify({
+        noteNo,
+        dueDate
+      })
+    }
+  );
+
+  if(res.ok){
+
+    showToast(`Senet tahsil edildi • ${noteNo}`, "success");
+
+    loadNotes();
+
+  }else{
+
+    showToast("Tahsil işlemi başarısız", "error");
+
+  }
+
+}
+
+async function endorseNote(noteNo, dueDate){
+
+  const res = await fetch(
+    "http://localhost:8080/api/notes/endorse",
+    {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "Authorization":"Bearer " + localStorage.getItem("token")
+      },
+      body: JSON.stringify({
+        noteNo,
+        dueDate
+      })
+    }
+  );
+
+  if(res.ok){
+
+    showToast(`Senet ciro edildi • ${noteNo}`, "success");
+
+    loadNotes();
+
+  }else{
+
+    showToast("Ciro işlemi başarısız", "error");
+
+  }
+
+}
+
+async function loadNotesDashboard(){
+
+    const adetEl = document.getElementById("senetAdet");
+    const tutarEl = document.getElementById("senetToplamTutar");
+    const barEl = document.getElementById("barSenetler");
+
+    if(!adetEl) return;
+
+    const res = await fetch(
+        "http://localhost:8080/api/notes/portfolio",
+        {
+            headers:{
+                "Authorization":
+                    "Bearer " + localStorage.getItem("token")
+            }
+        }
+    );
+
+    if(!res.ok) return;
+
+    const notes = await res.json();
+
+    const adet = notes.length;
+
+    let toplam = 0;
+
+    notes.forEach(n => {
+        toplam += Number(n.amount);
+    });
+
+    adetEl.innerText = adet + " adet";
+
+    tutarEl.innerText =
+        toplam.toLocaleString("tr-TR",{
+            minimumFractionDigits:2
+        }) + " TL";
+
+    if(barEl){
+
+        const percent = Math.min(adet * 10,100);
+
+        barEl.style.width = percent + "%";
+    }
+
+}

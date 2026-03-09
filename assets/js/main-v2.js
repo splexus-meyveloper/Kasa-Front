@@ -117,21 +117,72 @@ $sideHeaderClose.on('click', function(){
 });
     
 /*--
-    Side Header Menu
+Side Header Menu
 -----------------------------------*/
-var $sideHeaderNav = $('.side-header-menu'),
-    $sideHeaderSubMenu = $sideHeaderNav.find('.side-header-sub-menu');
 
-/*Add Toggle Button in Off Canvas Sub Menu*/
-$sideHeaderSubMenu.siblings('a').append('<span class="menu-expand"><i class="zmdi zmdi-chevron-down"></i></span>');
+var $sideHeaderNav = $('.side-header-menu');
+var $sideHeaderSubMenu = $sideHeaderNav.find('.side-header-sub-menu');
+
+/* submenu expand icon ekle */
+$sideHeaderSubMenu.siblings('a').append(
+    '<span class="menu-expand"><i class="zmdi zmdi-chevron-down"></i></span>'
+);
+
+/* submenu click behaviour */
+$sideHeaderNav.on('click', 'li a, li .menu-expand', function(e) {
+
+    // sidebar mini moddaysa açılmayı engelle
+    if (document.body.classList.contains("sidebar-collapsed")) {
+        return;
+    }
+
+    var $this = $(this);
+    var $parentLi = $this.parent('li');
+
+    if ($parentLi.hasClass('has-sub-menu') || 
+        $this.attr('href') === '#' || 
+        $this.hasClass('menu-expand')) {
+
+        e.preventDefault();
+
+        var $submenu = $parentLi.children('ul');
+
+        if ($submenu.is(':visible')) {
+
+            $parentLi.removeClass('active');
+            $submenu.slideUp(200);
+
+            $parentLi
+                .children('a')
+                .find('.menu-expand i')
+                .removeClass('zmdi-chevron-up')
+                .addClass('zmdi-chevron-down');
+
+        } else {
+
+            $parentLi.addClass('active');
+            $submenu.slideDown(200);
+
+            $parentLi
+                .children('a')
+                .find('.menu-expand i')
+                .removeClass('zmdi-chevron-down')
+                .addClass('zmdi-chevron-up');
+
+            // diğer açık menüleri kapat
+            $parentLi.siblings('li')
+                .removeClass('active')
+                .find('ul:visible')
+                .slideUp(200)
+                .siblings('a')
+                .find('.menu-expand i')
+                .removeClass('zmdi-chevron-up')
+                .addClass('zmdi-chevron-down');
+        }
+    }
+});
 
 
-/*Category Sub Menu Toggle*/
-if (document.body.classList.contains("sidebar-collapsed")) {
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    return;
-}
 
 $sideHeaderNav.on('click', 'li a, li .menu-expand', function(e) {
 
