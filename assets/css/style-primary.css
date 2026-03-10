@@ -368,7 +368,7 @@ input:-ms-input-placeholder, textarea:-ms-input-placeholder {
 }
 
 .text-danger {
-  color: #fd427c !important;
+  color: #ff0000 !important;
 }
 
 .text-warning {
@@ -1759,8 +1759,8 @@ input:-ms-input-placeholder, textarea:-ms-input-placeholder {
 }
 
 .badge-danger {
-  background-color: #fd427c;
-  border-color: #fd427c;
+  background-color: #ff0000;
+  border-color: #ff0000;
 }
 .badge-danger.badge-outline {
   color: #fd427c;

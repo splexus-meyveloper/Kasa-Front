@@ -1,10 +1,10 @@
 :root{
 
---kasapp-bg:#141925;
+--kasapp-bg:#fefeff;
 --kasapp-card:#1c2130;
 --kasapp-card-soft:#181d2a;
 
---kasapp-border:rgba(255,255,255,0.05);
+--kasapp-border:hsla(0, 0%, 100%, 0.05);
 
 --kasapp-success:#00e676;
 --kasapp-danger:#ff4d6d;
@@ -1322,4 +1322,107 @@ margin-right:6px;
 .loan-today{
   background:#00C853;
   color:white;
+}
+
+/* FILTER BAR */
+
+.filter-bar{
+    display:flex;
+    align-items:flex-end;
+    gap:20px;
+    flex-wrap:wrap;
+    margin-bottom:25px;
+}
+
+.filter-item{
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+}
+
+.filter-item label{
+    font-size:12px;
+    color:#aaa;
+}
+
+.filter-item input,
+.filter-item select{
+    background:#1f1f1f;
+    border:1px solid #333;
+    color:white;
+    padding:8px 10px;
+    border-radius:6px;
+}
+
+.filter-buttons{
+    display:flex;
+    gap:10px;
+}
+
+.btn-filter{
+    background:#4a7dff;
+    border:none;
+    padding:8px 16px;
+    color:white;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+.btn-clear{
+    background:#444;
+    border:none;
+    padding:8px 16px;
+    color:white;
+    border-radius:6px;
+}
+
+/* TABLE */
+
+.kasa-table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.kasa-table thead{
+    background:#1b1b1b;
+}
+
+.kasa-table th{
+    padding:12px;
+    text-align:left;
+    font-size:13px;
+    color:#bbb;
+}
+
+.kasa-table td{
+    padding:12px;
+    border-top:1px solid #2a2a2a;
+}
+
+.kasa-table tbody tr:hover{
+    background:#1c1c1c;
+}
+
+/* AMOUNT COLORS */
+
+.amount-income{
+    color:#27d17c;
+    font-weight:600;
+}
+
+.amount-expense{
+    color:#ff5a5a;
+    font-weight:600;
+}
+
+.table tbody tr:hover{
+
+background:linear-gradient(145deg,#24304a,#1a2234);
+
+box-shadow:
+0 10px 26px rgba(0,0,0,.55),
+0 0 0 1px rgba(74,163,255,.25);
+
+transform:translateY(-2px);
+
 }
