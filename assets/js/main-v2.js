@@ -47,86 +47,89 @@ $headerSearchClose.on('click', function(){
     $headerSearchForm.removeClass('show');
 });
 
-/*--
-    Side Header
------------------------------------*/
-var $sideHeaderToggle = $('.side-header-toggle'),
-    $sideHeaderClose = $('.side-header-close'),
-    $sideHeader = $('.side-header');
+function initKasappSidebar() {
 
-/*Add/Remove Show/Hide Class On Depending on Viewport Width*/
-function $sideHeaderClassToggle() {
-    var $windowWidth = $window.width();
-    if( $windowWidth >= 1200 ) {
-        $sideHeader.removeClass('hide').addClass('show');
-    } else {
-        $sideHeader.removeClass('show').addClass('hide');
+    if (window.sidebarInitialized) return;
+    window.sidebarInitialized = true;
+
+    const body = document.body;
+
+    function closeAll() {
+        document.querySelectorAll('.has-sub-menu.open').forEach(li => {
+            li.classList.remove('open');
+        });
     }
+
+    // 🔥 TOGGLE
+    document.addEventListener('click', function (e) {
+
+        const toggleBtn = e.target.closest('.side-header-toggle');
+        if (toggleBtn) {
+            e.preventDefault();
+
+            if (window.innerWidth <= 1199) {
+                body.classList.toggle('sidebar-mobile-open');
+            } else {
+                body.classList.toggle('sidebar-collapsed');
+                closeAll();
+            }
+            return;
+        }
+
+        const topLink = e.target.closest('.has-sub-menu > a');
+
+        if (topLink && !body.classList.contains('sidebar-collapsed')) {
+            e.preventDefault();
+
+            const parent = topLink.parentElement;
+            const isOpen = parent.classList.contains('open');
+
+            closeAll();
+
+            if (!isOpen) parent.classList.add('open');
+        }
+    });
+
+    // 🔥 HOVER (SADECE BU VAR)
+    document.querySelectorAll('.side-header-menu > ul > li').forEach(item => {
+
+        item.addEventListener('mouseenter', function () {
+
+            if (!body.classList.contains('sidebar-collapsed')) return;
+
+            // önce kapat
+            closeAll();
+
+            // submenu yoksa çık
+            if (!item.classList.contains('has-sub-menu')) return;
+
+            // aç
+            item.classList.add('open');
+
+            const submenu = item.querySelector(':scope > .side-header-sub-menu');
+            if (!submenu) return;
+
+            const rect = item.getBoundingClientRect();
+
+            let top = rect.top;
+            const h = submenu.scrollHeight;
+            const vh = window.innerHeight;
+
+            if (top + h > vh - 10) top = vh - h - 10;
+            if (top < 10) top = 10;
+
+            submenu.style.top = top + "px";
+            submenu.style.left = (rect.right + 8) + "px";
+        });
+    });
+
+    // 🔥 TAM DIŞARI ÇIKINCA KAPAT
+    document.addEventListener('mouseleave', function () {
+        closeAll();
+    });
+
 }
-$sideHeaderClassToggle();
-/*Side Header Toggle*/
-$(document).off('click', '.side-header-toggle');
 
-$(document).on('click', '.side-header-toggle', function (e) {
-  e.preventDefault();
-  e.stopImmediatePropagation();
-
-  document.body.classList.toggle('sidebar-collapsed');
-
-  if (document.body.classList.contains('sidebar-collapsed')) {
-    closeAllSubMenusHard();
-  }
-});
-
-function closeAllSubMenusHard() {
-
-  // Animasyonları durdur
-  $('.side-header-sub-menu').stop(true, true);
-
-  // Class temizle
-  $('.has-sub-menu').removeClass('active open');
-
-  // Icon reset
-  $('.has-sub-menu .menu-expand i')
-    .removeClass('zmdi-chevron-up')
-    .addClass('zmdi-chevron-down');
-
-  // INLINE STYLE TEMİZLE
-  document.querySelectorAll('.side-header-sub-menu').forEach(ul => {
-    ul.style.display = "";
-    ul.style.height = "";
-    ul.style.overflow = "";
-  });
-}
-
-// ✅ Mini modda submenu click toggle’u blokla (capture ile)
-document.addEventListener("click", function (e) {
-  if (!document.body.classList.contains("sidebar-collapsed")) return;
-
-  const a = e.target.closest(".has-sub-menu > a, .has-sub-menu .menu-expand");
-  if (!a) return;
-
-  // mini modda aşağı doğru açılmayı tamamen engelle
-  e.preventDefault();
-  e.stopPropagation();
-  if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
-}, true);
-/*Side Header Close (Visiable Only On Mobile)*/
-$sideHeaderClose.on('click', function(){
-    $sideHeader.removeClass('show').addClass('hide');
-});
-    
-
-// Adding active class to nav menu depending on page
-var pageUrl = window.location.href.substr(window.location.href.lastIndexOf("/") + 1);
-$('.side-header-menu a').each(function() {
-    if ($(this).attr("href") === pageUrl || $(this).attr("href") === '') {
-        $(this).closest('li').addClass("active").parents('li').addClass('active').children('ul').slideDown().siblings('a').find('.menu-expand i').removeClass('zmdi-chevron-down').addClass('zmdi-chevron-up');
-    }
-    else if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
-        $('.side-header-menu a[href="index.html"]').closest('li').addClass("active").parents('li').addClass('active').children('ul').slideDown().siblings('a').find('.menu-expand i').removeClass('zmdi-chevron-down').addClass('zmdi-chevron-up');
-    }
-})
 
 /*--
     Tooltip, Popover & Tippy Tooltip
@@ -242,16 +245,21 @@ $chatContactClose.on('click', function(){
     $chatContacts.removeClass('show');
 });
 
-
-// Common Resize function
-function resize() {
-    $sideHeaderClassToggle();
-}
-// Resize Window Resize
-$window.on('resize', function(){
-    resize();
-});
     
+// ✅ CLEAN RESIZE
+function resizeKasappLayout() {
+    // mobile moddan çıkınca sidebar kapanmış kalsın
+    if (window.innerWidth > 1199) {
+        document.body.classList.remove('sidebar-mobile-open');
+    }
+}
+
+// event
+window.addEventListener('resize', resizeKasappLayout);
+
+// ilk load
+resizeKasappLayout();
+
 /*--
     Custom Scrollbar (Perfect Scrollbar)
 -----------------------------------*/ 

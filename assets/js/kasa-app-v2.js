@@ -14,6 +14,9 @@ const API_BASE = "http://localhost:8080";
 // ==============================
 function loadPage(page){
 
+  window.currentPage = page;
+  localStorage.setItem('lastPage', page);
+
   const container = document.getElementById("pageContent");
   if(!container) return;
 
@@ -897,6 +900,7 @@ function initPageModules() {
   loadNotes();
   loadLoans();
   loadUsers();
+  loadMenu();
 }
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -962,69 +966,123 @@ function initPageObserver(){
 
 }
 
-// ================= MENU SYSTEM =================
+/* =========================================
+   SIDEBAR MENU SYSTEM (FINAL CLEAN VERSION)
+========================================= */
 
-// 🔐 USER (backend'den doldur)
-const user = {
-    permissions: ["KASA", "MASRAF", "CEK", "SENET", "KULLANICI_YONETIMI"]
-};
-
-// ================= MENU LOAD =================
 function loadMenu() {
-    fetch('menu.html')
-        .then(res => res.text())
-        .then(html => {
-            document.getElementById('menuContainer').innerHTML = html;
+  fetch('menu.html')
+    .then(res => res.text())
+    .then(html => {
+      const container = document.getElementById('menuContainer');
+      if (!container) return;
 
-            applyPermissions();
-            initSubMenu();
-        })
-        .catch(err => console.error("Menu yüklenemedi:", err));
+      container.innerHTML = html;
+
+      if (typeof applyPermissionsFromToken === 'function') {
+        applyPermissionsFromToken();
+      }
+
+      if (typeof initKasappSidebar === 'function') {
+        initKasappSidebar();
+      }
+    })
+    .catch(err => console.error("Menu yüklenemedi:", err));
 }
 
-// ================= PERMISSIONS =================
-function applyPermissions() {
-    document.querySelectorAll('[data-perm]').forEach(el => {
-        const perm = el.getAttribute('data-perm');
-        if (!user.permissions.includes(perm)) {
-            el.remove();
-        }
+
+// =========================================
+// SIDEBAR BEHAVIOR
+// =========================================
+
+function initKasappSidebar() {
+
+  // tekrar tekrar bind olmasın
+  if (window.sidebarInitialized) return;
+  window.sidebarInitialized = true;
+
+  const body = document.body;
+
+  // ==============================
+  // TOGGLE (küçült / büyüt)
+  // ==============================
+  document.addEventListener('click', function (e) {
+
+    const toggleBtn = e.target.closest('.side-header-toggle');
+    if (toggleBtn) {
+      e.preventDefault();
+
+      body.classList.toggle('sidebar-collapsed');
+
+      // collapse olunca tüm submenu kapat
+      document.querySelectorAll('.has-sub-menu').forEach(li => {
+        li.classList.remove('open');
+      });
+
+      return;
+    }
+
+    const closeBtn = e.target.closest('.side-header-close');
+    if (closeBtn) {
+      e.preventDefault();
+      body.classList.remove('sidebar-mobile-open');
+      return;
+    }
+
+    // ==============================
+    // NORMAL MOD CLICK
+    // ==============================
+    const topLink = e.target.closest('.has-sub-menu > a');
+
+    if (topLink && !body.classList.contains('sidebar-collapsed')) {
+      e.preventDefault();
+
+      const parent = topLink.parentElement;
+      const isOpen = parent.classList.contains('open');
+
+      document.querySelectorAll('.has-sub-menu.open').forEach(li => {
+        if (li !== parent) li.classList.remove('open');
+      });
+
+      if (isOpen) parent.classList.remove('open');
+      else parent.classList.add('open');
+    }
+
+  });
+
+
+  // ==============================
+  // HOVER (collapsed mod)
+  // ==============================
+  document.addEventListener('mouseover', function (e) {
+
+    if (!body.classList.contains('sidebar-collapsed')) return;
+
+    const currentMenu = e.target.closest('.has-sub-menu');
+    if (!currentMenu) return;
+
+    document.querySelectorAll('.has-sub-menu.open').forEach(li => {
+      if (li !== currentMenu) li.classList.remove('open');
     });
+
+    currentMenu.classList.add('open');
+  });
+
+
+  // ==============================
+  // SIDEBAR DIŞINA ÇIKINCA KAPAT
+  // ==============================
+  document.addEventListener('mousemove', function (e) {
+
+    if (!body.classList.contains('sidebar-collapsed')) return;
+
+    const inside = e.target.closest('.side-header, .side-header-sub-menu');
+
+    if (!inside) {
+      document.querySelectorAll('.has-sub-menu.open').forEach(li => {
+        li.classList.remove('open');
+      });
+    }
+  });
+
 }
-
-// ================= SUBMENU =================
-function initSubMenu() {
-
-    document.querySelectorAll('.has-sub-menu > a').forEach(item => {
-
-        item.addEventListener('click', function (e) {
-            e.preventDefault();
-
-            const parent = this.parentElement;
-
-            // diğerlerini kapat
-            document.querySelectorAll('.has-sub-menu.open').forEach(el => {
-                if (el !== parent) el.classList.remove('open');
-            });
-
-            // toggle
-            parent.classList.toggle('open');
-        });
-
-    });
-}
-
-// ================= SIDEBAR TOGGLE =================
-// Adomx zaten body üzerinden çalışıyor
-document.addEventListener('click', function (e) {
-
-    const btn = e.target.closest('.side-header-toggle');
-    if (!btn) return;
-
-    document.body.classList.toggle('sidebar-collapsed');
-});
-
-// ================= INIT =================
-document.addEventListener("DOMContentLoaded", function () {
-    loadMenu();
-});
