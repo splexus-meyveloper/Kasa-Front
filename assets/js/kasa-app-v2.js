@@ -252,40 +252,6 @@ function checkPagePermission() {
   if (path.includes("KULLANICI")) deny("KULLANICI_YONETIMI");
 }
 
-// ==============================
-// MENU
-// ==============================
-function afterMenuLoaded() {
-  const role = localStorage.getItem("role") || "";
-  const adminOnly = document.getElementById("adminMenuOnly");
-  if (adminOnly) adminOnly.style.display = role === "ADMIN" ? "block" : "none";
-
-  applyPermissionsFromToken();
-
-  $(".side-header-menu")
-    .find(".has-sub-menu > a")
-    .off("click")
-    .on("click", function (e) {
-      if (document.body.classList.contains("sidebar-collapsed")) return;
-      e.preventDefault();
-      const parent = $(this).parent();
-      parent.toggleClass("open");
-      parent.children(".side-header-sub-menu").slideToggle(300);
-    });
-}
-
-function loadMenu() {
-  const menuContainer = document.getElementById("menuContainer");
-  if (!menuContainer) return;
-
-  fetch("menu.html")
-    .then((r) => r.text())
-    .then((html) => {
-      menuContainer.innerHTML = html;
-      afterMenuLoaded();
-    })
-    .catch((err) => console.error("MENU LOAD ERROR:", err));
-}
 
 // ==============================
 // DASHBOARD
@@ -326,12 +292,12 @@ function loadKasaChart(girisData, cikisData, labels) {
       animation: { duration: 800 },
       scales: {
         x: {
-          grid: { color: "rgba(255, 255, 255, 0.28)", lineWidth: 1.2 },
-          ticks: { color: "#f8f8f8", font: { weight: "bold" } }
+          grid: { color: "rgba(0, 0, 0, 0.28)", lineWidth: 1.2 },
+          ticks: { color: "#0e0e0e", font: { weight: "bold" } }
         },
         y: {
-          grid: { color: "rgba(255, 255, 255, 0.27)", lineWidth: 1.2 },
-          ticks: { color: "#ffffff", font: { weight: "bold" } }
+          grid: { color: "rgba(0, 0, 0, 0.27)", lineWidth: 1.2 },
+          ticks: { color: "#000000", font: { weight: "bold" } }
         }
       }
     }
@@ -934,7 +900,7 @@ function initPageModules() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-  loadMenu();
+
   checkPagePermission();
 
   initPageObserver();
@@ -996,68 +962,69 @@ function initPageObserver(){
 
 }
 
-// ==============================
-// MINI SIDEBAR CLEAN FLYOUT SYSTEM
-// ==============================
-function initMiniSidebarFlyout() {
-  if (window.__miniFlyoutInited) return;
-  window.__miniFlyoutInited = true;
+// ================= MENU SYSTEM =================
 
-  let flyout = null;
-  let closeTimer = null;
+// 🔐 USER (backend'den doldur)
+const user = {
+    permissions: ["KASA", "MASRAF", "CEK", "SENET", "KULLANICI_YONETIMI"]
+};
 
-  function ensureFlyout() {
-    if (flyout) return flyout;
-    flyout = document.createElement("div");
-    flyout.className = "mini-flyout";
-    flyout.style.display = "none";
-    document.body.appendChild(flyout);
+// ================= MENU LOAD =================
+function loadMenu() {
+    fetch('menu.html')
+        .then(res => res.text())
+        .then(html => {
+            document.getElementById('menuContainer').innerHTML = html;
 
-    flyout.addEventListener("mouseenter", () => {
-      if (closeTimer) clearTimeout(closeTimer);
-    });
-    flyout.addEventListener("mouseleave", scheduleClose);
-
-    return flyout;
-  }
-
-  function scheduleClose() {
-    if (closeTimer) clearTimeout(closeTimer);
-    closeTimer = setTimeout(() => {
-      if (flyout) flyout.style.display = "none";
-    }, 120);
-  }
-
-  document.addEventListener("mouseover", (e) => {
-    if (!document.body.classList.contains("sidebar-collapsed")) return;
-
-    const li = e.target.closest(".side-header-menu .has-sub-menu");
-    if (!li) return;
-
-    const ul = li.querySelector(":scope > .side-header-sub-menu");
-    if (!ul) return;
-
-    const f = ensureFlyout();
-    if (closeTimer) clearTimeout(closeTimer);
-
-    f.innerHTML = `<ul class="side-header-sub-menu">${ul.innerHTML}</ul>`;
-
-    const rect = li.getBoundingClientRect();
-    f.style.top = rect.top + "px";
-    f.style.left = "84px";
-    f.style.display = "block";
-  });
-
-  document.addEventListener("mousemove", (e) => {
-    if (!document.body.classList.contains("sidebar-collapsed")) {
-      if (flyout) flyout.style.display = "none";
-      return;
-    }
-
-    const onLi = e.target.closest(".side-header-menu .has-sub-menu");
-    const onFlyout = e.target.closest(".mini-flyout");
-    if (!onLi && !onFlyout) scheduleClose();
-  });
+            applyPermissions();
+            initSubMenu();
+        })
+        .catch(err => console.error("Menu yüklenemedi:", err));
 }
 
-initMiniSidebarFlyout();
+// ================= PERMISSIONS =================
+function applyPermissions() {
+    document.querySelectorAll('[data-perm]').forEach(el => {
+        const perm = el.getAttribute('data-perm');
+        if (!user.permissions.includes(perm)) {
+            el.remove();
+        }
+    });
+}
+
+// ================= SUBMENU =================
+function initSubMenu() {
+
+    document.querySelectorAll('.has-sub-menu > a').forEach(item => {
+
+        item.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            const parent = this.parentElement;
+
+            // diğerlerini kapat
+            document.querySelectorAll('.has-sub-menu.open').forEach(el => {
+                if (el !== parent) el.classList.remove('open');
+            });
+
+            // toggle
+            parent.classList.toggle('open');
+        });
+
+    });
+}
+
+// ================= SIDEBAR TOGGLE =================
+// Adomx zaten body üzerinden çalışıyor
+document.addEventListener('click', function (e) {
+
+    const btn = e.target.closest('.side-header-toggle');
+    if (!btn) return;
+
+    document.body.classList.toggle('sidebar-collapsed');
+});
+
+// ================= INIT =================
+document.addEventListener("DOMContentLoaded", function () {
+    loadMenu();
+});

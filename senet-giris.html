@@ -1,53 +1,69 @@
-<!-- PAGE HEAD -->
-<div class="row justify-content-between align-items-center mb-10">
-    <div class="col-12 col-lg-auto mb-20">
-        <div class="page-heading">
-            <h3>Senetler <span>/ Giriş</span></h3>
-        </div>
-    </div>
-</div>
+
 
 <div class="row">
-    <div class="col-12">
-        <div class="box">
-            <div class="box-head">
-                <h3 class="title">Senet Girişi</h3>
-            </div>
-
-            <div class="box-body">
-                <form>
-                    <div class="row">
-
-                        <div class="col-md-6 mb-20">
-    <label>Senet No</label>
-    <input type="text" id="noteNo" class="form-control" placeholder="Senet Numarası">
-</div>
-
-<div class="col-md-6 mb-20">
-    <label>Vade Tarihi</label>
-    <input type="date" id="dueDate" class="form-control">
-</div>
-
-<div class="col-md-6 mb-20">
-    <label>Tutar</label>
-    <input type="text" id="tutar" class="form-control" placeholder="Tutar giriniz">
-</div>
-
-<div class="col-md-12 mb-20">
-    <label>Açıklama</label>
-    <textarea id="description" class="form-control" placeholder="Açıklama"></textarea>
-</div>
-
 <div class="col-12">
-    <button id="btnNoteIn" type="button" class="button button-primary">
-        Kaydet
-    </button>
+
+<div class="box">
+
+<div class="box-head">
+<h3 class="title">Senet Girişi</h3>
 </div>
 
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+<div class="box-body">
+
+<form>
+
+<div class="row">
+
+<!-- Senet No -->
+<div class="col-md-6 mb-20">
+<label>Senet No</label>
+
+<div class="form-icon">
+<i class="zmdi zmdi-assignment"></i>
+<input type="text" id="noteNo" class="form-control" placeholder="Senet Numarası">
+</div>
+
+</div>
+
+<!-- Vade Tarihi -->
+<div class="col-md-6 mb-20">
+<label>Vade Tarihi</label>
+<input type="date" id="dueDate" class="form-control">
+</div>
+
+<!-- Tutar -->
+<div class="col-md-6 mb-20">
+<label>Tutar</label>
+
+<div class="form-icon">
+<span class="currency">₺</span>
+<input type="text" id="tutar" class="form-control" placeholder="Tutar giriniz">
+</div>
+
+</div>
+
+<!-- Açıklama -->
+<div class="col-md-12 mb-20">
+<label>Açıklama</label>
+<textarea id="description" class="form-control" placeholder="Açıklama"></textarea>
+</div>
+
+<!-- Button -->
+<div class="col-12">
+<button id="btnNoteIn" type="button" class="button button-primary">
+Kaydet
+</button>
+</div>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
 </div>
 

@@ -92,7 +92,7 @@
                     yAxes: [{
                         display: true,
                         gridLines: {
-                            color: 'rgba(136,136,136,0.1)',
+                            color: 'rgba(247, 239, 239, 0.1)',
                             lineWidth: 3,
                             drawBorder: false,
                             zeroLineWidth: 3,
