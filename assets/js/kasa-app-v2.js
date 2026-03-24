@@ -49,9 +49,9 @@ window.loadPage = loadPage;
 
 function parseMoney(value) {
   if (!value) return 0;
+
   return parseFloat(
     String(value)
-      .replace(" TL", "")
       .replace(/\./g, "")
       .replace(",", ".")
   ) || 0;
@@ -61,7 +61,7 @@ function formatMoney(value) {
   return Number(value || 0).toLocaleString("tr-TR", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
-  }) + " TL";
+  });
 }
 
 const bankMap = {
@@ -100,10 +100,12 @@ function animateValue(el, endValue) {
 
   function update(now) {
     const progress = Math.min((now - startTime) / duration, 1);
-    const value = Math.floor(progress * safeEnd);
+
+    const value = progress * safeEnd; // 🔥 floor kaldırıldı
 
     el.innerText = value.toLocaleString("tr-TR", {
-      minimumFractionDigits: 2
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
     }) + " TL";
 
     if (progress < 1) requestAnimationFrame(update);
@@ -202,32 +204,6 @@ function logout() {
   window.location.href = "login.html";
 }
 window.logout = logout;
-
-// ==============================
-// MONEY MASK
-// ==============================
-function tutarInputMask(input) {
-  if (!input || input.dataset.masked === "true") return;
-
-  input.addEventListener("input", function () {
-    let raw = this.value.replace(" TL", "").replace(/\D/g, "");
-
-    if (raw === "") {
-      this.value = "";
-      return;
-    }
-
-    this.value = Number(raw).toLocaleString("tr-TR") + " TL";
-  });
-
-  input.dataset.masked = "true";
-}
-
-document.body.addEventListener("focusin", function (e) {
-  if (["tutar", "krediTutar", "krediAylik"].includes(e.target.id)) {
-    tutarInputMask(e.target);
-  }
-});
 
 // ==============================
 // AUTH / PERMISSIONS
@@ -639,7 +615,7 @@ async function loadNotesDashboard() {
   const toplam = notes.reduce((sum, n) => sum + Number(n.amount || 0), 0);
 
   adetEl.innerText = `${adet} adet`;
-  tutarEl.innerText = formatMoney(toplam);
+  animateValue(tutarEl, toplam);
   if (barEl) barEl.style.width = Math.min(adet * 10, 100) + "%";
 }
 
@@ -1010,3 +986,80 @@ function loadUsersSafe(){
         showToast("Kullanıcılar yüklenemedi","error");
     });
 }
+
+// ==============================
+// ENTER FUNCTİON
+// ==============================
+
+document.addEventListener("keydown", function(e){
+
+    if(e.key !== "Enter") return;
+
+    const target = e.target;
+
+    // 🔥 SADECE kullanıcı sayfasında çalış
+    const userPage = document.getElementById("kullanicilarPage");
+
+    if(userPage){
+
+        if(
+            target.id === "newUsername" ||
+            target.id === "newUserPassword"
+        ){
+            e.preventDefault();
+            addUser();
+        }
+
+    } else {
+
+        // 🔥 DİĞER SAYFALARDA FORM SUBMIT ENGELLE
+        if(target.tagName === "INPUT"){
+            e.preventDefault();
+        }
+
+    }
+
+});
+
+// ==============================
+// MONEY MASK
+// ==============================
+
+document.addEventListener("focusin", function (e) {
+
+    if (e.target.classList.contains("money-input")) {
+
+        const input = e.target;
+
+        if(input.dataset.masked === "true") return;
+
+        input.addEventListener("input", function () {
+
+            let raw = this.value
+                .replace(/[^\d,]/g, "")   // sayı + virgül
+
+            // 🔥 virgül kontrol (sadece 1 tane)
+            const parts = raw.split(",");
+            if(parts.length > 2){
+                raw = parts[0] + "," + parts[1];
+            }
+
+            // 🔥 format
+            let [int, dec] = raw.split(",");
+
+            int = int.replace(/\D/g, "");
+            int = Number(int || 0).toLocaleString("tr-TR");
+
+            if(dec !== undefined){
+                dec = dec.slice(0,2); // max 2 basamak
+                this.value = int + "," + dec;
+            } else {
+                this.value = int;
+            }
+
+        });
+
+        input.dataset.masked = "true";
+    }
+
+});
