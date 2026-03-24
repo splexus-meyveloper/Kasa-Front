@@ -593,7 +593,7 @@ border:none;
 
     font-size:15px;
 
-    color:#e7ecf7;
+    color:#111827;
 
 }
 
@@ -1421,4 +1421,29 @@ background:#f1f5f9;
 
 color:#2563eb !important;
 
+}
+
+.users-table tbody {
+    display: table-row-group !important;
+}
+
+.users-table tr {
+    display: table-row !important;
+}
+
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.users-table td,
+.users-table th {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.user-row.removing {
+    opacity: 0 !important;
+    transform: translateX(50px) !important;
+    transition: all 0.3s ease !important;
 }

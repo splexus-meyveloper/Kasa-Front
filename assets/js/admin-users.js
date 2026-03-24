@@ -18,67 +18,63 @@ function initUsersPage() {
  *********************************/
 async function loadUsers(){
 
-    const tbody = document.getElementById("userTable");
-    if(!tbody) return;
+    console.log("LOAD USERS ÇALIŞTI");
 
-    const res = await fetch(
-        "http://localhost:8080/api/admin/profiles",
-        {
-            headers:{
-                "Authorization":"Bearer " + localStorage.getItem("token")
-            }
+    try {
+
+        const tbody = document.getElementById("userTable");
+        if(!tbody){
+            console.error("TABLO YOK");
+            return;
         }
-    );
 
-    if(!res.ok){
-        showToast("Kullanıcılar yüklenemedi","error");
-        return;
+        console.log("FETCH ÖNCESİ");
+
+        const res = await fetch(
+            "http://localhost:8080/api/admin/profiles",
+            {
+                headers:{
+                    "Authorization":"Bearer " + localStorage.getItem("token")
+                }
+            }
+        );
+
+        console.log("FETCH SONRASI");
+
+        if(!res.ok){
+            console.error("API HATA:", res.status);
+            return;
+        }
+
+        const data = await res.json();
+
+        console.log("DATA:", data);
+
+        const users = Array.isArray(data) ? data : (data.content || []);
+
+        console.log("USERS:", users);
+
+        tbody.innerHTML = "";
+
+        users.forEach(u => {
+
+            const tr = document.createElement("tr");
+
+            tr.innerHTML = `
+                <td>${u.username || "-"}</td>
+                <td>${u.role || "USER"}</td>
+                <td>X</td>
+            `;
+
+            tbody.appendChild(tr);
+
+        });
+
+    } catch(e) {
+        console.error("LOAD USERS ERROR:", e);
     }
 
-    const users = await res.json();
-
-    tbody.innerHTML = "";
-
-    users.forEach(u => {
-
-        const tr = document.createElement("tr");
-        tr.className = "user-row";
-
-        tr.innerHTML = `
-<td class="user-name">${u.username}</td>
-
-<td>
-<span class="role-badge ${u.role === "ADMIN" ? "role-admin" : "role-user"}">
-${u.role}
-</span>
-</td>
-
-<td>
-<button class="button button-danger button-sm deleteUserBtn">
-Sil
-</button>
-</td>
-`;
-
-        // kullanıcıya tıklayınca permission panel
-        tr.addEventListener("click", () => {
-            editUser(u.id, u.username);
-        });
-
-        // sil butonu
-        tr.querySelector(".deleteUserBtn").addEventListener("click", e => {
-
-            e.stopPropagation();
-            deleteUser(u.id);
-
-        });
-
-        tbody.appendChild(tr);
-
-    });
-
 }
-
 
 /*********************************
  * ADD USER
@@ -122,7 +118,7 @@ async function addUser(){
 
     showToast("Kullanıcı eklendi","success");
 
-    loadUsers();
+    loadUsersSafe();
 
 }
 
@@ -136,32 +132,43 @@ async function deleteUser(id){
         "Kullanıcı silinsin mi?",
         async () => {
 
+            const tbody = document.querySelector("#pageContent #userTable");
+            const row = tbody ? tbody.querySelector(`tr[data-id="${id}"]`) : null;
+
+            console.log("SILINECEK ROW:", row);
+
             const res = await fetch(
                 `http://localhost:8080/api/admin/users/${id}`,
                 {
-                    method:"DELETE",
-                    headers:{
+                    method: "DELETE",
+                    headers: {
                         "Authorization":"Bearer " + localStorage.getItem("token")
                     }
                 }
             );
 
             if(!res.ok){
-
                 showToast("Silme başarısız","error");
                 return;
-
             }
 
             showToast("Kullanıcı pasif yapıldı","success");
 
-            loadUsers();
+            if(row){
+                row.style.transition = "opacity 0.35s ease, transform 0.35s ease";
+                row.style.opacity = "0";
+                row.style.transform = "translateX(40px)";
 
+                setTimeout(() => {
+                    row.remove();
+                }, 350);
+            } else {
+                // satır bulunamazsa güvenli fallback
+                loadUsersSafe();
+            }
         }
     );
-
 }
-
 
 /*********************************
  * EDIT USER PERMISSIONS

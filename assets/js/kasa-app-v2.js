@@ -25,8 +25,16 @@ function loadPage(page){
     .then(html => {
 
       container.innerHTML = html;
+if(page.includes("kullanicilar")){
 
-      // sayfa yüklendiğinde gerekli modülleri çalıştır
+    setTimeout(() => {
+        console.log("SAFE LOAD USERS ÇAĞRILDI");
+        loadUsersSafe();
+    }, 300);
+
+    return;
+}
+      // 🔥 sadece diğer sayfalarda çalışsın
       initPageModules();
 
     })
@@ -35,6 +43,7 @@ function loadPage(page){
     });
 
 }
+
 
 window.loadPage = loadPage;
 
@@ -899,14 +908,11 @@ function initPageModules() {
   loadChecks();
   loadNotes();
   loadLoans();
-  loadUsers();
 }
 
 document.addEventListener("DOMContentLoaded", function () {
 
   checkPagePermission();
-
-  initPageObserver();
 
   const role = localStorage.getItem("role");
   const adminDashboard = document.getElementById("adminDashboard");
@@ -928,50 +934,79 @@ document.addEventListener("DOMContentLoaded", function () {
     if (dropdownEl) dropdownEl.textContent = username;
   }
 
-  initPageModules();
 });
 
-function initPageObserver(){
+function loadUsersSafe(){
 
-  const pageContent = document.getElementById("pageContent");
-  if(!pageContent) return;
+    console.log("SAFE LOAD USERS");
 
-  let currentPage = "";
-
-function initPageObserver(){
-
-  const pageContent = document.getElementById("pageContent");
-  if(!pageContent) return;
-
-  new MutationObserver(() => {
-
-    const newPage = pageContent.querySelector("div")?.id || "";
-
-    if(newPage !== currentPage){
-
-      currentPage = newPage;
-
-      console.log("Page changed:", currentPage);
-
-      initPageModules();
-
+    const container = document.getElementById("pageContent");
+    if(!container){
+        console.error("PAGE CONTENT YOK");
+        return;
     }
 
-  }).observe(pageContent, {
-    childList: true
-  });
+    const tbody = container.querySelector("#userTable");
+    if(!tbody){
+        console.error("TBODY BULUNAMADI");
+        return;
+    }
 
+    fetch("http://localhost:8080/api/admin/profiles", {
+        headers:{
+            "Authorization":"Bearer " + localStorage.getItem("token")
+        }
+    })
+    .then(async res => {
+        if(!res.ok){
+            throw new Error("API hata: " + res.status);
+        }
+        return res.json();
+    })
+    .then(data => {
+
+        const users = Array.isArray(data) ? data : (Array.isArray(data.content) ? data.content : []);
+
+        console.log("USERS:", users);
+
+        tbody.innerHTML = "";
+
+        users.forEach(u => {
+
+            const tr = document.createElement("tr");
+            tr.className = "user-row";
+            tr.dataset.id = String(u.id);   // KRİTİK
+
+            const username = u.username || u.userName || "-";
+            const role = u.role || "USER";
+
+            tr.innerHTML = `
+                <td class="user-name">${username}</td>
+                <td>
+                    <span class="role-badge ${role === "ADMIN" ? "role-admin" : "role-user"}">
+                        ${role}
+                    </span>
+                </td>
+                <td>
+                    <button type="button" class="btn-delete deleteUserBtn">Sil</button>
+                </td>
+            `;
+
+            tr.addEventListener("click", () => {
+                editUser(u.id, username);
+            });
+
+            tr.querySelector(".deleteUserBtn").addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                deleteUser(u.id);
+            });
+
+            tbody.appendChild(tr);
+        });
+    })
+    .catch(err => {
+        console.error("LOAD USERS SAFE ERROR:", err);
+        showToast("Kullanıcılar yüklenemedi","error");
+    });
 }
-
-}
-
-fetch('menu.html')
-  .then(res => res.text())
-  .then(html => {
-    document.getElementById('menuContainer').innerHTML = html;
-
-    // Menü yüklendikten sonra JS çalıştır
-    const script = document.createElement('script');
-    script.src = 'assets/js/menu.js';
-    document.body.appendChild(script);
-  });
