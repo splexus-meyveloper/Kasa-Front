@@ -964,3 +964,14 @@ function initPageObserver(){
 }
 
 }
+
+fetch('menu.html')
+  .then(res => res.text())
+  .then(html => {
+    document.getElementById('menuContainer').innerHTML = html;
+
+    // Menü yüklendikten sonra JS çalıştır
+    const script = document.createElement('script');
+    script.src = 'assets/js/menu.js';
+    document.body.appendChild(script);
+  });

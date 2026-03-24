@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/kasapp-ui.css">
     <link id="cus-style" rel="stylesheet" href="assets/css/style-primary.css">
+    <link rel="stylesheet" href="assets/css/menu.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     
 
@@ -143,7 +144,15 @@
 
 
 <script>
+fetch('menu.html')
+  .then(res => res.text())
+  .then(html => {
+    document.getElementById('menuContainer').innerHTML = html;
 
+    // 🔥 BURASI KRİTİK
+    initMenu();
+  });
+</script>
 </script>
 
 
