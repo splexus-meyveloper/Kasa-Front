@@ -25,7 +25,9 @@ function loadPage(page){
     .then(html => {
 
       container.innerHTML = html;
+      applyPermissionsFromToken();
 if(page.includes("kullanicilar")){
+  
 
     setTimeout(() => {
         console.log("SAFE LOAD USERS ÇAĞRILDI");
@@ -292,7 +294,7 @@ function loadKasaChart(girisData, cikisData, labels) {
   });
 }
 
-async function loadDashboard() {
+async function loadDashboard(selectedUserId = null) {
   const gi = document.getElementById("gunlukGiris");
   const gc = document.getElementById("gunlukCikis");
   const an = document.getElementById("aylikNet");
@@ -301,9 +303,15 @@ async function loadDashboard() {
 
   if (!gi || !gc || !an || !kb) return;
 
-  const res = await fetch(`${API_BASE}/api/dashboard`, {
-    headers: getAuthHeaders()
-  });
+  let url = `${API_BASE}/api/dashboard`;
+
+if (selectedUserId) {
+  url += `?userId=${selectedUserId}`;
+}
+
+const res = await fetch(url, {
+  headers: getAuthHeaders()
+});
   if (!res.ok) return;
 
   const d = await res.json();
@@ -321,25 +329,31 @@ async function loadDashboard() {
   setAutoBar("barKredi", d.totalLoanDebt || 0, 1000000);
 }
 
-async function loadChart() {
+async function loadChart(selectedUserId = null) {
   const canvas = document.getElementById("chartjs-revenue-statistics-chart");
   if (!canvas) return;
 
-  const res = await fetch(`${API_BASE}/api/dashboard/chart`, {
-    headers: getAuthHeaders()
-  });
+  let url = `${API_BASE}/api/dashboard/chart`;
+
+if (selectedUserId) {
+  url += `?userId=${selectedUserId}`;
+}
+
+const res = await fetch(url, {
+  headers: getAuthHeaders()
+});
   if (!res.ok) return;
 
   const d = await res.json();
   loadKasaChart(d.incomes.map(Number), d.expenses.map(Number), d.labels);
 }
 
-function initDashboard() {
+function initDashboard(selectedUserId = null) {
   const canvas = document.getElementById("chartjs-revenue-statistics-chart");
   if (!canvas) return;
 
-  loadDashboard();
-  loadChart();
+  loadDashboard(selectedUserId);
+  loadChart(selectedUserId);
   loadCheckSummary();
   loadNotesDashboard();
 }
@@ -372,6 +386,47 @@ async function submitCash(endpoint, successMessage) {
   } else {
     showToast("Hata oluştu", "error");
   }
+}
+
+async function loadCashTransactions() {
+  const tbody = document.getElementById("cashTableBody");
+  if (!tbody) return;
+
+  const res = await fetch(`${API_BASE}/api/cash/transactions`, {
+    headers: getAuthHeaders()
+  });
+
+  if (!res.ok) {
+    console.error("Cash transactions yüklenemedi:", res.status);
+    return;
+  }
+
+  const data = await res.json();
+
+  tbody.innerHTML = "";
+
+  data.forEach(t => {
+    const typeText = t.type === "INCOME" ? "Kasa Giriş" : "Kasa Çıkış";
+    const typeClass = t.type === "INCOME" ? "text-success" : "text-danger";
+    const sign = t.type === "INCOME" ? "+" : "-";
+
+    const tarih = t.transactionDate
+      ? new Date(t.transactionDate).toLocaleString("tr-TR")
+      : "-";
+
+    const row = `
+      <tr>
+        <td>${tarih}</td>
+        <td>${t.description || "-"}</td>
+        <td class="${typeClass}">${typeText}</td>
+        <td class="text-end ${typeClass}">
+          ${sign}${formatMoney(t.amount)} TL
+        </td>
+      </tr>
+    `;
+
+    tbody.insertAdjacentHTML("beforeend", row);
+  });
 }
 
 // ==============================
@@ -884,6 +939,9 @@ function initPageModules() {
   loadChecks();
   loadNotes();
   loadLoans();
+  loadCashTransactions();
+
+  initUserFilter();
 }
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -959,18 +1017,42 @@ function loadUsersSafe(){
             tr.innerHTML = `
                 <td class="user-name">${username}</td>
                 <td>
-                    <span class="role-badge ${role === "ADMIN" ? "role-admin" : "role-user"}">
-                        ${role}
-                    </span>
-                </td>
+    <select class="roleSelect" data-id="${u.id}">
+        <option value="USER" ${role === "USER" ? "selected" : ""}>USER</option>
+        <option value="ADMIN" ${role === "ADMIN" ? "selected" : ""}>ADMIN</option>
+    </select>
+</td>
                 <td>
                     <button type="button" class="btn-delete deleteUserBtn">Sil</button>
                 </td>
             `;
 
-            tr.addEventListener("click", () => {
-                editUser(u.id, username);
-            });
+            tr.querySelector(".roleSelect").addEventListener("change", async (e) => {
+
+    const newRole = e.target.value;
+    const userId = e.target.dataset.id;
+
+    const res = await fetch(`${API_BASE}/api/admin/users/${userId}/role?role=${newRole}`, {
+        method: "PUT",
+        headers: {
+            "Authorization":"Bearer " + localStorage.getItem("token")
+        }
+    });
+
+    if (res.ok) {
+        showToast("Rol güncellendi","success");
+    } else {
+        showToast("Rol güncellenemedi","error");
+    }
+});
+
+            tr.addEventListener("click", (e) => {
+
+    if (e.target.closest(".roleSelect")) return;
+    if (e.target.closest(".deleteUserBtn")) return;
+
+    editUser(u.id, username);
+});
 
             tr.querySelector(".deleteUserBtn").addEventListener("click", (e) => {
                 e.preventDefault();
@@ -1063,3 +1145,92 @@ document.addEventListener("focusin", function (e) {
     }
 
 });
+
+async function initUserFilter() {
+
+  const select = document.getElementById("userFilterSelect");
+  const box = document.getElementById("userFilterBox");
+
+  if (!select || !box) return;
+
+  const jwt = JSON.parse(atob(localStorage.getItem("token").split('.')[1]));
+  const role = jwt.role;
+
+  // 👤 USER → hiçbir şey gösterme
+  if (role !== "ADMIN") {
+    box.style.display = "none";
+    return;
+  }
+
+  // 👑 ADMIN → göster
+  box.style.display = "block";
+
+  // kullanıcıları çek
+  const res = await fetch(`${API_BASE}/api/admin/profiles`, {
+    headers: getAuthHeaders()
+  });
+
+  if (!res.ok) return;
+
+  const users = await res.json();
+
+  // dropdown temizle
+  select.innerHTML = `<option value="">Tüm Kullanıcılar</option>`;
+
+  users.forEach(u => {
+    select.insertAdjacentHTML("beforeend",
+      `<option value="${u.id}">${u.username}</option>`
+    );
+  });
+
+  // seçim değişince dashboard yenile
+  select.addEventListener("change", () => {
+  const userId = select.value || null;
+  initDashboard(userId);
+});
+}
+
+async function loadDashboardWithFilter() {
+
+  const select = document.getElementById("userFilterSelect");
+  const userId = select?.value;
+
+  let url = `${API_BASE}/api/dashboard`;
+
+  if (userId) {
+    url += `?userId=${userId}`;
+  }
+
+  const res = await fetch(url, {
+    headers: getAuthHeaders()
+  });
+
+  if (!res.ok) return;
+
+  const data = await res.json();
+
+  // 🔥 senin mevcut dashboard update fonksiyonun
+  initDashboard();
+
+  // chart da yenile
+  loadChartWithFilter(userId);
+}
+
+async function loadChartWithFilter(userId) {
+
+  let url = `${API_BASE}/api/dashboard/chart`;
+
+  if (userId) {
+    url += `?userId=${userId}`;
+  }
+
+  const res = await fetch(url, {
+    headers: getAuthHeaders()
+  });
+
+  if (!res.ok) return;
+
+  const data = await res.json();
+
+  updateChartUI(data);
+}

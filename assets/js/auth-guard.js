@@ -1,4 +1,3 @@
-
 (function () {
 
     const token = localStorage.getItem("token");
@@ -8,12 +7,17 @@
     }
 
     function parseJwt(token) {
-        const base64Url = token.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
-            '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-        ).join(''));
-        return JSON.parse(jsonPayload);
+        try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
+                '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+            ).join(''));
+            return JSON.parse(jsonPayload);
+        } catch (e) {
+            console.error("JWT parse hatası", e);
+            return {};
+        }
     }
 
     const jwt = parseJwt(token);
@@ -29,38 +33,47 @@
 
     const path = window.location.pathname.toLowerCase();
 
-    // ================= KASA =================
-    if (
-        path.includes("kasa-giris") ||
-        path.includes("kasa-cikis")
-    ) {
-        if (!has("KASA")) deny();
+    // ================= SAYFA KORUMA =================
+    if (path.includes("kasa") && !has("KASA")) deny();
+    if (path.includes("masraf") && !has("MASRAF")) deny();
+    if (path.includes("cek") && !has("CEK")) deny();
+    if (path.includes("senet") && !has("SENET")) deny();
+    if (path.includes("krediler") && !has("KREDILER")) deny();
+    if (path.includes("kullanici") && !has("KULLANICI_YONETIMI")) deny();
+
+    // ================= UI GİZLEME =================
+    function applyPermissionUI() {
+        const elements = document.querySelectorAll("[data-perm]");
+
+        if (elements.length === 0) return false;
+
+        elements.forEach(el => {
+            const perm = el.getAttribute("data-perm");
+            if (!has(perm)) {
+                el.remove();
+            }
+        });
+
+        return true;
     }
 
-    // ================= MASRAF =================
-    if (path.includes("masraf")) {
-        if (!has("MASRAF")) deny();
-    }
+    // DOM hazır olunca çalıştır
+    document.addEventListener("DOMContentLoaded", () => {
 
-    // ================= CEK =================
-    if (path.includes("cek")) {
-        if (!has("CEK")) deny();
-    }
+        // İlk deneme
+        if (!applyPermissionUI()) {
 
-    // ================= SENET =================
-    if (path.includes("senet")) {
-        if (!has("SENET")) deny();
-    }
+            // Menü sonradan geliyorsa bekle
+            const interval = setInterval(() => {
+                if (applyPermissionUI()) {
+                    clearInterval(interval);
+                }
+            }, 100);
 
-    // ================= KREDILER =================
-    if (path.includes("krediler")) {
-        if (!has("KREDILER")) deny();
-    }
+            // Sonsuza kadar dönmesin (fail-safe)
+            setTimeout(() => clearInterval(interval), 5000);
+        }
 
-    // ================= KULLANICI YONETIMI =================
-    if (path.includes("kullanici")) {
-        if (!has("KULLANICI_YONETIMI")) deny();
-    }
+    });
 
 })();
-

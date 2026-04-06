@@ -58,17 +58,58 @@ async function loadUsers(){
 
         users.forEach(u => {
 
-            const tr = document.createElement("tr");
+    const tr = document.createElement("tr");
 
-            tr.innerHTML = `
-                <td>${u.username || "-"}</td>
-                <td>${u.role || "USER"}</td>
-                <td>X</td>
-            `;
+    const role = u.role || "USER";
 
-            tbody.appendChild(tr);
+    tr.innerHTML = `
+        <td class="user-name">${u.username || "-"}</td>
+        <td>
+            <select class="roleSelect" data-id="${u.id}">
+                <option value="USER" ${role === "USER" ? "selected" : ""}>USER</option>
+                <option value="ADMIN" ${role === "ADMIN" ? "selected" : ""}>ADMIN</option>
+            </select>
+        </td>
+        <td>
+            <button type="button" class="btn-delete deleteUserBtn">Sil</button>
+        </td>
+    `;
 
+    tr.querySelector(".roleSelect").addEventListener("change", async (e) => {
+        const newRole = e.target.value;
+        const userId = e.target.dataset.id;
+
+        const res = await fetch(`${API_BASE}/api/admin/users/${userId}/role?role=${newRole}`, {
+            method: "PUT",
+            headers: getAuthHeaders()
         });
+
+        if (res.ok) {
+            showToast("Rol güncellendi", "success");
+        } else {
+            showToast("Rol güncellenemedi", "error");
+        }
+    });
+
+    tr.querySelector(".deleteUserBtn").addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        deleteUser(u.id);
+    });
+
+    tr.addEventListener("click", (e) => {
+
+    // dropdown'a tıklanınca tetiklenmesin
+    if (e.target.closest(".roleSelect")) return;
+
+    // delete butonuna tıklanınca tetiklenmesin
+    if (e.target.closest(".deleteUserBtn")) return;
+
+    editUser(u.id, u.username);
+});
+
+    tbody.appendChild(tr);
+});
 
     } catch(e) {
         console.error("LOAD USERS ERROR:", e);
