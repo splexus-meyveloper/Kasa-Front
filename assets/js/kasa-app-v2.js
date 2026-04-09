@@ -380,7 +380,7 @@ async function submitCash(endpoint, successMessage) {
   if (res.ok) {
     showToast(successMessage, "success");
     setTimeout(() => {
-      loadPage("index.html");
+      loadPage("dashboard.html");
       setTimeout(() => initDashboard(), 300);
     }, 1200);
   } else {
@@ -456,7 +456,7 @@ async function addExpense() {
 
   if (res.ok) {
     showToast("Masraf eklendi", "success");
-    setTimeout(() => loadPage("index.html"), 1200);
+    setTimeout(() => loadPage("dashboard.html"), 1200);
   } else {
     const text = await res.text();
     showToast("Masraf eklenemedi: " + (text || res.status), "error");

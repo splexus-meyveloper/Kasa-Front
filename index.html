@@ -1,228 +1,193 @@
-<!-- USER WELCOME -->
-<div id="userWelcome" style="display:none;">
-    <div class="row">
-        <div class="col-12">
-            <div class="box">
-                <div class="box-body text-center" style="padding:200px 20px;">
-                    <h2 style="margin-bottom:15px;">👋 Hoşgeldiniz</h2>
+<!doctype html>
+<html lang="tr">
 
-                    <p style="font-size:18px; opacity:0.8;">
-                        Sol menüden <b>Kasa</b>, <b>Çek</b>, <b>Senet</b> ve <b>Masraf</b> işlemlerinizi yapabilirsiniz.
-                    </p>
+<head>
+    <meta charset="UTF-8">
+    <title>KASAPP - Finans Yönetimi</title>
 
-                    <p style="margin-top:10px; opacity:0.7;">
-                        Tüm hareketlerinizi <b>Benim İşlemlerim</b> ekranından takip edebilirsiniz.
-                    </p>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-                    <div style="margin-top:60px;">
-                        <i class="zmdi zmdi-balance" style="font-size:64px; opacity:0.3;"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <!-- CSS -->
+    <link rel="stylesheet" href="assets/css/vendor/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/style-primary.css">
+
+    <style>
+        body {
+            background: linear-gradient(135deg,#eef2ff,#f8fafc);
+        }
+
+        .navbar {
+            background: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            padding: 15px 30px;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 20px;
+            color: #3b82f6;
+        }
+
+        .hero {
+            padding: 120px 0;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 42px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: #6b7280;
+            margin-top: 15px;
+        }
+
+        .btn-main {
+            background: #3b82f6;
+            color: white;
+            border-radius: 10px;
+            padding: 12px 22px;
+            border: none;
+            margin: 5px;
+            transition: .2s;
+        }
+
+        .btn-main:hover {
+            background: #2563eb;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #3b82f6;
+            color: #3b82f6;
+        }
+
+        .features {
+            padding: 80px 0;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 14px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            text-align: center;
+            transition: .2s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 18px 35px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .section-title h2 {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .cta {
+            background: #3b82f6;
+            color: white;
+            padding: 60px 0;
+            text-align: center;
+        }
+
+        .footer {
+            padding: 30px;
+            text-align: center;
+            color: #6b7280;
+        }
+    </style>
+
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar d-flex justify-content-between">
+    <img src="assets/images/logo/logo-blue.png" class="logo-light" alt="">
+    <div>
+        <a href="login.html" class="btn-main">Giriş Yap</a>
+        <a href="register.html" class="btn-main btn-outline">Kayıt Ol</a>
     </div>
 </div>
 
-<!-- TOP REPORT -->
-<div class="row">
+<!-- HERO -->
+<section class="hero">
+    <div class="container">
+        <h1>Finansınızı Kontrol Altına Alın</h1>
+        <p>Kasa, çek, senet ve masraf işlemlerinizi tek panelden yönetin</p>
 
-    <!-- Günlük Giriş -->
-    <div class="col-xl-3 col-md-6 col-12 mb-30" data-perm="KASA">
-        <div class="top-report dashboard-card">
-            <div class="head"><h4>Günlük Giriş</h4></div>
-            <div class="content">
-                <h5>Bugün</h5>
-                <h2 id="gunlukGiris" class="text-end money-plus">0 TL</h2>
-            </div>
-            <div class="footer">
-                <div class="progess">
-                    <div id="barGunlukGiris" class="progess-bar"></div>
-                </div>
-            </div>
+        <div style="margin-top:30px;">
+            <a href="register.html" class="btn-main">Hemen Başla</a>
+            <a href="login.html" class="btn-main btn-outline">Giriş Yap</a>
         </div>
     </div>
+</section>
 
-    <!-- Günlük Çıkış -->
-    <div class="col-xl-3 col-md-6 col-12 mb-30" data-perm="KASA">
-        <div class="top-report dashboard-card">
-            <div class="head"><h4>Günlük Çıkış</h4></div>
-            <div class="content">
-                <h5>Bugün</h5>
-                <h2 id="gunlukCikis" class="text-end money-minus">0 TL</h2>
-            </div>
-            <div class="footer">
-                <div class="progess">
-                    <div id="barGunlukCikis" class="progess-bar"></div>
-                </div>
-            </div>
-        </div>
-    </div>
+<!-- FEATURES -->
+<section class="features">
+    <div class="container">
 
-    <!-- Aylık Net -->
-    <div class="col-xl-3 col-md-6 col-12 mb-30" data-perm="KULLANICI_YONETIMI">
-        <div class="top-report dashboard-card">
-            <div class="head"><h4>Aylık Net</h4></div>
-            <div class="content">
-                <h5>Bu Ay</h5>
-                <h2 id="aylikNet" class="text-info">0 TL</h2>
-            </div>
-            <div class="footer">
-                <div class="progess">
-                    <div id="barAylikGiris" class="progess-bar"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Kasa Bakiye -->
-    <div class="col-xl-3 col-md-6 col-12 mb-30" data-perm="KULLANICI_YONETIMI">
-        <div class="top-report dashboard-card">
-            <div class="head"><h4>Kasa Bakiye</h4></div>
-            <div class="content">
-                <h5>Güncel</h5>
-                <h2 id="kasaBakiye" class="text-primary">0 TL</h2>
-            </div>
-            <div class="footer">
-                <div class="progess">
-                    <div id="barBakiye" class="progess-bar"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Eldeki Çekler -->
-    <div class="col-xl-3 col-md-6 col-12 mb-30" data-perm="CEK">
-        <div class="top-report dashboard-card">
-            <div class="head"><h4>Eldeki Çekler</h4></div>
-            <div class="content">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
-                    <h5>Portföy</h5>
-                    <span id="cekAdet" style="opacity:0.8;font-size:13px;">0 adet</span>
-                </div>
-                <h2 id="cekToplamTutar" class="text-warning">0 TL</h2>
-            </div>
-            <div class="footer">
-                <div class="progess">
-                    <div id="barCekler" class="progess-bar"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Eldeki Senetler -->
-    <div class="col-xl-3 col-md-6 col-12 mb-30" data-perm="SENET">
-        <div class="top-report dashboard-card">
-            <div class="head"><h4>Eldeki Senetler</h4></div>
-            <div class="content">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
-                    <h5>Portföy</h5>
-                    <span id="senetAdet" style="opacity:0.8;font-size:13px;">0 adet</span>
-                </div>
-                <h2 id="senetToplamTutar" class="text-info">0 TL</h2>
-            </div>
-            <div class="footer">
-                <div class="progess">
-                    <div id="barSenetler" class="progess-bar"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toplam Kredi Borcu -->
-    <div class="col-xlg-3 col-md-6 col-12 mb-30" data-perm="KULLANICI_YONETIMI">
-    <div class="top-report dashboard-card">
-
-        <div class="head">
-            <h4>Toplam Kredi Borcu</h4>
+        <div class="section-title">
+            <h2>Özellikler</h2>
         </div>
 
-        <div class="content">
-            <h5>Aktif Krediler</h5>
+        <div class="row">
 
-            <h2 id="toplamKrediBorc"
-                class="text-danger">
-                0 TL
-            </h2>
-        </div>
-
-        <div class="footer">
-            <div class="progess">
-                <div id="barKredi"
-                     class="progess-bar"></div>
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <h4>💰 Kasa Yönetimi</h4>
+                    <p>Gelir ve giderlerinizi anlık takip edin</p>
+                </div>
             </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <h4>📊 Raporlama</h4>
+                    <p>Günlük ve aylık analizlerle finansınızı görün</p>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <h4>🔐 Güvenli Sistem</h4>
+                    <p>Şirket bazlı güvenli kullanıcı yönetimi</p>
+                </div>
+            </div>
+
         </div>
 
     </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+    <div class="container">
+        <h2>Hemen Kullanmaya Başlayın</h2>
+        <p>Ücretsiz hesap oluşturun ve finansınızı yönetin</p>
+
+        <div style="margin-top:20px;">
+            <a href="register.html" class="btn-main" style="background:white; color:#3b82f6;">
+                Kayıt Ol
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<div class="footer">
+    © 2026 KASAPP - Tüm hakları saklıdır
 </div>
 
-</div>
-
-
-    <!-- GRAFIK -->
-<div class="row mbn-30">
-  <div class="col-md-12 mb-30">
-
-    <div class="box chart-panel">
-
-      <div class="box-head">
-        <h4 class="title">İşlem Grafiği</h4>
-      </div>
-
-      <div class="box-body">
-        <canvas id="chartjs-revenue-statistics-chart"></canvas>
-      </div>
-
-    </div>
-
-  </div>
-</div>
-
-    <!-- SON 10 HAREKET -->
-    <div class="row">
-        <div class="col-12 mb-30">
-            <div class="box dashboard-card">
-                <div class="box-head">
-                    <h4 class="title">Son 10 Hareket</h4>
-                </div>
-                <div class="box-body table-responsive">
-                    <table class="table table-vertical-middle">
-                        <thead>
-                            <tr>
-                                <th>Tarih</th>
-                                <th>Kullanıcı</th>
-                                <th>İşlem Türü</th>
-                                <th>Açıklama</th>
-                                <th class="text-end">Tutar</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>21.01.2026</td>
-                                <td>Ahmet</td>
-                                <td>Kasa Giriş</td>
-                                <td>Nakit tahsilat</td>
-                                <td class="text-end text-success">+1.250,00 TL</td>
-                            </tr>
-                            <tr>
-                                <td>21.01.2026</td>
-                                <td>Mehmet</td>
-                                <td>Masraf</td>
-                                <td>Yemek</td>
-                                <td class="text-end text-danger">-350,00 TL</td>
-                            </tr>
-                            <tr>
-                                <td>21.01.2026</td>
-                                <td>Ayşe</td>
-                                <td>Çek Giriş</td>
-                                <td>Firma çeki</td>
-                                <td class="text-end text-success">+8.000,00 TL</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-</div>
-</div>
+</body>
+</html>

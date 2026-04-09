@@ -15,18 +15,61 @@
     <link id="cus-style" rel="stylesheet" href="assets/css/style-primary.css">
     <link rel="stylesheet" href="assets/css/menu.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    
-
-
 </head>
+
 <body class="skin-dark">
 
-  <!-- MENU -->
+<!-- 🔥 PRELOADER -->
+<div id="pageLoader" style="
+    position:fixed;
+    inset:0;
+    background:#0f172a;
+    z-index:9999;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+">
+
+    <!-- LOGO -->
+    <div id="loaderLogo" style="
+        font-size:30px;
+        font-weight:700;
+        color:white;
+        letter-spacing:2px;
+        opacity:0;
+        transform:translateY(20px);
+    ">
+        KASAPP
+    </div>
+
+    <!-- ALT YAZI -->
+    <div id="loaderText" style="
+        margin-top:10px;
+        color:#94a3b8;
+        font-size:14px;
+        opacity:0;
+        transform:translateY(20px);
+    ">
+        kasapp.com.tr'ye hoş geldiniz
+    </div>
+
+    <!-- SPINNER -->
+    <div id="loaderSpinner" class="spinner-border text-light" style="
+        width:35px;
+        height:35px;
+        margin-top:25px;
+        opacity:0;
+    "></div>
+
+</div>
+
+    <div class="spinner-border text-light" style="width:40px; height:40px;"></div>
+
+</div>
+
+<!-- MENU -->
 <div class="side-header-menu" id="menuContainer"></div>
-
-    
-
-
 
 <div class="header-section">
   <div class="container-fluid h-100 d-flex align-items-center">
@@ -34,33 +77,26 @@
     <!-- SOL -->
     <div class="d-flex align-items-center gap-20">
 
-      <!-- SIDEBAR TOGGLE -->
       <button class="side-header-toggle header-btn">
         <i class="zmdi zmdi-menu"></i>
       </button>
 
-      <!-- SAYFA BAŞLIĞI -->
       <div class="header-title">
         <h4 id="pageTitle"></h4>
       </div>
 
     </div>
 
-
-   <!-- ORTA: USER FILTER (ADMIN) -->
-<div class="header-search d-none d-lg-block" id="userFilterBox" style="display:none;">
-  
-  <select id="userFilterSelect" class="form-control" style="min-width:200px;">
-    <option value="">Tüm Kullanıcılar</option>
-  </select>
-
-</div>
-
+    <!-- ORTA -->
+    <div class="header-search d-none d-lg-block" id="userFilterBox" style="display:none;">
+      <select id="userFilterSelect" class="form-control" style="min-width:200px;">
+        <option value="">Tüm Kullanıcılar</option>
+      </select>
+    </div>
 
     <!-- SAĞ -->
     <ul class="header-notification-area d-flex align-items-center mb-0 ms-auto">
 
-      <!-- BİLDİRİM -->
       <li>
         <button class="header-action-btn">
           <i class="zmdi zmdi-notifications"></i>
@@ -94,21 +130,12 @@
 
           <div class="body">
             <ul>
-
-              <li>
-                <a href="#">
-                  <i class="zmdi zmdi-account"></i>
-                  Profil
-                </a>
-              </li>
-
               <li>
                 <a href="javascript:void(0)" onclick="logout()">
-                  <i class="zmdi zmdi-lock-open"></i>
+                  <i class="zmdi zmdi-power"></i>
                   Çıkış Yap
                 </a>
               </li>
-
             </ul>
           </div>
 
@@ -121,22 +148,14 @@
   </div>
 </div>
 
-    <!-- 🔥 DEĞİŞEN İÇERİK BURAYA GELECEK -->
-    <div class="content-body">
+<!-- CONTENT -->
+<div class="content-body">
     <div id="pageContent"></div>
-
 </div>
-
-
-    
-
-</div>
-
-
 
 <!-- JS -->
- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
- <script src="assets/js/auth-guard.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="assets/js/auth-guard.js"></script>
 <script src="assets/js/vendor/jquery-3.3.1.min.js"></script>
 <script src="assets/js/menu.js"></script>
 <script src="assets/js/main-v2.js"></script>
@@ -144,21 +163,60 @@
 <script src="assets/js/admin-users.js"></script>
 <script src="assets/js/admin-log.js"></script>
 
-
-
 <script>
 fetch('menu.html')
   .then(res => res.text())
   .then(html => {
     document.getElementById('menuContainer').innerHTML = html;
-
-    // 🔥 BURASI KRİTİK
     initMenu();
   });
 </script>
+
+<!-- 🔥 PRELOADER SCRIPT -->
+
+<script>
+window.addEventListener("load", function () {
+
+    const logo = document.getElementById("loaderLogo");
+    const text = document.getElementById("loaderText");
+    const spinner = document.getElementById("loaderSpinner");
+    const loader = document.getElementById("pageLoader");
+
+    // 1️⃣ Logo
+    setTimeout(() => {
+        logo.style.transition = "0.8s";
+        logo.style.opacity = "1";
+        logo.style.transform = "translateY(0)";
+    }, 500);
+
+    // 2️⃣ Alt yazı
+    setTimeout(() => {
+        text.style.transition = "0.8s";
+        text.style.opacity = "1";
+        text.style.transform = "translateY(0)";
+    }, 900);
+
+    // 3️⃣ Spinner
+    setTimeout(() => {
+        spinner.style.transition = "0.6s";
+        spinner.style.opacity = "1";
+    }, 1400);
+
+    // 4️⃣ Kapat (EN KRİTİK)
+    setTimeout(() => {
+        loader.style.transition = "0.8s";
+        loader.style.opacity = "0";
+
+        setTimeout(() => {
+            loader.style.display = "none";
+        }, 800);
+
+    }, 3000); // 🔥 BURASI ANA SÜRE
+
+});
 </script>
 
-
 <div id="toastBox"></div>
+
 </body>
 </html>

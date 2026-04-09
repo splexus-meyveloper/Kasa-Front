@@ -1,0 +1,199 @@
+<!doctype html>
+<html class="no-js" lang="tr">
+
+<head>
+    <meta charset="utf-8">
+    <title>Kayıt Ol</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="assets/css/vendor/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/vendor/material-design-iconic-font.min.css">
+    <link rel="stylesheet" href="assets/css/plugins/plugins.css">
+    <link rel="stylesheet" href="assets/css/helper.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/style-primary.css">
+    <link rel="stylesheet" href="assets/css/login-page.css">
+</head>
+
+<body class="skin-dark login-page">
+
+<div class="main-wrapper">
+    <div class="content-body m-0 p-0">
+
+        <div class="login-register-wrap">
+            <div class="row m-0">
+
+                <!-- SOL -->
+                <div class="col-lg-5 col-12 p-0 login-left-side">
+                    <div class="login-left-inner">
+
+                        <div class="login-register-form-wrap">
+
+                            <div class="content">
+                                <h1>Kayıt Ol</h1>
+                                <p>Yeni hesap oluşturun</p>
+                            </div>
+
+                            <div class="login-register-form">
+                                <form id="registerForm">
+                                    <div class="row">
+
+                                        <div class="col-12 mb-15">
+                                            <input class="form-control" id="companyName" placeholder="Firma Adı">
+                                        </div>
+
+                                        <div class="col-6 mb-15">
+                                            <input class="form-control" id="name" placeholder="Ad">
+                                        </div>
+
+                                        <div class="col-6 mb-15">
+                                            <input class="form-control" id="surname" placeholder="Soyad">
+                                        </div>
+
+                                        <div class="col-12 mb-15">
+                                            <input class="form-control" id="email" placeholder="Email">
+                                        </div>
+
+                                        <div class="col-12 mb-15">
+                                            <input class="form-control" id="phone" placeholder="Telefon">
+                                        </div>
+
+                                        <div class="col-12 mb-15">
+                                            <input class="form-control" id="username" placeholder="Kullanıcı Adı">
+                                        </div>
+
+                                        <div class="col-12 mb-20">
+                                            <input class="form-control" type="password" id="password" placeholder="Şifre">
+                                        </div>
+
+                                        <div class="col-12 mt-10">
+                                            <button type="submit" class="button button-primary button-outline login-btn">
+                                                Kayıt Ol
+                                            </button>
+                                        </div>
+
+                                        <div class="col-12 mt-15 text-center">
+                                            <a href="login.html" style="color:#9fb3ff;">
+                                                Zaten hesabın var mı? Giriş Yap
+                                            </a>
+                                        </div>
+
+                                    </div>
+                                </form>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- SAĞ -->
+                <div class="login-register-bg col-lg-7 col-12 p-0 login-right-side">
+                    <div class="content">
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- POPUP -->
+<div id="registerSuccessModal" style="
+display:none;
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.6);
+z-index:9999;
+align-items:center;
+justify-content:center;
+">
+
+<div style="
+background:white;
+border-radius:14px;
+padding:30px;
+width:400px;
+text-align:center;
+">
+
+<h3 style="color:#111;">🎉 Kayıt Başarılı</h3>
+
+<p>Firma Kodunuz:</p>
+
+<div id="companyCodeBox" style="
+font-size:22px;
+font-weight:600;
+color:#3b82f6;
+margin-bottom:15px;
+"></div>
+
+<button onclick="copyCompanyCode()" class="btn btn-primary mb-2">
+Kopyala
+</button>
+
+<br>
+
+<button onclick="goLogin()" class="btn btn-success">
+Giriş Yap
+</button>
+
+</div>
+</div>
+
+<script>
+document.getElementById("registerForm").addEventListener("submit", async function(e){
+e.preventDefault();
+
+const data = {
+companyName: document.getElementById("companyName").value.trim(),
+name: document.getElementById("name").value.trim(),
+surname: document.getElementById("surname").value.trim(),
+email: document.getElementById("email").value.trim(),
+phone: document.getElementById("phone").value.trim(),
+username: document.getElementById("username").value.trim(),
+password: document.getElementById("password").value.trim()
+};
+
+if (!data.companyName || !data.username || !data.password) {
+alert("Zorunlu alanları doldurun!");
+return;
+}
+
+try{
+const res = await fetch("http://localhost:8080/api/auth/register-company",{
+method:"POST",
+headers:{ "Content-Type":"application/json" },
+body: JSON.stringify(data)
+});
+
+const result = await res.json();
+
+if(!res.ok){
+alert(result.message);
+return;
+}
+
+document.getElementById("companyCodeBox").innerText = result.companyCode;
+document.getElementById("registerSuccessModal").style.display = "flex";
+
+}catch(err){
+alert("Sunucu hatası!");
+}
+});
+
+function copyCompanyCode(){
+const code = document.getElementById("companyCodeBox").innerText;
+navigator.clipboard.writeText(code);
+alert("Kopyalandı!");
+}
+
+function goLogin(){
+window.location.href = "login.html";
+}
+</script>
+
+</body>
+</html>
