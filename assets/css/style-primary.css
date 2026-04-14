@@ -10898,7 +10898,7 @@ body.skin-dark .text-heading {
   color: #ffffff !important;
 }
 body.skin-dark h1, body.skin-dark h2, body.skin-dark h3, body.skin-dark h4, body.skin-dark h5, body.skin-dark h6, body.skin-dark .text-heading {
-  color: #ffffff;
+  color: #000;
 }
 body.skin-dark hr {
   border-color: #333853;

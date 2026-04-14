@@ -15,12 +15,13 @@
     <link id="cus-style" rel="stylesheet" href="assets/css/style-primary.css">
     <link rel="stylesheet" href="assets/css/menu.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
 </head>
 
 <body class="skin-dark">
 
 <!-- 🔥 PRELOADER -->
-<div id="pageLoader" style="
+ <div id="pageLoader" style="
     position:fixed;
     inset:0;
     background:#0f172a;
@@ -75,8 +76,7 @@
   <div class="container-fluid h-100 d-flex align-items-center">
 
     <!-- SOL -->
-    <div class="d-flex align-items-center gap-20">
-
+    <div class="header-left d-flex align-items-center gap-20">
       <button class="side-header-toggle header-btn">
         <i class="zmdi zmdi-menu"></i>
       </button>
@@ -84,66 +84,71 @@
       <div class="header-title">
         <h4 id="pageTitle"></h4>
       </div>
-
     </div>
 
     <!-- ORTA -->
-    <div class="header-search d-none d-lg-block" id="userFilterBox" style="display:none;">
+    <div class="header-center" id="userFilterBox">
       <select id="userFilterSelect" class="form-control" style="min-width:200px;">
         <option value="">Tüm Kullanıcılar</option>
       </select>
     </div>
 
     <!-- SAĞ -->
-    <ul class="header-notification-area d-flex align-items-center mb-0 ms-auto">
+    <div class="header-right d-flex align-items-center">
 
-      <li>
-        <button class="header-action-btn">
-          <i class="zmdi zmdi-notifications"></i>
-        </button>
-      </li>
+      <ul class="header-notification-area d-flex align-items-center mb-0">
 
-      <!-- USER -->
-      <li class="adomx-dropdown">
+        <!-- NOTIFICATION -->
+        <li class="adomx-dropdown">
+          <button class="header-action-btn notif-btn toggle" onclick="loadHeaderNotifications()">
+            <i class="zmdi zmdi-notifications"></i>
+            <span id="notificationCount" class="notif-badge">0</span>
+          </button>
 
-        <a class="toggle" href="#">
-          <span class="user d-flex align-items-center">
+          <div id="notificationDropdown" class="adomx-dropdown-menu dropdown-menu-user">
+            <div class="head">
+              <h5>Bildirimler</h5>
+            </div>
+            <div class="body" id="notifList">
+              <div class="p-2 text-muted">Yükleniyor...</div>
+            </div>
+          </div>
+        </li>
 
-            <span class="avatar">
-              <img src="assets/images/avatar/avatar-1.png">
+        <!-- USER -->
+        <li class="adomx-dropdown">
+          <a class="toggle" href="#">
+            <span class="user d-flex align-items-center">
+              <span class="avatar">
+                <img src="assets/images/avatar/avatar-1.png">
+              </span>
+              <span class="name ms-2" id="headerUserName"></span>
+              <i class="zmdi zmdi-chevron-down ms-1"></i>
             </span>
+          </a>
 
-            <span class="name ms-2" id="headerUserName"></span>
+          <div class="adomx-dropdown-menu dropdown-menu-user">
+            <div class="head">
+              <h5 class="name">
+                <a href="#" id="dropdownUserName"></a>
+              </h5>
+            </div>
 
-            <i class="zmdi zmdi-chevron-down ms-1"></i>
-
-          </span>
-        </a>
-
-        <div class="adomx-dropdown-menu dropdown-menu-user">
-
-          <div class="head">
-            <h5 class="name">
-              <a href="#" id="dropdownUserName"></a>
-            </h5>
+            <div class="body">
+              <ul>
+                <li>
+                  <a href="javascript:void(0)" onclick="logout()">
+                    <i class="zmdi zmdi-power"></i>
+                    Çıkış Yap
+                  </a>
+                </li>
+              </ul>
+            </div>
           </div>
+        </li>
 
-          <div class="body">
-            <ul>
-              <li>
-                <a href="javascript:void(0)" onclick="logout()">
-                  <i class="zmdi zmdi-power"></i>
-                  Çıkış Yap
-                </a>
-              </li>
-            </ul>
-          </div>
-
-        </div>
-
-      </li>
-
-    </ul>
+      </ul>
+    </div>
 
   </div>
 </div>
@@ -153,15 +158,120 @@
     <div id="pageContent"></div>
 </div>
 
+<!-- TAKVİM EVENT DETAY MODAL -->
+<div id="eventModal" class="kasa-modal">
+  <div class="kasa-modal-overlay" data-close="eventModal"></div>
+
+  <div class="kasa-modal-card">
+    <button type="button" class="kasa-modal-close" data-close="eventModal">×</button>
+
+    <div class="kasa-modal-header">
+      <div class="kasa-modal-icon" id="modalIcon">
+        <i class="zmdi zmdi-info-outline"></i>
+      </div>
+      <div>
+        <h3 id="modalTitle" class="kasa-modal-title">Detay</h3>
+        <div id="modalSubtitle" class="kasa-modal-subtitle">Takvim kaydı</div>
+      </div>
+    </div>
+
+    <div class="kasa-modal-body">
+      <div class="kasa-modal-row">
+        <span>Tarih</span>
+        <strong id="modalDate">-</strong>
+      </div>
+
+      <div class="kasa-modal-row">
+        <span>Tutar</span>
+        <strong id="modalAmount">-</strong>
+      </div>
+
+      <div class="kasa-modal-row">
+        <span>Tür</span>
+        <strong id="modalType">-</strong>
+      </div>
+
+      <div class="kasa-modal-row">
+        <span>Açıklama</span>
+        <strong id="modalDesc">-</strong>
+      </div>
+
+      <div class="kasa-modal-row">
+        <span>Durum</span>
+        <strong id="modalStatus">-</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAKVİM NOT MODAL -->
+<div id="noteModal" class="kasa-modal">
+  <div class="kasa-modal-overlay" data-close="noteModal"></div>
+
+  <div class="kasa-modal-card">
+    <button type="button" class="kasa-modal-close" data-close="noteModal">×</button>
+
+    <div class="kasa-modal-header">
+      <div class="kasa-modal-icon kasa-modal-icon-note">
+        <i class="zmdi zmdi-edit"></i>
+      </div>
+      <div>
+        <h3 class="kasa-modal-title">Takvime Not Ekle</h3>
+        <div class="kasa-modal-subtitle">Seçilen güne not ekleyin</div>
+      </div>
+    </div>
+
+    <div class="kasa-modal-body">
+      <div class="kasa-form-group">
+        <label for="noteDate">Tarih</label>
+        <input type="date" id="noteDate" class="kasa-modal-input">
+      </div>
+
+      <div class="kasa-form-group">
+        <label for="noteText">Not</label>
+        <textarea id="noteText" class="kasa-modal-textarea" placeholder="Notunuzu yazın..."></textarea>
+      </div>
+    </div>
+
+    <div class="kasa-modal-footer">
+      <button type="button" class="button button-secondary" data-close="noteModal">Vazgeç</button>
+      <button type="button" class="button button-primary" id="saveNoteBtn">Kaydet</button>
+    </div>
+  </div>
+</div>
+
 <!-- JS -->
+<!-- CORE / LIB -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="assets/js/auth-guard.js"></script>
 <script src="assets/js/vendor/jquery-3.3.1.min.js"></script>
+
+<!-- BASE -->
+<script src="assets/js/auth-guard.js"></script>
 <script src="assets/js/menu.js"></script>
 <script src="assets/js/main-v2.js"></script>
+
+<!-- API (ÖNCE) -->
+<script src="assets/js/api/apiClient.js"></script>
+
+<script src="assets/js/api/loanApi.js"></script>
+<script src="assets/js/api/checkApi.js"></script>
+<script src="assets/js/api/cashApi.js"></script>
+<script src="assets/js/api/adminApi.js"></script>
+<script src="assets/js/api/dashboardApi.js"></script>
+
+<!-- STORE (SONRA) -->
+<script src="assets/js/store/authStore.js"></script>
+<script src="assets/js/store/loanStore.js"></script>
+<script src="assets/js/store/checkStore.js"></script>
+<script src="assets/js/store/cashStore.js"></script>
+<script src="assets/js/store/notificationStore.js?v=999"></script>
+<script src="assets/js/store/dashboardStore.js"></script>
+
+<!-- APP (EN SON) -->
 <script src="assets/js/kasa-app-v2.js"></script>
 <script src="assets/js/admin-users.js"></script>
 <script src="assets/js/admin-log.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 
 <script>
 fetch('menu.html')

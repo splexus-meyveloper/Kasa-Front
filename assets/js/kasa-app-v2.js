@@ -3,7 +3,6 @@ let kasaChart = null;
 // ==============================
 // CONFIG
 // ==============================
-const API_BASE = "http://localhost:8080";
 
 // ==============================
 // UTIL
@@ -37,7 +36,9 @@ if(page.includes("kullanicilar")){
     return;
 }
       // 🔥 sadece diğer sayfalarda çalışsın
-      initPageModules();
+      setTimeout(() => {
+  initPageModules();
+}, 100);
 
     })
     .catch(err => {
@@ -150,6 +151,24 @@ function getDueStatus(dueDate) {
   if (diffDays <= 7) return { class: "due-warning", text: `${diffDays} gün kaldı` };
 
   return null;
+}
+
+function getDueColor(dueDate) {
+
+  const today = new Date();
+  const due = new Date(dueDate);
+
+  today.setHours(0,0,0,0);
+  due.setHours(0,0,0,0);
+
+  const diff = Math.ceil((due - today) / (1000 * 60 * 60 * 24));
+
+  if (diff < 0) return "#b91c1c";   // geçmiş → koyu kırmızı
+  if (diff <= 1) return "#ef4444";  // 1 gün → kırmızı
+  if (diff <= 3) return "#f97316";  // 3 gün → turuncu
+  if (diff <= 5) return "#facc15";  // 5 gün → sarı
+
+  return "#3b82f6"; // 🔥 default mavi
 }
 
 // ==============================
@@ -303,18 +322,8 @@ async function loadDashboard(selectedUserId = null) {
 
   if (!gi || !gc || !an || !kb) return;
 
-  let url = `${API_BASE}/api/dashboard`;
-
-if (selectedUserId) {
-  url += `?userId=${selectedUserId}`;
-}
-
-const res = await fetch(url, {
-  headers: getAuthHeaders()
-});
-  if (!res.ok) return;
-
-  const d = await res.json();
+  const d = await dashboardStore.fetchSummary(selectedUserId);
+  if (!d) return;
 
   animateValue(gi, Number(d.todayIncome || 0));
   animateValue(gc, Number(d.todayExpense || 0));
@@ -333,29 +342,30 @@ async function loadChart(selectedUserId = null) {
   const canvas = document.getElementById("chartjs-revenue-statistics-chart");
   if (!canvas) return;
 
-  let url = `${API_BASE}/api/dashboard/chart`;
+  const d = await dashboardStore.fetchChart(selectedUserId);
+  if (!d) return;
 
-if (selectedUserId) {
-  url += `?userId=${selectedUserId}`;
-}
-
-const res = await fetch(url, {
-  headers: getAuthHeaders()
-});
-  if (!res.ok) return;
-
-  const d = await res.json();
   loadKasaChart(d.incomes.map(Number), d.expenses.map(Number), d.labels);
 }
 
 function initDashboard(selectedUserId = null) {
-  const canvas = document.getElementById("chartjs-revenue-statistics-chart");
-  if (!canvas) return;
 
   loadDashboard(selectedUserId);
-  loadChart(selectedUserId);
+
+  // chart varsa çalıştır
+  const canvas = document.getElementById("chartjs-revenue-statistics-chart");
+  if (canvas) {
+    loadChart(selectedUserId);
+  }
+  
   loadCheckSummary();
   loadNotesDashboard();
+  loadHeaderNotifications();
+
+  // 🔥 TAKVİMİ GECİKMELİ ÇAĞIR
+  setTimeout(() => {
+    loadCalendar();
+  }, 100);
 }
 
 // ==============================
@@ -371,19 +381,29 @@ async function submitCash(endpoint, successMessage) {
     return;
   }
 
-  const res = await fetch(`${API_BASE}${endpoint}`, {
-    method: "POST",
-    headers: getAuthHeaders(true),
-    body: JSON.stringify({ amount, description: aciklama })
-  });
+  try {
 
-  if (res.ok) {
+    if (endpoint.includes("income")) {
+      await cashStore.addIncome({
+        amount,
+        description: aciklama
+      });
+    } else {
+      await cashStore.addExpense({
+        amount,
+        description: aciklama
+      });
+    }
+
     showToast(successMessage, "success");
+
     setTimeout(() => {
       loadPage("dashboard.html");
       setTimeout(() => initDashboard(), 300);
     }, 1200);
-  } else {
+
+  } catch (e) {
+    console.error(e);
     showToast("Hata oluştu", "error");
   }
 }
@@ -470,12 +490,7 @@ async function loadChecks() {
   const container = document.getElementById("checkContainer");
   if (!container) return;
 
-  const res = await fetch(`${API_BASE}/api/checks/portfolio`, {
-    headers: getAuthHeaders()
-  });
-  if (!res.ok) return;
-
-  const checks = await res.json();
+  const checks = await checkStore.fetchChecks();
   container.innerHTML = "";
 
   checks.forEach((c) => {
@@ -537,12 +552,8 @@ async function loadCheckSummary() {
   const adetEl = document.getElementById("cekAdet");
   if (!tutarEl || !adetEl) return;
 
-  const res = await fetch(`${API_BASE}/api/checks/portfolio`, {
-    headers: getAuthHeaders()
-  });
-  if (!res.ok) return;
-
-  const checks = await res.json();
+  const checks = await checkStore.fetchChecks();
+  
   const total = checks.reduce((sum, c) => sum + Number(c.amount || 0), 0);
 
   tutarEl.innerText = formatMoney(total);
@@ -660,7 +671,7 @@ async function loadNotesDashboard() {
   const barEl = document.getElementById("barSenetler");
   if (!adetEl || !tutarEl) return;
 
-  const res = await fetch(`${API_BASE}/api/notes/portfolio`, {
+  const res = await fetch(`${API_BASE}/notes/portfolio`, {
     headers: getAuthHeaders()
   });
   if (!res.ok) return;
@@ -724,12 +735,7 @@ async function loadLoans() {
   const container = document.getElementById("loanContainer");
   if (!container) return;
 
-  const res = await fetch(`${API_BASE}/api/loans`, {
-    headers: getAuthHeaders()
-  });
-  if (!res.ok) return;
-
-  const loans = await res.json();
+  const loans = await loanStore.fetchLoans();
   container.innerHTML = "";
 
   loans.forEach((l) => {
@@ -784,18 +790,17 @@ async function loadLoans() {
 
 async function payLoanInstallment(loanId) {
   showConfirmToast("Bu kredinin taksitini ödemek istiyor musunuz?", async () => {
-    const res = await fetch(`${API_BASE}/api/loans/${loanId}/pay`, {
-      method: "POST",
-      headers: getAuthHeaders(true)
-    });
+    try {
+      await loanStore.payLoan(loanId);
 
-    if (res.ok) {
       showToast("Taksit başarıyla ödendi", "success");
+
       setTimeout(() => {
         loadLoans();
         loadDashboard();
       }, 800);
-    } else {
+
+    } catch (e) {
       showToast("Taksit ödenemedi", "error");
     }
   });
@@ -843,7 +848,7 @@ document.addEventListener("click", async function (e) {
       description: document.getElementById("description")?.value
     };
 
-    const res = await fetch(`${API_BASE}/api/checks/in`, {
+    const res = await fetch(`${API_BASE}/checks/in`, {
       method: "POST",
       headers: getAuthHeaders(true),
       body: JSON.stringify(payload)
@@ -851,6 +856,7 @@ document.addEventListener("click", async function (e) {
 
     if (res.ok) {
       showToast("Çek giriş yapıldı", "success");
+      refreshCalendar();
       setTimeout(() => {
         loadPage("cekler.html");
         setTimeout(() => initDashboard(), 300);
@@ -885,6 +891,7 @@ document.addEventListener("click", async function (e) {
 
     if (res.ok) {
       showToast("Senet giriş yapıldı", "success");
+      refreshCalendar();
       setTimeout(() => loadPage("senetler.html"), 1000);
     } else {
       showToast("Senet kaydedilemedi", "error");
@@ -892,7 +899,8 @@ document.addEventListener("click", async function (e) {
   }
 });
 
-$(document).on("click", "#krediKaydetBtn", function () {
+$(document).on("click", "#krediKaydetBtn", async function () {
+
   const bankName = $("#krediBanka").val();
   const loanAmount = parseMoney($("#krediTutar").val());
   const installmentCount = $("#krediTaksit").val();
@@ -905,30 +913,24 @@ $(document).on("click", "#krediKaydetBtn", function () {
     return;
   }
 
-  fetch(`${API_BASE}/api/loans`, {
-    method: "POST",
-    headers: getAuthHeaders(true),
-    body: JSON.stringify({
+  try {
+    await loanStore.createLoan({
       bankName,
       loanAmount,
       installmentCount: parseInt(installmentCount),
       monthlyPayment,
       paymentDay: parseInt(paymentDay),
       endDate
-    })
-  })
-    .then((res) => {
-      if (!res.ok) throw new Error("API hata");
-      return res.json();
-    })
-    .then(() => {
-      showToast("Kredi başarıyla oluşturuldu", "success");
-      setTimeout(() => loadPage("krediler.html"), 1200);
-    })
-    .catch((err) => {
-      console.error(err);
-      showToast("Kredi oluşturulamadı", "error");
     });
+
+    showToast("Kredi başarıyla oluşturuldu", "success");
+    refreshCalendar();
+    setTimeout(() => loadPage("krediler.html"), 1200);
+
+  } catch (err) {
+    console.error(err);
+    showToast("Kredi oluşturulamadı", "error");
+  }
 });
 
 // ==============================
@@ -1166,7 +1168,7 @@ async function initUserFilter() {
   box.style.display = "block";
 
   // kullanıcıları çek
-  const res = await fetch(`${API_BASE}/api/admin/profiles`, {
+  const res = await fetch(`${API_BASE}/admin/profiles`, {
     headers: getAuthHeaders()
   });
 
@@ -1234,3 +1236,365 @@ async function loadChartWithFilter(userId) {
 
   updateChartUI(data);
 }
+
+
+async function loadHeaderNotifications() {
+  const container = document.getElementById("notifList");
+  if (!container) return;
+
+  const list = await notificationStore.build();
+
+  const badge = document.getElementById("notificationCount");
+  if (badge) {
+    badge.innerText = list.length;
+    badge.style.display = list.length ? "inline-block" : "none";
+  }
+
+  container.innerHTML = "";
+
+  if (list.length === 0) {
+    container.innerHTML = "<div class='p-2 text-muted'>Bildirim yok</div>";
+    return;
+  }
+
+  list.forEach(n => {
+
+    // 🔥 ICON SEÇİMİ
+    let icon = "";
+    if (n.level === "danger") {
+      icon = "⚠️";
+    } else if (n.level === "warning") {
+      icon = "⏰";
+    } else {
+      icon = "ℹ️";
+    }
+
+    container.innerHTML += `
+      <div class="notif-item notif-${n.level}">
+        <span style="margin-right:6px;">${icon}</span>
+        ${n.message}
+      </div>
+    `;
+  });
+}
+
+let calendar;
+
+function getCalendarNotes() {
+  try {
+    return JSON.parse(localStorage.getItem("calendarNotes") || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveCalendarNotes(notes) {
+  localStorage.setItem("calendarNotes", JSON.stringify(notes));
+}
+
+function addCalendarNote(note) {
+  const notes = getCalendarNotes();
+  notes.push(note);
+  saveCalendarNotes(notes);
+}
+
+async function loadCalendar() {
+  const calendarEl = document.getElementById("calendar");
+  if (!calendarEl) return;
+
+  const events = [];
+
+  // ÇEKLER
+  const checks = await checkStore.fetchChecks();
+  checks.forEach(c => {
+    if (!c.dueDate) return;
+
+    const dynamicColor = getDueColor(c.dueDate);
+
+    events.push({
+      id: "check-" + c.id,
+      title: `Çek: ${c.amount} TL`,
+      start: c.dueDate,
+      allDay: true,
+      color: dynamicColor,
+      extendedProps: {
+        type: "CHECK",
+        data: c
+      }
+    });
+  });
+
+  // SENETLER
+  const notesPortfolio = await fetch(`${API_BASE}/notes/portfolio`, {
+    headers: getAuthHeaders()
+  }).then(r => r.json());
+
+  notesPortfolio.forEach(n => {
+    if (!n.dueDate) return;
+
+    const dynamicColor = getDueColor(n.dueDate);
+
+    events.push({
+      id: "note-" + n.id,
+      title: `Senet: ${n.amount} TL`,
+      start: n.dueDate,
+      allDay: true,
+      color: dynamicColor,
+      extendedProps: {
+        type: "SENET",
+        data: n
+      }
+    });
+  });
+
+  // KREDİLER
+  const loans = await loanStore.fetchLoans();
+  loans.forEach(l => {
+    if (!l.paymentDay) return;
+
+    const today = new Date();
+    const date = new Date(today.getFullYear(), today.getMonth(), l.paymentDay);
+    const dynamicColor = getDueColor(date);
+
+    events.push({
+      id: "loan-" + l.id,
+      title: `Kredi: ${l.monthlyPayment} TL`,
+      start: date,
+      allDay: true,
+      color: dynamicColor,
+      extendedProps: {
+        type: "LOAN",
+        data: l
+      }
+    });
+  });
+
+  // MANUEL TAKVİM NOTLARI
+  const calendarNotes = getCalendarNotes();
+  calendarNotes.forEach(n => {
+    if (!n.date) return;
+
+    events.push({
+      id: "calendar-note-" + n.id,
+      title: `Not: ${n.text}`,
+      start: n.date,
+      allDay: true,
+      color: "#0f766e",
+      extendedProps: {
+        type: "NOTE",
+        data: n
+      }
+    });
+  });
+
+  calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: "dayGridMonth",
+    displayEventTime: false,
+    locale: "tr",
+    height: 600,
+
+    headerToolbar: {
+      left: "",
+      center: "title",
+      right: ""
+    },
+
+    events,
+
+    eventClick: function(info) {
+      openEventModal(info.event);
+    },
+
+    dateClick: function(info) {
+      const noteDate = document.getElementById("noteDate");
+      const noteText = document.getElementById("noteText");
+
+      if (noteDate) noteDate.value = info.dateStr;
+      if (noteText) noteText.value = "";
+
+      openModal("noteModal");
+    },
+
+    eventContent: function(arg) {
+      const type = arg.event.extendedProps.type;
+      const title = arg.event.title;
+
+      let icon = "";
+
+      if (type === "CHECK") {
+        icon = '<i class="zmdi zmdi-money" style="margin-right:4px;"></i>';
+      } else if (type === "LOAN") {
+        icon = '<i class="zmdi zmdi-balance" style="margin-right:4px;"></i>';
+      } else if (type === "SENET") {
+        icon = '<i class="zmdi zmdi-file-text" style="margin-right:4px;"></i>';
+      } else if (type === "NOTE") {
+        icon = '<i class="zmdi zmdi-edit" style="margin-right:4px;"></i>';
+      }
+
+      return {
+        html: `<div style="display:flex;align-items:center;font-size:12px;">${icon}${title}</div>`
+      };
+    }
+  });
+
+  calendar.render();
+}
+
+function refreshCalendar() {
+  if (calendar) {
+    calendar.destroy();
+  }
+  loadCalendar();
+}
+
+function openEventModal(event) {
+  const data = event.extendedProps?.data || {};
+  const type = event.extendedProps?.type || "";
+
+  const modalTitle = document.getElementById("modalTitle");
+  const modalSubtitle = document.getElementById("modalSubtitle");
+  const modalIcon = document.getElementById("modalIcon");
+  const modalDate = document.getElementById("modalDate");
+  const modalAmount = document.getElementById("modalAmount");
+  const modalType = document.getElementById("modalType");
+  const modalDesc = document.getElementById("modalDesc");
+  const modalStatus = document.getElementById("modalStatus");
+
+  // Her açılışta gizlenen alanları geri aç
+  if (modalAmount?.parentElement) {
+    modalAmount.parentElement.style.display = "flex";
+  }
+  if (modalType?.parentElement) {
+    modalType.parentElement.style.display = "flex";
+  }
+
+  let typeText = "";
+  if (type === "CHECK") typeText = "Çek";
+  else if (type === "SENET") typeText = "Senet";
+  else if (type === "LOAN") typeText = "Kredi";
+  else if (type === "NOTE") typeText = "Not";
+
+  modalDate.textContent = event.start
+    ? new Date(event.start).toLocaleDateString("tr-TR")
+    : "-";
+
+  modalType.textContent = typeText;
+
+  if (type === "CHECK") {
+    modalTitle.textContent = "Çek Detayı";
+    modalSubtitle.textContent = data.checkNo ? `Çek No: ${data.checkNo}` : "";
+    modalIcon.innerHTML = '<i class="zmdi zmdi-money-box"></i>';
+
+    modalAmount.textContent = formatMoney(data.amount) + " TL";
+    modalDesc.textContent = data.description || "-";
+    modalStatus.textContent = "Kasanda";
+  }
+
+  else if (type === "SENET") {
+    modalTitle.textContent = "Senet Detayı";
+    modalSubtitle.textContent = data.noteNo ? `Senet No: ${data.noteNo}` : "";
+    modalIcon.innerHTML = '<i class="zmdi zmdi-assignment"></i>';
+
+    modalAmount.textContent = formatMoney(data.amount) + " TL";
+    modalDesc.textContent = data.description || "-";
+    modalStatus.textContent = "Kasanda";
+  }
+
+  else if (type === "LOAN") {
+    modalTitle.textContent = "Kredi Detayı";
+    modalSubtitle.textContent = data.bankName || "";
+    modalIcon.innerHTML = '<i class="zmdi zmdi-balance"></i>';
+
+    modalAmount.textContent = formatMoney(data.monthlyPayment) + " TL";
+    modalDesc.textContent = data.bankName || "-";
+    modalStatus.textContent =
+      data.remainingDebt != null
+        ? "Kalan Borç: " + formatMoney(data.remainingDebt) + " TL"
+        : "Aktif";
+  }
+
+  else if (type === "NOTE") {
+    modalTitle.textContent = "Takvim Notu";
+    modalSubtitle.textContent = "Manuel eklenen not";
+    modalIcon.innerHTML = '<i class="zmdi zmdi-edit"></i>';
+
+    if (modalAmount?.parentElement) {
+      modalAmount.parentElement.style.display = "none";
+    }
+    if (modalType?.parentElement) {
+      modalType.parentElement.style.display = "none";
+    }
+
+    modalDesc.textContent = data.text || "-";
+    modalStatus.textContent = "Not";
+  }
+
+  openModal("eventModal");
+}
+
+function openModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (!modal) return;
+
+  modal.classList.add("active");
+  document.body.style.overflow = "hidden";
+}
+
+function closeModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (!modal) return;
+
+  modal.classList.remove("active");
+  document.body.style.overflow = "";
+}
+
+function closeAllCalendarModals() {
+  closeModal("eventModal");
+  closeModal("noteModal");
+}
+
+document.addEventListener("click", function(e) {
+  const closeTarget = e.target.closest("[data-close]");
+  if (closeTarget) {
+    const modalId = closeTarget.getAttribute("data-close");
+    closeModal(modalId);
+    return;
+  }
+
+  const saveNoteBtn = e.target.closest("#saveNoteBtn");
+  if (saveNoteBtn) {
+    const date = document.getElementById("noteDate")?.value;
+    const text = document.getElementById("noteText")?.value?.trim();
+
+    if (!date || !text) {
+      showToast("Tarih ve not alanını doldurun", "error");
+      return;
+    }
+
+    addCalendarNote({
+      id: Date.now(),
+      date,
+      text
+    });
+
+    showToast("Takvim notu eklendi", "success");
+closeModal("noteModal");
+
+// 🔥 SCROLL KONUMUNU KORU
+const scrollY = window.scrollY;
+
+refreshCalendar();
+
+setTimeout(() => {
+  window.scrollTo(0, scrollY);
+}, 50);
+
+return;
+  }
+});
+
+document.addEventListener("keydown", function(e) {
+  if (e.key === "Escape") {
+    closeAllCalendarModals();
+  }
+});

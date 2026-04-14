@@ -179,7 +179,7 @@ margin-bottom:30px;
 
 .chart-panel:hover{
 
-transform:translateY(-3px);
+transform:translateY(-2px);
 
 box-shadow:
 0 14px 26px rgba(0,0,0,.12);
@@ -267,7 +267,7 @@ transition:.25s;
 
 .cek-card:hover{
 
-transform:translateY(-4px);
+transform:translateY(-2px);
 
 box-shadow:0 12px 24px rgba(0,0,0,.12);
 
@@ -317,7 +317,7 @@ transition:.2s;
 
 .btn-modern:hover{
 
-transform:translateY(-1px);
+transform:translateY(-2px);
 
 box-shadow:0 6px 14px rgba(59,130,246,.35);
 
@@ -475,7 +475,7 @@ color:#374151;
 
 margin-left: calc(var(--ka-sidebar-open) + 20px) !important;
 
-margin-top: var(--ka-header-h) !important;
+padding: 16px 28px !important;
 
 width: calc(100% - var(--ka-sidebar-open) - 20px) !important;
 
@@ -1517,4 +1517,470 @@ color:#2563eb !important;
 /* SADECE LOGIN SAYFASI */
 body.login-page.skin-dark {
     background: linear-gradient(135deg, #0f172a, #1e293b);
+}
+
+/* NOTIFICATION BUTTON FIX */
+.notif-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* BADGE */
+.notif-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: red;
+  color: white;
+  font-size: 10px;
+  padding: 2px 5px;
+  border-radius: 50%;
+  font-weight: bold;
+  line-height: 1;
+}
+
+/* DROPDOWN */
+.notif-dropdown {
+  position: absolute;
+  top: 40px;
+  right: 0;
+  width: 260px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+  display: none;
+  z-index: 999;
+  padding: 10px;
+}
+
+/* ITEM */
+.notif-item {
+  font-size: 13px;
+  padding: 6px;
+  border-bottom: 1px solid #eee;
+}
+
+/* BUTTON FIX */
+.notif-btn {
+  position: relative;
+}
+
+/* BADGE */
+.notif-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #ff3b3b;
+  color: #fff;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 50%;
+  font-weight: 600;
+}
+
+/* DROPDOWN İÇİ */
+#notificationDropdown .body {
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+#notificationDropdown .notif-item {
+  padding: 6px 10px;
+  font-size: 13px;
+  border-bottom: 1px solid #eee;
+}
+
+#notificationDropdown .notif-item:hover {
+  background: #f5f5f5;
+}
+
+/* HEADER 3 BLOK SİSTEMİ */
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.header-center {
+  margin-left: 40px;
+}
+
+/* EN KRİTİK SATIR */
+.header-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+/* notification fix */
+.notif-btn {
+  position: relative;
+}
+
+.notif-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #ff3b3b;
+  color: #fff;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 50%;
+  font-weight: 600;
+}
+
+/* =========================
+   HEADER / CONTENT FINAL FIX
+   BUNU DOSYANIN EN ALTINA KOY
+========================= */
+
+/* header sabit */
+.header-section {
+  position: fixed !important;
+  top: 0 !important;
+  left: var(--ka-sidebar-open) !important;
+  right: 0 !important;
+  height: var(--ka-header-h) !important;
+  z-index: 1200 !important;
+}
+
+/* ana içerik alanı */
+.content-body {
+  margin-top: 0 !important;
+  padding-top: calc(var(--ka-header-h) + 12px) !important;
+  margin-left: calc(var(--ka-sidebar-open) + 20px) !important;
+  width: calc(100% - var(--ka-sidebar-open) - 20px) !important;
+  min-height: calc(100vh - var(--ka-header-h)) !important;
+}
+
+/* içerik içine sonradan basılan sayfa alanı */
+#pageContent {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* dashboard ilk satır */
+#pageContent > .row:first-child,
+#pageContent .row.mt-30:first-child,
+#pageContent .row.mb-30:first-child {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* box'ların headerdan uzaklaşmasını engelle */
+.content-body .box:first-child,
+.content-body .dashboard-card:first-child,
+.content-body .top-report:first-child {
+  margin-top: 0 !important;
+}
+
+/* container içindeki gereksiz üst boşlukları bastır */
+.content-body .container-fluid,
+.content-body .container {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+.notif-item {
+  padding: 8px 10px;
+  font-size: 13px;
+  border-bottom: 1px solid #eee;
+}
+
+/* RENKLER */
+.notif-danger {
+  color: #ff3b3b;
+  font-weight: 600;
+}
+
+.notif-warning {
+  color: #ff9800;
+}
+
+.notif-info {
+  color: #2196f3;
+}
+
+.notif-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fc-event {
+  font-weight: 500;
+  border-radius: 6px;
+  padding: 2px 6px;
+}
+
+.fc-event {
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.fc-event:hover {
+  transform: scale(1.03);
+  filter: brightness(1.1);
+}
+
+.fc-day-today {
+  background: rgba(255, 193, 7, 0.25) !important;
+  border: 2px solid #ffc107;
+}
+
+.kasa-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999999; /* 🔥 çok yüksek */
+}
+
+.kasa-modal.active {
+  display: block;
+}
+
+.kasa-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+}
+
+.kasa-modal-card {
+  position: relative;
+  width: calc(100% - 32px);
+  max-width: 520px;
+  margin: 80px auto;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22);
+  padding: 24px;
+  z-index: 2;
+}
+
+.kasa-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  border: none;
+  background: transparent;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  color: #64748b;
+}
+
+.kasa-modal-close:hover {
+  color: #0f172a;
+}
+
+.kasa-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+  padding-right: 28px;
+}
+
+.kasa-modal-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  color: #1d4ed8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.kasa-modal-icon-note {
+  background: linear-gradient(135deg, #ecfeff, #cffafe);
+  color: #0f766e;
+}
+
+.kasa-modal-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.kasa-modal-subtitle {
+  margin-top: 4px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.kasa-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.kasa-modal-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.kasa-modal-row span {
+  color: #475569;
+}
+
+.kasa-modal-row strong {
+  color: #0f172a;
+  text-align: right;
+  word-break: break-word;
+}
+
+.kasa-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kasa-form-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.kasa-modal-input,
+.kasa-modal-textarea {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 14px;
+  outline: none;
+  background: #fff;
+}
+
+.kasa-modal-input:focus,
+.kasa-modal-textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.kasa-modal-textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.kasa-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+@media (max-width: 576px) {
+  .kasa-modal-card {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  width: 100%;
+  max-width: 520px;
+  max-height: 85vh;
+
+  overflow-y: auto; /* 🔥 scroll sadece burada */
+
+  background: #fff;
+  border-radius: 18px;
+  padding: 24px;
+
+  box-shadow: 0 25px 60px rgba(0,0,0,0.25);
+  z-index: 2;
+}
+
+  .kasa-modal-row {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .kasa-modal-row strong {
+    text-align: left;
+  }
+}
+
+.calendar-card:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.18);
+}
+
+body.modal-open {
+  overflow: hidden;
+  touch-action: none;
+}
+
+.lock-scroll {
+  overflow: hidden !important;
+}
+
+.kasa-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999999;
+}
+
+.kasa-modal.active {
+  display: block;
+}
+
+.kasa-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+}
+
+.kasa-modal-card {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: calc(100% - 32px);
+  max-width: 520px;
+  max-height: 85vh;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.25);
+  z-index: 2;
+
+  /* 🔥 BAŞLANGIÇ DURUMU */
+  transform: translate(-50%, -50%) scale(0.92);
+  opacity: 0;
+
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+            opacity 0.25s ease;
+}
+
+.kasa-modal.active .kasa-modal-card {
+  transform: translate(-50%, -80%) scale(1);
+  opacity: 1;
+}
+
+.kasa-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.kasa-modal.active .kasa-modal-overlay {
+  opacity: 1;
 }
