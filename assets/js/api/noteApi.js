@@ -1,23 +1,23 @@
-const checkApi = {
-  getAll: () => apiClient.request("/checks/portfolio"),
+const noteApi = {
+  getAll: () => apiClient.request("/notes/portfolio"),
 
   create: (data) =>
-    apiClient.request("/checks/in", {
+    apiClient.request("/notes/in", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   collect: (data) =>
-    apiClient.request("/checks/collect", {
+    apiClient.request("/notes/collect", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   endorse: (data) =>
-    apiClient.request("/checks/endorse", {
+    apiClient.request("/notes/endorse", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 };
 
-window.checkApi = checkApi;
+window.noteApi = noteApi;

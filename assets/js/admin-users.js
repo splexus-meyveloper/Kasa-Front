@@ -1,3 +1,7 @@
+if (!authStore.isLoggedIn()) {
+    window.location.href = "login.html";
+}
+
 /*********************************
  * USERS PAGE INIT
  *********************************/
@@ -30,24 +34,9 @@ async function loadUsers(){
 
         console.log("FETCH ÖNCESİ");
 
-        const res = await fetch(
-            "http://localhost:8080/api/admin/profiles",
-            {
-                headers:{
-                    "Authorization":"Bearer " + localStorage.getItem("token")
-                }
-            }
-        );
+        const data = await adminApi.getProfiles();
 
         console.log("FETCH SONRASI");
-
-        if(!res.ok){
-            console.error("API HATA:", res.status);
-            return;
-        }
-
-        const data = await res.json();
-
         console.log("DATA:", data);
 
         const users = Array.isArray(data) ? data : (data.content || []);
@@ -58,63 +47,54 @@ async function loadUsers(){
 
         users.forEach(u => {
 
-    const tr = document.createElement("tr");
+            const tr = document.createElement("tr");
+            tr.setAttribute("data-id", u.id);
 
-    const role = u.role || "USER";
+            const role = u.role || "USER";
 
-    tr.innerHTML = `
-        <td class="user-name">${u.username || "-"}</td>
-        <td>
-            <select class="roleSelect" data-id="${u.id}">
-                <option value="USER" ${role === "USER" ? "selected" : ""}>USER</option>
-                <option value="ADMIN" ${role === "ADMIN" ? "selected" : ""}>ADMIN</option>
-            </select>
-        </td>
-        <td>
-            <button type="button" class="btn-delete deleteUserBtn">Sil</button>
-        </td>
-    `;
+            tr.innerHTML = `
+                <td class="user-name">${u.username || "-"}</td>
+                <td>
+                    <select class="roleSelect" data-id="${u.id}">
+                        <option value="USER" ${role === "USER" ? "selected" : ""}>USER</option>
+                        <option value="ADMIN" ${role === "ADMIN" ? "selected" : ""}>ADMIN</option>
+                    </select>
+                </td>
+                <td>
+                    <button type="button" class="btn-delete deleteUserBtn">Sil</button>
+                </td>
+            `;
 
-    tr.querySelector(".roleSelect").addEventListener("change", async (e) => {
-        const newRole = e.target.value;
-        const userId = e.target.dataset.id;
+            tr.querySelector(".roleSelect").addEventListener("change", async (e) => {
+                const newRole = e.target.value;
+                const userId = e.target.dataset.id;
 
-        const res = await fetch(`${API_BASE}/api/admin/users/${userId}/role?role=${newRole}`, {
-            method: "PUT",
-            headers: getAuthHeaders()
+                try {
+                    await adminApi.updateUserRole(userId, newRole);
+                    showToast("Rol güncellendi", "success");
+                } catch (e) {
+                    showToast("Rol güncellenemedi: " + e.message, "error");
+                }
+            });
+
+            tr.querySelector(".deleteUserBtn").addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                deleteUser(u.id);
+            });
+
+            tr.addEventListener("click", (e) => {
+                if (e.target.closest(".roleSelect")) return;
+                if (e.target.closest(".deleteUserBtn")) return;
+                editUser(u.id, u.username);
+            });
+
+            tbody.appendChild(tr);
         });
-
-        if (res.ok) {
-            showToast("Rol güncellendi", "success");
-        } else {
-            showToast("Rol güncellenemedi", "error");
-        }
-    });
-
-    tr.querySelector(".deleteUserBtn").addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        deleteUser(u.id);
-    });
-
-    tr.addEventListener("click", (e) => {
-
-    // dropdown'a tıklanınca tetiklenmesin
-    if (e.target.closest(".roleSelect")) return;
-
-    // delete butonuna tıklanınca tetiklenmesin
-    if (e.target.closest(".deleteUserBtn")) return;
-
-    editUser(u.id, u.username);
-});
-
-    tbody.appendChild(tr);
-});
 
     } catch(e) {
         console.error("LOAD USERS ERROR:", e);
     }
-
 }
 
 /*********************************
@@ -135,33 +115,20 @@ async function addUser(){
 
     }
 
-    const res = await fetch(
-        "http://localhost:8080/api/auth/register",
-        {
-            method:"POST",
-            headers:{
-                "Content-Type":"application/json",
-                "Authorization":"Bearer " + localStorage.getItem("token")
-            },
-            body:JSON.stringify({
-                username,
-                password
-            })
-        }
-    );
+    try {
+        await authApi.registerUser({
+            username,
+            password
+        });
 
-    if(!res.ok){
+        showToast("Kullanıcı eklendi","success");
+        loadUsersSafe();
 
-        showToast("Kullanıcı eklenemedi","error");
-        return;
-
+    } catch(e){
+        showToast("Kullanıcı eklenemedi: " + e.message,"error");
     }
-
-    showToast("Kullanıcı eklendi","success");
-
-    loadUsersSafe();
-
 }
+  
 
 
 /*********************************
@@ -178,18 +145,10 @@ async function deleteUser(id){
 
             console.log("SILINECEK ROW:", row);
 
-            const res = await fetch(
-                `http://localhost:8080/api/admin/users/${id}`,
-                {
-                    method: "DELETE",
-                    headers: {
-                        "Authorization":"Bearer " + localStorage.getItem("token")
-                    }
-                }
-            );
-
-            if(!res.ok){
-                showToast("Silme başarısız","error");
+            try {
+                await adminApi.deactivateUser(id);
+            } catch(e){
+                showToast("Silme başarısız: " + e.message,"error");
                 return;
             }
 
@@ -204,7 +163,6 @@ async function deleteUser(id){
                     row.remove();
                 }, 350);
             } else {
-                // satır bulunamazsa güvenli fallback
                 loadUsersSafe();
             }
         }
@@ -231,16 +189,7 @@ async function editUser(id, username){
 
     }
 
-    const res = await fetch(
-        `http://localhost:8080/api/admin/users/${id}/permissions`,
-        {
-            headers:{
-                "Authorization":"Bearer " + localStorage.getItem("token")
-            }
-        }
-    );
-
-    const perms = await res.json();
+    const perms = await adminApi.getUserPermissions(id);
 
     let targetRow = null;
 
@@ -347,24 +296,12 @@ async function savePermissions(userId){
         if(c.checked) perms.push(c.value);
     });
 
-    const res = await fetch(
-        `http://localhost:8080/api/admin/users/${userId}/permissions`,
-        {
-            method:"PUT",
-            headers:{
-                "Content-Type":"application/json",
-                "Authorization":"Bearer " + localStorage.getItem("token")
-            },
-            body: JSON.stringify({
-                permissions: perms
-            })
-        }
-    );
-
-    if(!res.ok){
-        showToast("Yetkiler kaydedilemedi","error");
-        return;
-    }
+    try {
+    await adminApi.setUserPermissions(userId, perms);
+} catch(e){
+    showToast("Yetkiler kaydedilemedi: " + e.message,"error");
+    return;
+}
 
     showToast("Yetkiler kaydedildi","success");
 }

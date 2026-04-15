@@ -1,5 +1,3 @@
-console.log("🔥 YENI notificationStore CALISTI");
-
 const notificationStore = {
 
   async build() {
