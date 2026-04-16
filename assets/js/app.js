@@ -2,15 +2,6 @@
 // APP CORE
 // ==============================
 
-function runPageInitializers() {
-  initDashboard();
-  loadChecks();
-  loadNotes();
-  loadLoans();
-  loadCashTransactions();
-  initUserFilter();
-}
-
 function initAppShell() {
   checkPagePermission();
 
@@ -38,10 +29,14 @@ function initAppShell() {
 
 function initApp() {
   initAppShell();
-  runPageInitializers();
+
+  const lastPage = localStorage.getItem("lastPage") || "dashboard.html";
+
+  if (window.loadPage) {
+    loadPage(lastPage);
+  }
 }
 
-window.runPageInitializers = runPageInitializers;
 window.initAppShell = initAppShell;
 window.initApp = initApp;
 

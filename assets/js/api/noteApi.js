@@ -1,6 +1,8 @@
 const noteApi = {
   getAll: () => apiClient.request("/notes/portfolio"),
 
+  getPortfolio: () => apiClient.request("/notes/portfolio"),
+
   create: (data) =>
     apiClient.request("/notes/in", {
       method: "POST",

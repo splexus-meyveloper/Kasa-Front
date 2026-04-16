@@ -1,91 +1,55 @@
 async function initUserFilter() {
-
   const select = document.getElementById("userFilterSelect");
   const box = document.getElementById("userFilterBox");
 
   if (!select || !box) return;
 
-  const jwt = JSON.parse(atob(localStorage.getItem("token").split('.')[1]));
-  const role = jwt.role;
+  if (!window.authStore) {
+    console.error("authStore bulunamadı");
+    return;
+  }
 
-  // 👤 USER → hiçbir şey gösterme
+  if (!window.adminStore) {
+    console.error("adminStore bulunamadı");
+    return;
+  }
+
+  const role = authStore.getRole();
+
   if (role !== "ADMIN") {
     box.style.display = "none";
     return;
   }
 
-  // 👑 ADMIN → göster
   box.style.display = "block";
 
-  // kullanıcıları çek
-  const res = await fetch(`${API_BASE}/admin/profiles`, {
-    headers: getAuthHeaders()
-  });
+  try {
+    const users = await adminStore.fetchProfiles();
 
-  if (!res.ok) return;
+    select.innerHTML = `<option value="">Tüm Kullanıcılar</option>`;
 
-  const users = await res.json();
+    users.forEach((u) => {
+      select.insertAdjacentHTML(
+        "beforeend",
+        `<option value="${u.id}">${u.username}</option>`
+      );
+    });
 
-  // dropdown temizle
-  select.innerHTML = `<option value="">Tüm Kullanıcılar</option>`;
+    if (!select.dataset.bound) {
+      select.addEventListener("change", () => {
+        const userId = select.value || null;
 
-  users.forEach(u => {
-    select.insertAdjacentHTML("beforeend",
-      `<option value="${u.id}">${u.username}</option>`
-    );
-  });
+        if (window.initDashboard) {
+          initDashboard(userId);
+        }
+      });
 
-  // seçim değişince dashboard yenile
-  select.addEventListener("change", () => {
-  const userId = select.value || null;
-  initDashboard(userId);
-});
-}
-
-async function loadDashboardWithFilter() {
-
-  const select = document.getElementById("userFilterSelect");
-  const userId = select?.value;
-
-  let url = `${API_BASE}/api/dashboard`;
-
-  if (userId) {
-    url += `?userId=${userId}`;
+      select.dataset.bound = "true";
+    }
+  } catch (err) {
+    console.error("User filter error:", err);
+    showToast(err.message || "Kullanıcı filtresi yüklenemedi", "error");
   }
-
-  const res = await fetch(url, {
-    headers: getAuthHeaders()
-  });
-
-  if (!res.ok) return;
-
-  const data = await res.json();
-
-  // 🔥 senin mevcut dashboard update fonksiyonun
-  initDashboard();
-
-  // chart da yenile
-  loadChartWithFilter(userId);
 }
-
-async function loadChartWithFilter(userId) {
-
-  let url = `${API_BASE}/api/dashboard/chart`;
-
-  if (userId) {
-    url += `?userId=${userId}`;
-  }
-
-  const res = await fetch(url, {
-    headers: getAuthHeaders()
-  });
-
-  if (!res.ok) return;
-
-  const data = await res.json();
-
-  updateChartUI(data);
-}
-
 
 window.initUserFilter = initUserFilter;

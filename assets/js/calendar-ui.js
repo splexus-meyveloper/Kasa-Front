@@ -18,16 +18,11 @@ function addCalendarNote(note) {
   saveCalendarNotes(notes);
 }
 
-async function loadCalendar() {
-  const calendarEl = document.getElementById("calendar");
-  if (!calendarEl) return;
-
+function buildCheckEvents(checks = []) {
   const events = [];
 
-  // ÇEKLER
-  const checks = await checkStore.fetchChecks();
-  checks.forEach(c => {
-    if (!c.dueDate) return;
+  checks.forEach((c) => {
+    if (!c?.dueDate) return;
 
     const dynamicColor = getDueColor(c.dueDate);
 
@@ -39,18 +34,19 @@ async function loadCalendar() {
       color: dynamicColor,
       extendedProps: {
         type: "CHECK",
-        data: c
-      }
+        data: c,
+      },
     });
   });
 
-  // SENETLER
-  const notesPortfolio = await fetch(`${API_BASE}/notes/portfolio`, {
-    headers: getAuthHeaders()
-  }).then(r => r.json());
+  return events;
+}
 
-  notesPortfolio.forEach(n => {
-    if (!n.dueDate) return;
+function buildNoteEvents(notesPortfolio = []) {
+  const events = [];
+
+  notesPortfolio.forEach((n) => {
+    if (!n?.dueDate) return;
 
     const dynamicColor = getDueColor(n.dueDate);
 
@@ -62,15 +58,19 @@ async function loadCalendar() {
       color: dynamicColor,
       extendedProps: {
         type: "SENET",
-        data: n
-      }
+        data: n,
+      },
     });
   });
 
-  // KREDİLER
-  const loans = await loanStore.fetchLoans();
-  loans.forEach(l => {
-    if (!l.paymentDay) return;
+  return events;
+}
+
+function buildLoanEvents(loans = []) {
+  const events = [];
+
+  loans.forEach((l) => {
+    if (!l?.paymentDay) return;
 
     const today = new Date();
     const date = new Date(today.getFullYear(), today.getMonth(), l.paymentDay);
@@ -84,15 +84,19 @@ async function loadCalendar() {
       color: dynamicColor,
       extendedProps: {
         type: "LOAN",
-        data: l
-      }
+        data: l,
+      },
     });
   });
 
-  // MANUEL TAKVİM NOTLARI
-  const calendarNotes = getCalendarNotes();
-  calendarNotes.forEach(n => {
-    if (!n.date) return;
+  return events;
+}
+
+function buildManualNoteEvents(calendarNotes = []) {
+  const events = [];
+
+  calendarNotes.forEach((n) => {
+    if (!n?.date) return;
 
     events.push({
       id: "calendar-note-" + n.id,
@@ -102,68 +106,111 @@ async function loadCalendar() {
       color: "#0f766e",
       extendedProps: {
         type: "NOTE",
-        data: n
-      }
+        data: n,
+      },
     });
   });
 
-  calendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: "dayGridMonth",
-    displayEventTime: false,
-    locale: "tr",
-    height: 600,
+  return events;
+}
 
-    headerToolbar: {
-      left: "",
-      center: "title",
-      right: ""
-    },
+async function loadCalendar() {
+  const calendarEl = document.getElementById("calendar");
+  if (!calendarEl) return;
 
-    events,
+  if (calendar) {
+    calendar.destroy();
+    calendar = null;
+  }
 
-    eventClick: function(info) {
-      openEventModal(info.event);
-    },
+  const events = [];
 
-    dateClick: function(info) {
-      const noteDate = document.getElementById("noteDate");
-      const noteText = document.getElementById("noteText");
+  let checks = [];
+  let notesPortfolio = [];
+  let loans = [];
 
-      if (noteDate) noteDate.value = info.dateStr;
-      if (noteText) noteText.value = "";
+  try {
+    checks = await checkStore.fetchChecks();
+  } catch (err) {
+    console.error("Çekler takvime yüklenemedi:", err);
+  }
 
-      openModal("noteModal");
-    },
+  try {
+    notesPortfolio = await noteStore.fetchPortfolioNotes();
+  } catch (err) {
+    console.error("Senetler takvime yüklenemedi:", err);
+  }
 
-    eventContent: function(arg) {
-      const type = arg.event.extendedProps.type;
-      const title = arg.event.title;
+  try {
+    loans = await loanStore.fetchLoans();
+  } catch (err) {
+    console.error("Krediler takvime yüklenemedi:", err);
+  }
 
-      let icon = "";
+  events.push(...buildCheckEvents(checks));
+  events.push(...buildNoteEvents(notesPortfolio));
+  events.push(...buildLoanEvents(loans));
+  events.push(...buildManualNoteEvents(getCalendarNotes()));
 
-      if (type === "CHECK") {
-        icon = '<i class="zmdi zmdi-money" style="margin-right:4px;"></i>';
-      } else if (type === "LOAN") {
-        icon = '<i class="zmdi zmdi-balance" style="margin-right:4px;"></i>';
-      } else if (type === "SENET") {
-        icon = '<i class="zmdi zmdi-file-text" style="margin-right:4px;"></i>';
-      } else if (type === "NOTE") {
-        icon = '<i class="zmdi zmdi-edit" style="margin-right:4px;"></i>';
-      }
+  try {
+    calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: "dayGridMonth",
+      displayEventTime: false,
+      locale: "tr",
+      height: 600,
 
-      return {
-        html: `<div style="display:flex;align-items:center;font-size:12px;">${icon}${title}</div>`
-      };
-    }
-  });
+      headerToolbar: {
+        left: "",
+        center: "title",
+        right: "",
+      },
 
-  calendar.render();
+      events,
+
+      eventClick: function (info) {
+        openEventModal(info.event);
+      },
+
+      dateClick: function (info) {
+        const noteDate = document.getElementById("noteDate");
+        const noteText = document.getElementById("noteText");
+
+        if (noteDate) noteDate.value = info.dateStr;
+        if (noteText) noteText.value = "";
+
+        openModal("noteModal");
+      },
+
+      eventContent: function (arg) {
+        const type = arg.event.extendedProps.type;
+        const title = arg.event.title;
+
+        let icon = "";
+
+        if (type === "CHECK") {
+          icon = '<i class="zmdi zmdi-money" style="margin-right:4px;"></i>';
+        } else if (type === "LOAN") {
+          icon = '<i class="zmdi zmdi-balance" style="margin-right:4px;"></i>';
+        } else if (type === "SENET") {
+          icon = '<i class="zmdi zmdi-file-text" style="margin-right:4px;"></i>';
+        } else if (type === "NOTE") {
+          icon = '<i class="zmdi zmdi-edit" style="margin-right:4px;"></i>';
+        }
+
+        return {
+          html: `<div style="display:flex;align-items:center;font-size:12px;">${icon}${title}</div>`,
+        };
+      },
+    });
+
+    calendar.render();
+  } catch (err) {
+    console.error("Takvim render hatası:", err);
+    showToast("Takvim yüklenemedi", "error");
+  }
 }
 
 function refreshCalendar() {
-  if (calendar) {
-    calendar.destroy();
-  }
   loadCalendar();
 }
 
@@ -180,7 +227,11 @@ function openEventModal(event) {
   const modalDesc = document.getElementById("modalDesc");
   const modalStatus = document.getElementById("modalStatus");
 
-  // Her açılışta gizlenen alanları geri aç
+  if (!modalTitle || !modalSubtitle || !modalIcon || !modalDate || !modalDesc || !modalStatus) {
+    console.error("Takvim modal elementleri eksik");
+    return;
+  }
+
   if (modalAmount?.parentElement) {
     modalAmount.parentElement.style.display = "flex";
   }
@@ -198,42 +249,38 @@ function openEventModal(event) {
     ? new Date(event.start).toLocaleDateString("tr-TR")
     : "-";
 
-  modalType.textContent = typeText;
+  if (modalType) {
+    modalType.textContent = typeText;
+  }
 
   if (type === "CHECK") {
     modalTitle.textContent = "Çek Detayı";
     modalSubtitle.textContent = data.checkNo ? `Çek No: ${data.checkNo}` : "";
     modalIcon.innerHTML = '<i class="zmdi zmdi-money-box"></i>';
 
-    modalAmount.textContent = formatMoney(data.amount) + " TL";
+    if (modalAmount) modalAmount.textContent = formatMoney(data.amount) + " TL";
     modalDesc.textContent = data.description || "-";
     modalStatus.textContent = "Kasanda";
-  }
-
-  else if (type === "SENET") {
+  } else if (type === "SENET") {
     modalTitle.textContent = "Senet Detayı";
     modalSubtitle.textContent = data.noteNo ? `Senet No: ${data.noteNo}` : "";
     modalIcon.innerHTML = '<i class="zmdi zmdi-assignment"></i>';
 
-    modalAmount.textContent = formatMoney(data.amount) + " TL";
+    if (modalAmount) modalAmount.textContent = formatMoney(data.amount) + " TL";
     modalDesc.textContent = data.description || "-";
     modalStatus.textContent = "Kasanda";
-  }
-
-  else if (type === "LOAN") {
+  } else if (type === "LOAN") {
     modalTitle.textContent = "Kredi Detayı";
     modalSubtitle.textContent = data.bankName || "";
     modalIcon.innerHTML = '<i class="zmdi zmdi-balance"></i>';
 
-    modalAmount.textContent = formatMoney(data.monthlyPayment) + " TL";
+    if (modalAmount) modalAmount.textContent = formatMoney(data.monthlyPayment) + " TL";
     modalDesc.textContent = data.bankName || "-";
     modalStatus.textContent =
       data.remainingDebt != null
         ? "Kalan Borç: " + formatMoney(data.remainingDebt) + " TL"
         : "Aktif";
-  }
-
-  else if (type === "NOTE") {
+  } else if (type === "NOTE") {
     modalTitle.textContent = "Takvim Notu";
     modalSubtitle.textContent = "Manuel eklenen not";
     modalIcon.innerHTML = '<i class="zmdi zmdi-edit"></i>';
@@ -273,7 +320,7 @@ function closeAllCalendarModals() {
   closeModal("noteModal");
 }
 
-document.addEventListener("click", function(e) {
+document.addEventListener("click", function (e) {
   const closeTarget = e.target.closest("[data-close]");
   if (closeTarget) {
     const modalId = closeTarget.getAttribute("data-close");
@@ -294,31 +341,29 @@ document.addEventListener("click", function(e) {
     addCalendarNote({
       id: Date.now(),
       date,
-      text
+      text,
     });
 
     showToast("Takvim notu eklendi", "success");
-closeModal("noteModal");
+    closeModal("noteModal");
 
-// 🔥 SCROLL KONUMUNU KORU
-const scrollY = window.scrollY;
+    const scrollY = window.scrollY;
 
-refreshCalendar();
+    refreshCalendar();
 
-setTimeout(() => {
-  window.scrollTo(0, scrollY);
-}, 50);
+    setTimeout(() => {
+      window.scrollTo(0, scrollY);
+    }, 50);
 
-return;
+    return;
   }
 });
 
-document.addEventListener("keydown", function(e) {
+document.addEventListener("keydown", function (e) {
   if (e.key === "Escape") {
     closeAllCalendarModals();
   }
 });
-
 
 window.loadCalendar = loadCalendar;
 window.refreshCalendar = refreshCalendar;

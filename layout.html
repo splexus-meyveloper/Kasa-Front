@@ -240,19 +240,28 @@
   </div>
 </div>
 
-<!-- JS -->
-
-<!-- CORE / LIB -->
+<!-- ============================== -->
+<!-- LIB -->
+<!-- ============================== -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="assets/js/vendor/jquery-3.3.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 
+<!-- ============================== -->
 <!-- BASE -->
+<!-- ============================== -->
 <script src="assets/js/auth-guard.js"></script>
 <script src="assets/js/menu.js"></script>
 <script src="assets/js/main-v2.js"></script>
 
-<!-- API (ÖNCE) -->
+<!-- ============================== -->
+<!-- CORE (EN ÖNEMLİ - UI'DAN ÖNCE) -->
+<!-- ============================== -->
+<script src="assets/js/core.js"></script>
+
+<!-- ============================== -->
+<!-- API -->
+<!-- ============================== -->
 <script src="assets/js/api/apiClient.js"></script>
 <script src="assets/js/api/authApi.js"></script>
 <script src="assets/js/api/loanApi.js"></script>
@@ -263,8 +272,11 @@
 <script src="assets/js/api/adminApi.js"></script>
 <script src="assets/js/api/dashboardApi.js"></script>
 
+<!-- ============================== -->
 <!-- STORE -->
+<!-- ============================== -->
 <script src="assets/js/store/authStore.js"></script>
+<script src="assets/js/store/adminStore.js"></script>
 <script src="assets/js/store/loanStore.js"></script>
 <script src="assets/js/store/checkStore.js"></script>
 <script src="assets/js/store/noteStore.js"></script>
@@ -272,6 +284,10 @@
 <script src="assets/js/store/expenseStore.js"></script>
 <script src="assets/js/store/notificationStore.js?v=999"></script>
 <script src="assets/js/store/dashboardStore.js"></script>
+
+<!-- ============================== -->
+<!-- UI (HEPSİ BURADA TOPLU) -->
+<!-- ============================== -->
 <script src="assets/js/cash-ui.js"></script>
 <script src="assets/js/notes-ui.js"></script>
 <script src="assets/js/loan-ui.js"></script>
@@ -280,20 +296,23 @@
 <script src="assets/js/user-ui.js"></script>
 <script src="assets/js/filter-ui.js"></script>
 <script src="assets/js/expense-ui.js"></script>
-
-<!-- 🔥 CORE (YENİ) -->
-<script src="assets/js/core.js"></script>
-
-<!-- 🔥 UI MODÜLLERİ (YENİ) -->
 <script src="assets/js/check-ui.js"></script>
 <script src="assets/js/dashboard-ui.js"></script>
 
-<!-- APP CORE (EN SON) -->
+<!-- ============================== -->
+<!-- APP SHELL -->
+<!-- ============================== -->
 <script src="assets/js/kasa-app-v2.js"></script>
-<script src="assets/js/admin-users.js"></script>
+
+<!-- ============================== -->
+<!-- ADMIN EXTRA -->
+<!-- ============================== -->
+<!-- <script src="assets/js/admin-users.js"></script> -->
 <script src="assets/js/admin-log.js"></script>
 
-<!-- 🔥 APP SYSTEM (EN SON EN SON) -->
+<!-- ============================== -->
+<!-- APP INIT (EN SON) -->
+<!-- ============================== -->
 <script src="assets/js/app.js"></script>
 
 <script>

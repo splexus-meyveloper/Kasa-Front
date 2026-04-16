@@ -1,43 +1,169 @@
 // ==============================
-// PAGE LOADER (LAYOUT SYSTEM)
+// KASA APP SHELL / ROUTER
 // ==============================
-function loadPage(page){
 
+function getPageKey(page) {
+  const normalized = String(page || "").toLowerCase();
+
+  if (normalized.includes("kullanicilar")) return "users";
+  if (normalized.includes("dashboard")) return "dashboard";
+  if (normalized.includes("cek")) return "checks";
+  if (normalized.includes("kasa")) return "cash";
+  if (normalized.includes("not") || normalized.includes("senet")) return "notes";
+  if (normalized.includes("takvim")) return "calendar";
+  if (normalized.includes("kredi")) return "loans";
+  if (normalized.includes("gider")) return "expenses";
+  if (normalized.includes("bildirim")) return "notifications";
+
+  return "default";
+}
+
+const pageInitMap = {
+  users: () => {
+    if (window.initUsersPage) {
+      window.initUsersPage();
+    } else {
+      console.warn("initUsersPage tanımlı değil");
+    }
+  },
+
+  dashboard: () => {
+    if (window.initDashboardPage) {
+      window.initDashboardPage();
+    } else if (window.initDashboard) {
+      window.initDashboard();
+    } else {
+      console.warn("Dashboard init fonksiyonu tanımlı değil");
+    }
+  },
+
+  checks: () => {
+    if (window.initCheckPage) {
+      window.initCheckPage();
+    } else if (window.loadChecks) {
+      window.loadChecks();
+    } else {
+      console.warn("Check page init fonksiyonu tanımlı değil");
+    }
+  },
+
+  cash: () => {
+    if (window.initCashPage) {
+      window.initCashPage();
+    } else if (window.loadCashTransactions) {
+      window.loadCashTransactions();
+    } else {
+      console.warn("Cash page init fonksiyonu tanımlı değil");
+    }
+  },
+
+  notes: () => {
+    if (window.initNotesPage) {
+      window.initNotesPage();
+    } else if (window.loadNotes) {
+      window.loadNotes();
+    } else {
+      console.warn("Notes page init fonksiyonu tanımlı değil");
+    }
+  },
+
+  calendar: () => {
+    if (window.initCalendarPage) {
+      window.initCalendarPage();
+    } else if (window.loadCalendar) {
+      window.loadCalendar();
+    } else {
+      console.warn("Calendar page init fonksiyonu tanımlı değil");
+    }
+  },
+
+  loans: () => {
+    if (window.initLoanPage) {
+      window.initLoanPage();
+    } else if (window.loadLoans) {
+      window.loadLoans();
+    } else {
+      console.warn("Loan page init fonksiyonu tanımlı değil");
+    }
+  },
+
+  expenses: () => {
+    if (window.initExpensePage) {
+      window.initExpensePage();
+    } else {
+      console.warn("Expense page init fonksiyonu tanımlı değil");
+    }
+  },
+
+  notifications: () => {
+    if (window.initNotificationPage) {
+      window.initNotificationPage();
+    } else {
+      console.warn("Notification page init fonksiyonu tanımlı değil");
+    }
+  },
+
+  default: () => {
+    console.warn("Bu sayfa için init tanımlı değil");
+  }
+};
+
+function runPageInit(page) {
+  const pageKey = getPageKey(page);
+  const initFn = pageInitMap[pageKey] || pageInitMap.default;
+
+  console.log("RUN PAGE INIT:", page, "=>", pageKey);
+
+  try {
+    initFn();
+  } catch (err) {
+    console.error(`Page init error (${pageKey}):`, err);
+    if (window.showToast) {
+      showToast("Sayfa başlatılırken hata oluştu", "error");
+    }
+  }
+}
+
+async function loadPage(page) {
   window.currentPage = page;
-  localStorage.setItem('lastPage', page);
+  localStorage.setItem("lastPage", page);
 
   const container = document.getElementById("pageContent");
-  if(!container) return;
+  if (!container) return;
 
-  fetch(page)
-    .then(r => r.text())
-    .then(html => {
+  try {
+    const response = await fetch(page);
 
-      container.innerHTML = html;
+    if (!response.ok) {
+      throw new Error(`Sayfa yüklenemedi: ${response.status}`);
+    }
+
+    const html = await response.text();
+    container.innerHTML = html;
+
+    if (window.applyPermissionsFromToken) {
       applyPermissionsFromToken();
-if(page.includes("kullanicilar")){
-  
+    }
 
-    setTimeout(() => {
-        console.log("SAFE LOAD USERS ÇAĞRILDI");
-        loadUsersSafe();
-    }, 300);
+    runPageInit(page);
+  } catch (err) {
+    console.error("Page load error:", err);
 
-    return;
-}
-      // 🔥 sadece diğer sayfalarda çalışsın
-      setTimeout(() => {
-  runPageInitializers();
-}, 100);
+    container.innerHTML = `
+      <div class="alert alert-danger" style="margin:20px;">
+        Sayfa yüklenirken hata oluştu.
+      </div>
+    `;
 
-    })
-    .catch(err => {
-      console.error("Page load error:", err);
-    });
-
+    if (window.showToast) {
+      showToast("Sayfa yüklenemedi", "error");
+    }
+  }
 }
 
 window.loadPage = loadPage;
+window.runPageInit = runPageInit;
+window.getPageKey = getPageKey;
 
 const bankMap = {
   ZIRAAT: "Ziraat Bankası",

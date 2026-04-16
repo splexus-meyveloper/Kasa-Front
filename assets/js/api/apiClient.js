@@ -22,6 +22,15 @@ async function request(url, options = {}) {
     headers: finalHeaders,
   });
 
+  const rawText = await response.text();
+
+  let data = null;
+  try {
+    data = rawText ? JSON.parse(rawText) : null;
+  } catch {
+    data = rawText || null;
+  }
+
   if (response.status === 401) {
     localStorage.removeItem("token");
     localStorage.removeItem("username");
@@ -31,13 +40,12 @@ async function request(url, options = {}) {
     return null;
   }
 
-  const rawText = await response.text();
-
-  let data = null;
-  try {
-    data = rawText ? JSON.parse(rawText) : null;
-  } catch {
-    data = rawText || null;
+  if (response.status === 403) {
+    const errorMessage =
+      (data && data.message) ||
+      (typeof data === "string" && data) ||
+      "Bu işlem için yetkiniz yok";
+    throw new Error(errorMessage);
   }
 
   if (!response.ok) {

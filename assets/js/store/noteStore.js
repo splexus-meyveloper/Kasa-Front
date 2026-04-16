@@ -4,6 +4,10 @@ const noteStore = {
     return await noteApi.getAll();
   },
 
+  async fetchPortfolioNotes() {
+    return await noteApi.getPortfolio();
+  },
+
   async createNote(data) {
     return await noteApi.create(data);
   },
