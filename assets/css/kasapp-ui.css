@@ -566,21 +566,52 @@ transition:.2s;
 }
 
 .users-table tbody tr.user-row:hover{
+  background: rgba(39,147,255,0.08); /* 🔥 soft mavi */
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+}
 
-background:#f1f5f9;
-
-transform:translateY(-2px);
-
-box-shadow:0 10px 18px rgba(0,0,0,.08);
-
+.users-table tbody tr.user-row{
+  transition: transform .22s ease, box-shadow .22s ease;
 }
 
 .users-table tbody tr.user-row td{
+  padding:16px;
+  border:none;
+  background:#ffffff;
+  transition: background-color .22s ease, box-shadow .22s ease;
+}
 
-padding:16px;
+/* sol köşeler */
+.users-table tbody tr.user-row td:first-child{
+  border-top-left-radius:12px;
+  border-bottom-left-radius:12px;
+}
 
-border:none;
+/* sağ köşeler */
+.users-table tbody tr.user-row td:last-child{
+  border-top-right-radius:12px;
+  border-bottom-right-radius:12px;
+}
 
+/* hover artık td üzerinde */
+.users-table tbody tr.user-row:hover{
+  transform: translateY(-2px);
+}
+
+.users-table tbody tr.user-row:hover td{
+  background: rgb(59, 131, 246);
+  box-shadow: 0 10px 18px rgba(0,0,0,.06);
+}
+
+/* aktif satır */
+.users-table tbody tr.user-row.active td{
+  background: rgba(59,130,246,0.14);
+}
+
+/* aktif satırın sol mavi çizgisi */
+.users-table tbody tr.user-row.active td:first-child{
+  box-shadow: inset 4px 0 0 #3b82f6;
 }
 
 /* =========================================
@@ -656,143 +687,6 @@ color:#1d4ed8;
     transform:translateY(-1px);
 
     box-shadow:0 6px 16px rgba(0,0,0,.35);
-
-}
-
-/* =========================================
-   PERMISSION ROW
-========================================= */
-
-.permission-row td{
-
-    background:transparent !important;
-
-    padding:0 !important;
-
-    border:none !important;
-
-}
-
-/* =================================================
-   PERMISSION PANEL
-================================================= */
-
-.permission-content{
-
-background:#ffffff;
-
-border-radius:12px;
-
-border:1px solid var(--kasapp-border);
-
-margin-top:8px;
-
-overflow:hidden;
-
-max-height:0;
-
-opacity:0;
-
-transform:translateY(-10px);
-
-transition:
-max-height .35s ease,
-opacity .25s ease,
-transform .25s ease;
-
-}
-
-.permission-row.show .permission-content{
-
-max-height:220px;
-
-opacity:1;
-
-transform:translateY(0);
-
-}
-
-/* open state */
-
-.permission-row.show .permission-content{
-
-    max-height:220px;
-
-    opacity:1;
-
-    transform:translateY(0);
-
-}
-
-/* =================================================
-   PERMISSION GRID
-================================================= */
-
-.permission-grid{
-
-display:grid;
-
-grid-template-columns: repeat(3,1fr);
-
-gap:14px;
-
-padding:18px;
-
-}
-
-.perm-item{
-
-display:flex;
-
-align-items:center;
-
-gap:10px;
-
-background:#f8fafc;
-
-border:1px solid var(--kasapp-border);
-
-border-radius:10px;
-
-padding:10px 14px;
-
-cursor:pointer;
-
-transition:.2s;
-
-color:#374151;
-
-}
-
-.perm-item:hover{
-
-background:#eef2ff;
-
-border-color:#c7d2fe;
-
-}
-
-/* checkbox */
-
-.perm-item input{
-
-accent-color:#4aa3ff;
-
-width:16px;
-
-height:16px;
-
-cursor:pointer;
-
-}
-
-/* checked state */
-
-.perm-item input:checked + span{
-
-color:#ffffff;
-
-font-weight:500;
 
 }
 
@@ -1983,4 +1877,77 @@ body.modal-open {
 
 .kasa-modal.active .kasa-modal-overlay {
   opacity: 1;
+}
+
+/* ==============================
+   MODERN CHECKBOX STYLE
+============================== */
+
+.permission-grid {
+  padding: 15px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+/* label */
+.perm-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #fff;
+}
+
+/* default checkbox gizle */
+.perm-item input {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #555;
+  border-radius: 5px;
+  position: relative;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+/* hover */
+.perm-item input:hover {
+  border-color: #4f8cff;
+}
+
+/* checked */
+.perm-item input:checked {
+  background: #4f8cff;
+  border-color: #4f8cff;
+}
+
+/* tik işareti */
+.perm-item input:checked::after {
+  content: "✔";
+  position: absolute;
+  top: -2px;
+  left: 2px;
+  font-size: 14px;
+  color: white;
+}
+
+/* yazı */
+.perm-item span {
+  user-select: none;
+}
+
+.permission-content {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-5px);
+  transition: all 0.3s ease;
+}
+
+.permission-content.open {
+  max-height: 300px;
+  opacity: 1;
+  transform: translateY(0);
 }

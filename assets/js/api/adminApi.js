@@ -19,6 +19,12 @@ const adminApi = {
       method: "PUT",
       body: JSON.stringify({ permissions }),
     }),
+
+    createUser: (data) =>
+  apiClient.request("/admin/users", {
+    method: "POST",
+    body: JSON.stringify(data),
+  }),
 };
 
 window.adminApi = adminApi;

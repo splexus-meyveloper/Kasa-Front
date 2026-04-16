@@ -23,6 +23,15 @@ const adminStore = {
 
   async setUserPermissions(userId, permissions) {
     return await adminApi.setUserPermissions(userId, permissions);
+  },
+
+  // 🔥 BUNU EKLE
+  async updateUserPermissions(userId, permissions) {
+    return await this.setUserPermissions(userId, permissions);
+  },
+
+  async createUser(data) {
+  return await adminApi.createUser(data);
   }
 };
 

@@ -116,7 +116,11 @@ async function addUser() {
   }
 
   try {
-    await authStore.registerUser({ username, password });
+    await adminStore.createUser({
+  username,
+  password,
+  role: "USER"
+});
 
     showToast("Kullanıcı eklendi", "success");
 
@@ -126,8 +130,14 @@ async function addUser() {
     loadUsersSafe();
 
   } catch (e) {
+  const msg = e?.message || "";
+
+  if (msg.includes("USER_ALREADY_EXISTS")) {
+    showToast("Bu kullanıcı adı zaten var", "error");
+  } else {
     showToast("Kullanıcı eklenemedi", "error");
   }
+}
 }
 
 /*********************************
@@ -140,7 +150,7 @@ async function deleteUser(id) {
     const row = tbody?.querySelector(`tr[data-id="${id}"]`);
 
     try {
-      await adminStore.deactivateUser(id);
+      await adminStore.deleteUser(id);
     } catch (e) {
       showToast("Silme başarısız", "error");
       return;
@@ -149,7 +159,11 @@ async function deleteUser(id) {
     showToast("Kullanıcı pasif yapıldı", "success");
 
     if (row) {
-      row.remove();
+  row.classList.add("removing");
+
+  setTimeout(() => {
+    row.remove();
+  }, 300);
     } else {
       loadUsersSafe();
     }
@@ -160,51 +174,93 @@ async function deleteUser(id) {
  * EDIT USER PERMISSIONS
  *********************************/
 async function editUser(id, username) {
+  try {
+    const tbody = document.getElementById("userTable");
+    if (!tbody) return;
 
-  const tbody = document.getElementById("userTable");
-  const rows = tbody.querySelectorAll("tr");
+    const rows = tbody.querySelectorAll("tr");
 
-  const existing = document.querySelector(".permission-row");
+    const existing = document.querySelector(".permission-row");
 
-  if (existing) {
+    if (existing) {
+  const content = existing.querySelector(".permission-content");
+  // aynı kullanıcıya tekrar tıklandıysa highlight kaldır
+if (existing.dataset.userid == id) {
+  const rows = document.querySelectorAll(".user-row");
+  rows.forEach(r => r.classList.remove("active"));
+}
+  
+  if (content) {
+    content.classList.remove("open");
+
+    setTimeout(() => {
+      existing.remove();
+    }, 300);
+  } else {
     existing.remove();
-    if (existing.dataset.userid == id) return;
   }
 
-  const perms = await adminStore.getUserPermissions(id);
+  if (existing.dataset.userid == id) return;
+}
 
-  let targetRow = null;
+    const perms = await adminStore.fetchUserPermissions(id);
 
-  rows.forEach(r => {
-    if (r.querySelector(".user-name")?.innerText === username) {
-      targetRow = r;
-    }
-  });
+    let targetRow = null;
 
-  if (!targetRow) return;
+    rows.forEach((r) => {
+      if (r.querySelector(".user-name")?.innerText === username) {
+        targetRow = r;
+      }
+    });
 
-  const permRow = document.createElement("tr");
-  permRow.className = "permission-row";
-  permRow.dataset.userid = id;
+    // 🔥 tüm satırlardan active kaldır
+rows.forEach(r => r.classList.remove("active"));
 
-  permRow.innerHTML = `
+// 🔥 seçilen satıra active ekle
+if (targetRow) {
+  targetRow.classList.add("active");
+}
+
+    if (!targetRow) return;
+
+    const permRow = document.createElement("tr");
+    permRow.className = "permission-row";
+    permRow.dataset.userid = id;
+
+    permRow.innerHTML = `
 <td colspan="3">
-<div class="permission-grid">
-${checkbox("KASA",perms)}
-${checkbox("CEK",perms)}
-${checkbox("SENET",perms)}
-${checkbox("MASRAF",perms)}
-${checkbox("KREDILER",perms)}
-${checkbox("KULLANICI_YONETIMI",perms)}
-</div>
-<button class="savePermBtn">Kaydet</button>
+  <div class="permission-content">
+    <div class="permission-grid">
+      ${checkbox("KASA", perms)}
+      ${checkbox("CEK", perms)}
+      ${checkbox("SENET", perms)}
+      ${checkbox("MASRAF", perms)}
+      ${checkbox("KREDILER", perms)}
+      ${checkbox("KULLANICI_YONETIMI", perms)}
+    </div>
+    <button class="savePermBtn">Kaydet</button>
+  </div>
 </td>
 `;
 
-  targetRow.after(permRow);
+    targetRow.after(permRow);
 
-  permRow.querySelector(".savePermBtn")
-    .addEventListener("click", () => savePermissions(id));
+    setTimeout(() => {
+  permRow.querySelector(".permission-content")?.classList.add("open");
+}, 10);
+
+    permRow
+      .querySelector(".savePermBtn")
+      .addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        savePermissions(id);
+      });
+
+  } catch (err) {
+    console.error("EDIT USER ERROR:", err);
+    showToast("Yetkiler yüklenemedi", "error");
+  }
 }
 
 /*********************************
@@ -212,40 +268,43 @@ ${checkbox("KULLANICI_YONETIMI",perms)}
  *********************************/
 function checkbox(code, perms) {
   const labels = {
-    KASA:"Kasa",
-    CEK:"Çek",
-    SENET:"Senet",
-    MASRAF:"Masraf",
-    KREDILER:"Krediler",
-    KULLANICI_YONETIMI:"Kullanıcı Yönetimi"
+    KASA: "Kasa",
+    CEK: "Çek",
+    SENET: "Senet",
+    MASRAF: "Masraf",
+    KREDILER: "Krediler",
+    KULLANICI_YONETIMI: "Kullanıcı Yönetimi",
   };
 
+  const safePerms = Array.isArray(perms) ? perms : [];
+
   return `
-<label>
-<input type="checkbox" value="${code}" ${perms.includes(code) ? "checked" : ""}>
-${labels[code]}
-</label>`;
+    <label>
+      <input type="checkbox" value="${code}" ${safePerms.includes(code) ? "checked" : ""}>
+      ${labels[code]}
+    </label>
+  `;
 }
 
 /*********************************
  * SAVE PERMISSIONS
  *********************************/
 async function savePermissions(userId) {
-
   const row = document.querySelector(".permission-row");
   if (!row) return;
 
   const checkboxes = row.querySelectorAll("input[type=checkbox]");
   const perms = [];
 
-  checkboxes.forEach(c => {
+  checkboxes.forEach((c) => {
     if (c.checked) perms.push(c.value);
   });
 
   try {
-    await adminStore.setUserPermissions(userId, perms);
+    await adminStore.updateUserPermissions(userId, perms);
     showToast("Yetkiler kaydedildi", "success");
-  } catch {
+  } catch (err) {
+    console.error("SAVE PERMISSIONS ERROR:", err);
     showToast("Kaydedilemedi", "error");
   }
 }
