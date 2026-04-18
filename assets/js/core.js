@@ -165,8 +165,22 @@ function parseMoney(val) {
 }
 
 // ==============================
+// XSS GUARD
+// ==============================
+function escapeHtml(str) {
+  if (str == null) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+// ==============================
 // GLOBAL EXPORT
 // ==============================
+window.escapeHtml = escapeHtml;
 window.showToast = showToast;
 window.showConfirmToast = showConfirmToast;
 window.animateValue = animateValue;

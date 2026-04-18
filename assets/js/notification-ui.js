@@ -32,7 +32,7 @@ async function loadHeaderNotifications() {
     container.innerHTML += `
       <div class="notif-item notif-${n.level}">
         <span style="margin-right:6px;">${icon}</span>
-        ${n.message}
+        ${escapeHtml(n.message)}
       </div>
     `;
   });

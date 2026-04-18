@@ -6,18 +6,34 @@
 
   <div class="box-body">
 
+    <!-- Çek Tipi -->
+    <input type="hidden" id="checkTypeInput" value="MUSTERI">
+    <div class="row mb-30">
+      <div class="col-6">
+        <div id="labelMusteri" class="check-type-option check-type-active" data-value="MUSTERI">
+          <i class="zmdi zmdi-accounts"></i>
+          Müşteri Çeki
+        </div>
+      </div>
+      <div class="col-6">
+        <div id="labelKendi" class="check-type-option" data-value="KENDI">
+          <i class="zmdi zmdi-receipt"></i>
+          Kendi Çekim
+        </div>
+      </div>
+    </div>
+
     <div class="row">
 
       <!-- Çek No -->
       <div class="col-md-6 mb-20">
-<label>Çek No</label>
+        <label>Çek No</label>
+        <div class="form-icon">
+          <i class="zmdi zmdi-assignment"></i>
+          <input type="text" id="checkNo" class="form-control">
+        </div>
+      </div>
 
-<div class="form-icon">
-<i class="zmdi zmdi-assignment"></i>
-<input type="text" id="checkNo" class="form-control">
-
-</div>
-</div>
       <!-- Banka -->
       <div class="col-md-6 mb-20">
         <label>Banka</label>
@@ -39,28 +55,18 @@
 
       <!-- Vade -->
       <div class="col-md-6 mb-20">
-
-<label>Vade Tarihi</label>
-
-<input type="date" id="dueDate" class="form-control">
-
-</div>
-
+        <label>Vade Tarihi</label>
+        <input type="date" id="dueDate" class="form-control">
+      </div>
 
       <!-- Tutar -->
       <div class="col-md-6 mb-20">
-
-<label>Tutar</label>
-
-<div class="form-icon">
-
-<span class="currency">₺</span>
-
-<input id="tutar" type="text" class="form-control">
-
-</div>
-
-</div>
+        <label>Tutar</label>
+        <div class="form-icon">
+          <span class="currency">₺</span>
+          <input id="tutar" type="text" class="form-control">
+        </div>
+      </div>
 
       <!-- Açıklama -->
       <div class="col-md-12 mb-20">

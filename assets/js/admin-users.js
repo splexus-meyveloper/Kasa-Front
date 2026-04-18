@@ -53,7 +53,7 @@ async function loadUsers(){
             const role = u.role || "USER";
 
             tr.innerHTML = `
-                <td class="user-name">${u.username || "-"}</td>
+                <td class="user-name">${escapeHtml(u.username) || "-"}</td>
                 <td>
                     <select class="roleSelect" data-id="${u.id}">
                         <option value="USER" ${role === "USER" ? "selected" : ""}>USER</option>

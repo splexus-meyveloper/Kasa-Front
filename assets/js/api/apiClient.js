@@ -1,5 +1,3 @@
-window.API_BASE = "http://localhost:8080/api";
-
 async function request(url, options = {}) {
   const token = localStorage.getItem("token");
 

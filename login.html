@@ -93,6 +93,7 @@
 <script src="assets/js/vendor/jquery-3.3.1.min.js"></script>
 <script src="assets/js/vendor/bootstrap.min.js"></script>
 <script src="assets/js/main-v2.js"></script>
+<script src="assets/js/config.js"></script>
 
 <script>
 document.getElementById("loginForm").addEventListener("submit", async function(e) {
@@ -110,7 +111,7 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
     try {
         document.getElementById("preloader").style.display = "flex";
 
-        const res = await fetch("http://localhost:8080/api/auth/login", {
+        const res = await fetch(API_BASE + "/auth/login", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

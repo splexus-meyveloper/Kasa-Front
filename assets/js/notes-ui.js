@@ -30,17 +30,19 @@ function createFinancialCard(data, type) {
 <div class="col-xl-4 col-md-6 mb-30">
   <div class="box check-card ${dueClass}">
     <div class="box-head d-flex justify-content-between align-items-center">
-      <h5 class="title mb-0">${title}</h5>
+      <h5 class="title mb-0">${escapeHtml(title)}</h5>
       <div class="check-actions">
         ${dueBadge}
         <span class="check-status status-portfolio">Portföyde</span>
         <div class="check-menu">
           <button class="check-menu-btn"><i class="zmdi zmdi-more-vert"></i></button>
           <div class="check-menu-dropdown">
-            <button onclick="collectNote('${numberValue}','${data.dueDate}')">
+            <button
+              onclick="collectNote(${data.id})"
               <i class="zmdi zmdi-money"></i> Tahsil Et
             </button>
-            <button onclick="endorseNote('${numberValue}','${data.dueDate}')">
+            <button
+              onclick="endorseNote(${data.id})"
               <i class="zmdi zmdi-share"></i> Ciro Et
             </button>
           </div>
@@ -49,9 +51,9 @@ function createFinancialCard(data, type) {
     </div>
     <div class="box-body">
       <div class="check-info">
-        <div class="check-row"><span class="label">${numberLabel}</span><span class="value">${numberValue}</span></div>
-        <div class="check-row"><span class="label">Vade</span><span class="value">${data.dueDate}</span></div>
-        <div class="check-description">${data.description || "-"}</div>
+        <div class="check-row"><span class="label">${escapeHtml(numberLabel)}</span><span class="value">${escapeHtml(numberValue)}</span></div>
+        <div class="check-row"><span class="label">Vade</span><span class="value">${escapeHtml(data.dueDate)}</span></div>
+        <div class="check-description">${escapeHtml(data.description) || "-"}</div>
       </div>
       <div class="check-amount">${amount}</div>
     </div>
@@ -82,11 +84,13 @@ async function loadNotes() {
   container.innerHTML = "";
 
   notes.forEach((n) => {
-    container.insertAdjacentHTML(
-      "beforeend",
-      createFinancialCard(n, "note")
-    );
-  });
+  console.log("NOTE ITEM:", n);
+
+  container.insertAdjacentHTML(
+    "beforeend",
+    createFinancialCard(n, "note")
+  );
+});
 }
 
 
@@ -120,29 +124,36 @@ async function loadNotesDashboard() {
 // ==============================
 // ACTIONS
 // ==============================
-async function collectNote(noteNo, dueDate) {
-  try {
-    await noteApi.collect({ noteNo, dueDate });
 
-    showToast(`Senet tahsil edildi • ${noteNo}`, "success");
+async function collectNote(id) {
+  try {
+    console.log("COLLECT NOTE ID:", id);
+
+    await noteApi.collect({ id });
+
+    showToast("Senet tahsil edildi", "success");
     loadNotes();
     loadNotesDashboard();
 
   } catch (e) {
+    console.error(e);
     showToast("Tahsil işlemi başarısız", "error");
   }
 }
 
 
-async function endorseNote(noteNo, dueDate) {
+async function endorseNote(id) {
   try {
-    await noteApi.endorse({ noteNo, dueDate });
+    console.log("ENDORSE NOTE ID:", id);
 
-    showToast(`Senet ciro edildi • ${noteNo}`, "success");
+    await noteApi.endorse({ id });
+
+    showToast("Senet ciro edildi", "success");
     loadNotes();
     loadNotesDashboard();
 
   } catch (e) {
+    console.error(e);
     showToast("Ciro işlemi başarısız", "error");
   }
 }

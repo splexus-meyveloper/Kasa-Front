@@ -70,7 +70,7 @@ async function loadCashTransactions() {
     const row = `
       <tr>
         <td>${tarih}</td>
-        <td>${t.description || "-"}</td>
+        <td>${escapeHtml(t.description) || "-"}</td>
         <td class="${typeClass}">${typeText}</td>
         <td class="text-end ${typeClass}">
           ${sign}${formatMoney(t.amount)} TL

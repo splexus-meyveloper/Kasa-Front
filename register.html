@@ -143,6 +143,7 @@ Giriş Yap
 </div>
 </div>
 
+<script src="assets/js/config.js"></script>
 <script>
 document.getElementById("registerForm").addEventListener("submit", async function(e){
 e.preventDefault();
@@ -163,7 +164,7 @@ return;
 }
 
 try{
-const res = await fetch("http://localhost:8080/api/auth/register-company",{
+const res = await fetch(API_BASE + "/auth/register-company",{
 method:"POST",
 headers:{ "Content-Type":"application/json" },
 body: JSON.stringify(data)

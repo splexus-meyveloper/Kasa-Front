@@ -71,7 +71,7 @@ async function loadMovements(page = 0, start = "", end = "", action = "", userna
         q = "kredi taksiti";
     }
 
-    let url = `http://localhost:8080/api/audit-logs?page=${page}&size=20`;
+    let url = `${API_BASE}/audit-logs?page=${page}&size=20`;
 
     if(start) url += `&start=${start}T00:00:00`;
     if(end) url += `&end=${end}T23:59:59`;
@@ -125,9 +125,9 @@ const amountClass = isIncome ? "text-success" : "text-danger";
 
     tr.innerHTML = `
         <td>${date}</td>
-        <td>${item.username}</td>
+        <td>${escapeHtml(item.username)}</td>
         <td>${actionBadge(item.action)}</td>
-        <td>${item.description ?? "-"}</td>
+        <td>${escapeHtml(item.description) ?? "-"}</td>
         <td class="text-end ${amountClass}">
             ${icon} ${formattedAmount}
         </td>
@@ -192,7 +192,7 @@ setInterval(initAdminLogs, 300);
 async function loadUsers() {
     const token = localStorage.getItem("token");
 
-    const res = await fetch("http://localhost:8080/api/admin/profiles", {
+    const res = await fetch(API_BASE + "/admin/profiles", {
         headers: {
             "Authorization": "Bearer " + token
         }

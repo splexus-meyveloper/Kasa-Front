@@ -31,7 +31,7 @@ async function initUserFilter() {
     users.forEach((u) => {
       select.insertAdjacentHTML(
         "beforeend",
-        `<option value="${u.id}">${u.username}</option>`
+        `<option value="${escapeHtml(String(u.id))}">${escapeHtml(u.username)}</option>`
       );
     });
 

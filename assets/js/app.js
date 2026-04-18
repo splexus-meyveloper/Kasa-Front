@@ -42,4 +42,5 @@ window.initApp = initApp;
 
 document.addEventListener("DOMContentLoaded", function () {
   initApp();
+  wsClient.connect();
 });

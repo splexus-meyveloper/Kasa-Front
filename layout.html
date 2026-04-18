@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="assets/css/plugins/plugins.css">
     <link rel="stylesheet" href="assets/css/helper.css">
     <link rel="stylesheet" href="assets/css/style.css">
-    <link rel="stylesheet" href="assets/css/kasapp-ui.css">
+    <link rel="stylesheet" href="assets/css/kasapp-ui.css?v=4">
     <link id="cus-style" rel="stylesheet" href="assets/css/style-primary.css">
     <link rel="stylesheet" href="assets/css/menu.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
@@ -262,6 +262,7 @@
 <!-- ============================== -->
 <!-- API -->
 <!-- ============================== -->
+<script src="assets/js/config.js"></script>
 <script src="assets/js/api/apiClient.js"></script>
 <script src="assets/js/api/authApi.js"></script>
 <script src="assets/js/api/loanApi.js"></script>
@@ -309,6 +310,13 @@
 <!-- ============================== -->
 <!-- <script src="assets/js/admin-users.js"></script> -->
 <script src="assets/js/admin-log.js"></script>
+
+<!-- ============================== -->
+<!-- WEBSOCKET (SockJS + STOMP) -->
+<!-- ============================== -->
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@6/bundles/stomp.umd.min.js"></script>
+<script src="assets/js/websocket.js"></script>
 
 <!-- ============================== -->
 <!-- APP INIT (EN SON) -->
