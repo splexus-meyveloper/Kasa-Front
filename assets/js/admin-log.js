@@ -8,6 +8,7 @@ CASH_EXPENSE: '<span class="badge badge-danger">Kasa Çıkış</span>',
 CHECK_IN: '<span class="badge badge-primary">Çek Giriş</span>',
 CHECK_COLLECT: '<span class="badge badge-success">Çek Tahsil</span>',
 CHECK_ENDORSE: '<span class="badge badge-warning">Çek Ciro</span>',
+CHECK_OUT: '<span class="badge badge-warning">Çek Ödendi</span>',
 
 NOTE_IN: '<span class="badge badge-primary">Senet Giriş</span>',
 NOTE_COLLECT: '<span class="badge badge-success">Senet Tahsil</span>',
@@ -33,6 +34,7 @@ function translateAction(action){
         CHECK_IN: "Çek Giriş",
         CHECK_COLLECT: "Çek Tahsil Edildi",
         CHECK_ENDORSE: "Çek Ciro Edildi",
+        CHECK_OUT: "Çek Ödendi",
 
         NOTE_IN: "Senet Giriş",
         NOTE_COLLECT: "Senet Tahsil Edildi",

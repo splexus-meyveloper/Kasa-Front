@@ -177,6 +177,42 @@ function escapeHtml(str) {
     .replace(/'/g, "&#39;");
 }
 
+let dynamicModalCallback = null;
+
+function openDynamicModal({
+  title,
+  subtitle = "",
+  icon = "zmdi-info-outline",
+  content,
+  onConfirm
+}) {
+
+  document.getElementById("dynamicModalTitle").innerText = title;
+  document.getElementById("dynamicModalSubtitle").innerText = subtitle;
+
+  document.getElementById("dynamicModalIcon").innerHTML =
+    `<i class="zmdi ${icon}"></i>`;
+
+  document.getElementById("dynamicModalBody").innerHTML = content;
+
+  dynamicModalCallback = onConfirm;
+
+  document.getElementById("dynamicModal").classList.add("active");
+}
+
+function closeDynamicModal() {
+  document.getElementById("dynamicModal").classList.remove("active");
+  dynamicModalCallback = null;
+}
+
+document
+  .getElementById("dynamicModalConfirm")
+  .addEventListener("click", function () {
+    if (dynamicModalCallback) {
+      dynamicModalCallback();
+    }
+  });
+
 // ==============================
 // GLOBAL EXPORT
 // ==============================

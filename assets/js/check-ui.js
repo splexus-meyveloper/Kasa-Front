@@ -34,7 +34,7 @@ function _buildCheckCard(c) {
     : "";
 
   let statusClass = "status-portfolio";
-  let statusText = "Portföyde";
+  let statusText = "Kasanda";
 
   if (c.status === "TAHSIL_EDILDI") {
     statusClass = "status-collected";
@@ -47,18 +47,44 @@ function _buildCheckCard(c) {
   const amount = formatMoney(c.amount);
   const isPortfoyde = c.status === "PORTFOYDE" || !c.status;
 
-  const actions = isPortfoyde ? `
-    <div class="check-menu">
-      <button class="check-menu-btn"><i class="zmdi zmdi-more-vert"></i></button>
-      <div class="check-menu-dropdown">
-        <button onclick="collectCheck(${c.id})">
-          <i class="zmdi zmdi-money"></i> Tahsil Et
+  let actions = "";
+
+if (isPortfoyde) {
+
+  // 🔵 KENDİ ÇEKİ
+  if (c.checkType === "KENDI") {
+    actions = `
+      <div class="check-menu">
+        <button class="check-menu-btn">
+          <i class="zmdi zmdi-more-vert"></i>
         </button>
-        <button onclick="endorseCheck(${c.id})">
-          <i class="zmdi zmdi-share"></i> Ciro Et
+        <div class="check-menu-dropdown">
+          <button onclick="openPaidModal(${c.id})">
+            <i class="zmdi zmdi-check"></i> Ödendi
+          </button>
+        </div>
+      </div>`;
+  }
+
+  // 🟢 MÜŞTERİ ÇEKİ
+  else {
+    actions = `
+      <div class="check-menu">
+        <button class="check-menu-btn">
+          <i class="zmdi zmdi-more-vert"></i>
         </button>
-      </div>
-    </div>` : "";
+        <div class="check-menu-dropdown">
+          <button onclick="collectCheck(${c.id})">
+            <i class="zmdi zmdi-money"></i> Tahsil Et
+          </button>
+          <button onclick="endorseCheck(${c.id})">
+            <i class="zmdi zmdi-share"></i> Ciro Et
+          </button>
+        </div>
+      </div>`;
+  }
+
+}
 
   return `
 <div class="col-xl-4 col-md-6 mb-30">
@@ -82,6 +108,60 @@ function _buildCheckCard(c) {
   </div>
 </div>`;
 }
+
+let selectedCheckId = null;
+
+function openPaidModal(id) {
+  selectedCheckId = id;
+
+  const modal = document.getElementById("dynamicModal");
+  const body = document.getElementById("dynamicModalBody");
+  const title = document.getElementById("dynamicModalTitle");
+  const subtitle = document.getElementById("dynamicModalSubtitle");
+  const icon = document.getElementById("dynamicModalIcon");
+
+  if (!modal || !body || !title || !subtitle || !icon) {
+    console.error("dynamicModal elemanları bulunamadı");
+    return;
+  }
+
+  title.textContent = "Çek Ödeme";
+  subtitle.textContent = "Çek ödendi olarak işaretlenecek";
+  icon.innerHTML = `<i class="zmdi zmdi-check-circle"></i>`;
+
+  body.innerHTML = `
+    <div class="kasa-form-group">
+      <label for="paidDescription">Açıklama</label>
+      <textarea
+        id="paidDescription"
+        class="kasa-modal-textarea"
+        placeholder="Örn: X banka hesabından ödendi"
+      ></textarea>
+    </div>
+  `;
+
+  modal.classList.add("active");
+}
+
+async function submitPaid() {
+  const desc = document.getElementById("paidDescription")?.value || "";
+
+  try {
+    await checkApi.markAsPaid({
+      id: selectedCheckId,
+      description: desc
+    });
+
+    showToast("Çek ödendi olarak işaretlendi", "success");
+    document.getElementById("dynamicModal")?.classList.remove("active");
+    loadChecks();
+  } catch (err) {
+    showToast(err.message || "Hata oluştu", "error");
+  }
+}
+
+window.openPaidModal = openPaidModal;
+window.submitPaid = submitPaid;
 
 async function loadChecks() {
   const musteriContainer = document.getElementById("checkContainer-musteri");
@@ -221,15 +301,16 @@ document.addEventListener("click", async function (e) {
 
   e.preventDefault();
 
-  const checkTypeRadio = document.querySelector('input[name="checkType"]:checked');
+  const checkTypeValue =
+    document.getElementById("checkTypeInput")?.value || "MUSTERI";
 
   const payload = {
-    checkNo:    document.getElementById("checkNo")?.value,
-    bank:       document.getElementById("bank")?.value,
-    dueDate:    document.getElementById("dueDate")?.value,
-    amount:     parseMoney(document.getElementById("tutar")?.value),
-    description:document.getElementById("description")?.value,
-    checkType:  checkTypeRadio?.value || "MUSTERI"
+    checkNo: document.getElementById("checkNo")?.value,
+    bank: document.getElementById("bank")?.value,
+    dueDate: document.getElementById("dueDate")?.value,
+    amount: parseMoney(document.getElementById("tutar")?.value),
+    description: document.getElementById("description")?.value,
+    checkType: checkTypeValue
   };
 
   try {

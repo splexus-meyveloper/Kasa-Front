@@ -184,7 +184,12 @@ resizeKasappLayout();
  //   var ps = new PerfectScrollbar($(this)[0]);
 //});
     
-
+document.addEventListener("click", function(e){
+  const closeId = e.target.dataset.close;
+  if(closeId){
+    document.getElementById(closeId).classList.remove("active");
+  }
+});
 
 })(jQuery);
 

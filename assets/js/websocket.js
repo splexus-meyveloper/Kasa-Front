@@ -69,8 +69,10 @@ const wsClient = {
       window.loadNotesDashboard?.();
     } else if (m === "KREDI") {
       window.loadLoans?.();
+      window.initDashboard?.();
     } else if (m === "MASRAF") {
       window.loadExpenses?.();
+      window.initDashboard?.();
     }
 
     window.loadHeaderNotifications?.();

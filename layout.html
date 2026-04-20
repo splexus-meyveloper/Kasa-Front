@@ -240,6 +240,36 @@
   </div>
 </div>
 
+<!-- GLOBAL DYNAMIC MODAL -->
+<div id="dynamicModal" class="kasa-modal">
+  <div class="kasa-modal-overlay" data-close="dynamicModal"></div>
+
+  <div class="kasa-modal-card">
+    <button type="button" class="kasa-modal-close" data-close="dynamicModal">×</button>
+
+    <div class="kasa-modal-header">
+      <div class="kasa-modal-icon" id="dynamicModalIcon">
+        <i class="zmdi zmdi-info-outline"></i>
+      </div>
+      <div>
+        <h3 id="dynamicModalTitle" class="kasa-modal-title">Başlık</h3>
+        <div id="dynamicModalSubtitle" class="kasa-modal-subtitle"></div>
+      </div>
+    </div>
+
+    <div id="dynamicModalBody" class="kasa-modal-body"></div>
+
+    <div class="kasa-modal-footer">
+      <button type="button" class="button button-secondary" data-close="dynamicModal">
+        Vazgeç
+      </button>
+      <button type="button" class="button button-primary" onclick="submitPaid()">
+       Kaydet
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ============================== -->
 <!-- LIB -->
 <!-- ============================== -->

@@ -18,6 +18,12 @@ const checkApi = {
       method: "POST",
       body: JSON.stringify(data),
     }),
+
+    markAsPaid: (data) =>
+  apiClient.request("/checks/paid", {
+    method: "POST",
+    body: JSON.stringify(data),
+  }),
 };
 
 window.checkApi = checkApi;
