@@ -12,7 +12,7 @@
 
 --kasapp-border:#e5e7eb;
 
---kasapp-success:#16c784;
+--kasapp-success:#29db2d;
 --kasapp-danger:#ea3943;
 --kasapp-primary:#3b82f6;
 --kasapp-warning:#f59e0b;
@@ -297,21 +297,28 @@ margin-top:6px;
    BUTTONS
 ================================================= */
 
+.btn-modern,
+.btn-delete{
+
+display:inline-flex;
+align-items:center;
+justify-content:center;
+
+border:none;
+border-radius:10px;
+padding:10px 20px;
+font-size:13px;
+font-weight:600;
+line-height:1;
+cursor:pointer;
+transition:.2s;
+color:white;
+
+}
+
 .btn-modern{
 
 background:linear-gradient(135deg,#3b82f6,#2563eb);
-
-border:none;
-
-border-radius:10px;
-
-color:white;
-
-padding:10px 16px;
-
-font-weight:500;
-
-transition:.2s;
 
 }
 
@@ -325,15 +332,7 @@ box-shadow:0 6px 14px rgba(59,130,246,.35);
 
 .btn-delete{
 
-background:#ef4444;
-
-border:none;
-
-border-radius:8px;
-
-padding:6px 14px;
-
-color:white;
+background:linear-gradient(145deg,#ff4d6d,#e63956);
 
 }
 
@@ -600,7 +599,7 @@ transition:.2s;
 }
 
 .users-table tbody tr.user-row:hover td{
-  background: rgb(59, 131, 246);
+  background: rgba(59, 131, 246, 0.08);
   box-shadow: 0 10px 18px rgba(0,0,0,.06);
 }
 
@@ -664,29 +663,22 @@ color:#1d4ed8;
    DELETE BUTTON
 ========================================= */
 
-.btn-delete{
-
-    background:linear-gradient(145deg,#ff4d6d,#e63956);
-
-    border:none;
-
-    border-radius:8px;
-
-    padding:6px 14px;
-
-    font-size:13px;
-
-    color:#fff;
-
-    transition:.2s;
-
-}
 
 .btn-delete:hover{
 
-    transform:translateY(-1px);
+    background:linear-gradient(145deg,#e63956,#c9283f);
 
-    box-shadow:0 6px 16px rgba(0,0,0,.35);
+    box-shadow:0 6px 14px rgba(239,68,68,.35);
+
+}
+
+.btn-modern:hover{
+
+    background:linear-gradient(135deg,#2563eb,#1d4ed8);
+
+    box-shadow:0 6px 14px rgba(59,130,246,.35);
+
+    transform:none;
 
 }
 
@@ -2030,4 +2022,38 @@ body.modal-open {
   border-color: #3a7bd5;
   background: rgba(58, 123, 213, 0.12);
   color: #3a7bd5;
+}
+
+.table thead th {
+  font-size:13px;
+  color:#6b7280;
+  font-weight:600;
+  border:none !important;
+}
+
+.table tbody tr {
+  background:#ffffff;
+  border-radius:12px;
+  box-shadow:0 6px 14px rgba(0,0,0,.06);
+  transition:.2s;
+}
+
+.table tbody tr:hover {
+  transform:translateY(-2px);
+  box-shadow:0 12px 24px rgba(0,0,0,.12);
+}
+
+.amount-income {
+  color: var(--kasapp-success) !important;
+  font-weight: 600 !important;
+}
+
+.amount-expense {
+  color: var(--kasapp-danger) !important;
+  font-weight: 600 !important;
+}
+
+.users-table td.activity-date {
+  font-weight: 700 !important;
+  color: #111827 !important;
 }

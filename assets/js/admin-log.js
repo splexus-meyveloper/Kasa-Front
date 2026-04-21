@@ -16,7 +16,12 @@ NOTE_ENDORSE: '<span class="badge badge-warning">Senet Ciro</span>',
 
 LOAN_CREATE: '<span class="badge badge-primary">Kredi Ekleme</span>',
 
-EXPENSE_ADD: '<span class="badge badge-danger">Masraf</span>'
+EXPENSE_ADD: '<span class="badge badge-danger">Masraf</span>',
+
+CASH_UPDATE_REQUEST:  '<span class="badge badge-warning">Kasa Düzenleme</span>',
+CHECK_UPDATE_REQUEST: '<span class="badge badge-warning">Çek Düzenleme</span>',
+NOTE_UPDATE_REQUEST:  '<span class="badge badge-warning">Senet Düzenleme</span>',
+LOAN_UPDATE_REQUEST:  '<span class="badge badge-warning">Kredi Düzenleme</span>'
 
 };
 
@@ -68,12 +73,17 @@ async function loadMovements(page = 0, start = "", end = "", action = "", userna
 
     const token = localStorage.getItem("token");
 
+    // "Düzenlemeler" filtresi → ayrı endpoint
+    if(action === "CASH_UPDATE_REQUEST"){
+        return loadChangeRequests(token);
+    }
+
     if(action === "LOAN_INSTALLMENT"){
         action = "CASH_EXPENSE";
         q = "kredi taksiti";
     }
 
-    let url = `${API_BASE}/audit-logs?page=${page}&size=20`;
+    let url = `${API_BASE}/audit-logs?page=${page}&size=100`;
 
     if(start) url += `&start=${start}T00:00:00`;
     if(end) url += `&end=${end}T23:59:59`;
@@ -82,15 +92,46 @@ async function loadMovements(page = 0, start = "", end = "", action = "", userna
     if(q) url += `&q=${q}`;
 
     const res = await fetch(url,{
-        headers:{
-            "Authorization":"Bearer " + token
-        }
+        headers:{ "Authorization":"Bearer " + token }
     });
 
     const data = await res.json();
 
     renderTable(data.content || data.data || []);
 }
+
+async function loadChangeRequests(token){
+
+    const res = await fetch(`${API_BASE}/change-requests/all`, {
+        headers:{ "Authorization":"Bearer " + token }
+    });
+
+    if(!res.ok){
+        renderTable([]);
+        return;
+    }
+
+    const list = await res.json();
+
+    // audit-log formatına dönüştür
+    const mapped = list.map(item => ({
+        createdAt:   item.requestedAt,
+        username:    item.requestedByUsername || ("ID:" + item.requestedBy),
+        action:      item.entityType ? item.entityType + "_UPDATE_REQUEST" : "CASH_UPDATE_REQUEST",
+        description: "Düzenleme isteği → " + (item.status || ""),
+        amount:      null,
+        _isChangeReq: true,
+        _status:     item.status,
+    }));
+
+    renderTable(mapped);
+}
+
+const STATUS_BADGE = {
+    PENDING:  '<span class="badge badge-warning">Beklemede</span>',
+    APPROVED: '<span class="badge badge-success">Onaylandı</span>',
+    REJECTED: '<span class="badge badge-danger">Reddedildi</span>',
+};
 
 function renderTable(list){
 
@@ -100,38 +141,41 @@ const tbody = document.getElementById("kasaTableBody");
 
 tbody.innerHTML = "";
 
+if(list.length === 0){
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted" style="padding:20px">Kayıt bulunamadı</td></tr>`;
+    return;
+}
+
 list.forEach(item => {
 
     const tr = document.createElement("tr");
+    tr.classList.add("user-row");
 
-    const isIncome = item.action === "CASH_INCOME"
+    const isChangeReq = !!item._isChangeReq;
+
+    const isIncome = !isChangeReq && (
+              item.action === "CASH_INCOME"
               || item.action === "CHECK_IN"
               || item.action === "CHECK_COLLECT"
               || item.action === "NOTE_IN"
               || item.action === "NOTE_COLLECT"
-              || item.action === "LOAN_CREATE";
+              || item.action === "LOAN_CREATE");
 
-const icon = isIncome ? "▲" : "▼";
+    const amountClass = isIncome ? "text-success" : "text-danger";
 
-const amountClass = isIncome ? "text-success" : "text-danger";
+    const amountCell = isChangeReq
+        ? (STATUS_BADGE[item._status] || "-")
+        : `${isIncome ? "+" : "-"}${Number(item.amount || 0).toLocaleString("tr-TR", { minimumFractionDigits:2 })} TL`;
 
-    const formattedAmount =
-    (isIncome ? "+" : "-") +
-    Number(item.amount).toLocaleString("tr-TR", {
-        minimumFractionDigits:2
-    }) + " TL";
-
-    const date =
-        new Date(item.createdAt)
-        .toLocaleString("tr-TR");
+    const date = new Date(item.createdAt).toLocaleString("tr-TR");
 
     tr.innerHTML = `
         <td>${date}</td>
         <td>${escapeHtml(item.username)}</td>
         <td>${actionBadge(item.action)}</td>
         <td>${escapeHtml(item.description) ?? "-"}</td>
-        <td class="text-end ${amountClass}">
-            ${icon} ${formattedAmount}
+        <td class="text-end ${isChangeReq ? "" : amountClass}">
+            ${amountCell}
         </td>
     `;
 

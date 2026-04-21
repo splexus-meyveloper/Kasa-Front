@@ -1,57 +1,55 @@
-<h3 class="mb-30">Benim İşlemlerim</h3>
-
 <div class="row">
 
-    <div class="col-12">
-        <div class="box">
-
+    <div class="col-12 mb-30">
+        <div class="box dashboard-card">
             <div class="box-head">
                 <h4 class="title">Benim İşlemlerim</h4>
             </div>
 
             <div class="box-body">
 
-                <div class="table-responsive">
-                    <table class="table table-bordered table-striped mb-0">
-
-                        <thead>
-                            <tr>
-                                <th>Tarih</th>
-                                <th>Tür</th>
-                                <th>Tutar</th>
-                                <th>Açıklama</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            <!-- ÖRNEK VERİLER -->
-                            <tr>
-                                <td>21.01.2026</td>
-                                <td>Nakit Giriş</td>
-                                <td class="text-success">+1.000,00 TL</td>
-                                <td>Günlük satış</td>
-                            </tr>
-
-                            <tr>
-                                <td>21.01.2026</td>
-                                <td>Çek Giriş</td>
-                                <td class="text-success">+5.000,00 TL</td>
-                                <td>Müşteri çeki</td>
-                            </tr>
-
-                            <tr>
-                                <td>22.01.2026</td>
-                                <td>Masraf</td>
-                                <td class="text-danger">-300,00 TL</td>
-                                <td>Ofis gideri</td>
-                            </tr>
-                        </tbody>
-
-                    </table>
-                </div>
+                <table id="myActivitiesTable" class="table users-table">
+                    <thead>
+                        <tr>
+                            <th>Tarih</th>
+                            <th>İşlem Türü</th>
+                            <th>Açıklama</th>
+                            <th class="text-end">Tutar</th>
+                            <th class="text-center" style="width:100px">İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody id="myActivitiesTableBody"></tbody>
+                </table>
 
             </div>
         </div>
     </div>
 
+</div>
+<div id="editModal" class="kasa-modal">
+
+  <div class="kasa-modal-overlay" onclick="closeEditModal()"></div>
+
+  <div class="kasa-modal-card">
+
+    <button class="kasa-modal-close" onclick="closeEditModal()">×</button>
+
+    <h3>İşlem Düzenle</h3>
+
+    <div class="kasa-form-group">
+      <label>Tutar</label>
+      <input id="editAmount" class="kasa-modal-input" type="number">
+    </div>
+
+    <div class="kasa-form-group">
+      <label>Açıklama</label>
+      <textarea id="editDesc" class="kasa-modal-textarea"></textarea>
+    </div>
+
+    <div class="kasa-modal-footer">
+      <button class="btn-modern" onclick="submitEditRequest()">İstek Gönder</button>
+      <button class="btn-delete" onclick="closeEditModal()">Vazgeç</button>
+    </div>
+
+  </div>
 </div>

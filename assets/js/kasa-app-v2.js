@@ -14,6 +14,8 @@ function getPageKey(page) {
   if (normalized.includes("kredi")) return "loans";
   if (normalized.includes("gider")) return "expenses";
   if (normalized.includes("bildirim")) return "notifications";
+  if (normalized.includes("benim")) return "myActivities";
+  if (normalized.includes("onay")) return "approvals";
 
   return "default";
 }
@@ -102,6 +104,20 @@ const pageInitMap = {
       console.warn("Notification page init fonksiyonu tanımlı değil");
     }
   },
+
+  myActivities: () => {
+  if (window.initMyActivitiesPage) {
+    window.initMyActivitiesPage();
+  } else {
+    console.warn("initMyActivitiesPage tanımlı değil");
+  }
+},
+
+approvals: () => {
+  if (window.initApprovalsPage) {
+    window.initApprovalsPage();
+  }
+},
 
   default: () => {
     console.warn("Bu sayfa için init tanımlı değil");
