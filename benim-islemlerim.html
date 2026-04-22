@@ -8,18 +8,42 @@
 
             <div class="box-body">
 
-                <table id="myActivitiesTable" class="table users-table">
+                <div class="table-responsive">
+                <table id="myActivitiesTable" class="table users-table table-fixed">
+                    <colgroup>
+                        <col style="width:16%">
+                        <col style="width:18%">
+                        <col>
+                        <col style="width:14%">
+                        <col style="width:11%">
+                    </colgroup>
                     <thead>
                         <tr>
                             <th>Tarih</th>
-                            <th>İşlem Türü</th>
+                            <th class="text-center">İşlem Türü</th>
                             <th>Açıklama</th>
                             <th class="text-end">Tutar</th>
-                            <th class="text-center" style="width:100px">İşlem</th>
+                            <th class="text-center">İşlem</th>
                         </tr>
                     </thead>
                     <tbody id="myActivitiesTableBody"></tbody>
                 </table>
+                </div>
+
+                <div id="myActivitiesTotals" class="summary-bar" style="display:none">
+                    <div class="summary-item summary-income">
+                        <span class="summary-label">Toplam Giriş</span>
+                        <span class="summary-value" id="myTotalIncome">0,00 TL</span>
+                    </div>
+                    <div class="summary-item summary-expense">
+                        <span class="summary-label">Toplam Çıkış</span>
+                        <span class="summary-value" id="myTotalExpense">0,00 TL</span>
+                    </div>
+                    <div class="summary-item summary-net">
+                        <span class="summary-label">Net</span>
+                        <span class="summary-value" id="myTotalNet">0,00 TL</span>
+                    </div>
+                </div>
 
             </div>
         </div>

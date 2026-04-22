@@ -41,7 +41,6 @@
             <option value="LOAN_INSTALLMENT">Kredi Ödeme</option>
 
             <option value="EXPENSE_ADD">Masraf</option>
-            <option value="CASH_UPDATE_REQUEST">Düzenlemeler</option>
         </select>
     </div>
 
@@ -61,22 +60,43 @@
 
 
 <!-- TABLO -->
-<table id="kasaTable" class="table users-table">
-
+<div class="table-responsive">
+<table id="kasaTable" class="table users-table table-fixed">
+    <colgroup>
+        <col style="width:16%">
+        <col style="width:10%">
+        <col style="width:18%">
+        <col>
+        <col style="width:14%">
+    </colgroup>
     <thead>
         <tr>
             <th>Tarih</th>
             <th>Kullanıcı</th>
-            <th>İşlem Türü</th>
+            <th class="text-center">İşlem Türü</th>
             <th>Açıklama</th>
             <th class="text-end">Tutar</th>
         </tr>
     </thead>
-
-    <tbody id="kasaTableBody">
-    </tbody>
-
+    <tbody id="kasaTableBody"></tbody>
 </table>
+</div>
+
+<div id="adminTotals" class="summary-bar" style="display:none">
+    <div class="summary-item summary-income">
+        <span class="summary-label">Toplam Giriş</span>
+        <span class="summary-value" id="adminTotalIncome">0,00 TL</span>
+    </div>
+    <div class="summary-item summary-expense">
+        <span class="summary-label">Toplam Çıkış</span>
+        <span class="summary-value" id="adminTotalExpense">0,00 TL</span>
+    </div>
+    <div class="summary-item summary-net">
+        <span class="summary-label">Net</span>
+        <span class="summary-value" id="adminTotalNet">0,00 TL</span>
+    </div>
+</div>
+
 </div>
 </div>
 </div>

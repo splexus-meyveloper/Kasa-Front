@@ -37,10 +37,37 @@ function initApp() {
   }
 }
 
+// ==============================
+// DARK MODE
+// ==============================
+
+function applyDarkMode(dark) {
+  document.body.classList.toggle("dark-mode", dark);
+  const icon = document.getElementById("darkModeIcon");
+  if (icon) {
+    icon.className = dark ? "zmdi zmdi-sun" : "zmdi zmdi-brightness-2";
+  }
+}
+
+function toggleDarkMode() {
+  const isDark = !document.body.classList.contains("dark-mode");
+  localStorage.setItem("darkMode", isDark ? "1" : "0");
+  applyDarkMode(isDark);
+  // Chart varsa yeniden çiz — renkleri dark/light modda güncelle
+  if (window.loadChart) loadChart();
+}
+
+window.toggleDarkMode = toggleDarkMode;
 window.initAppShell = initAppShell;
 window.initApp = initApp;
 
 document.addEventListener("DOMContentLoaded", function () {
+  applyDarkMode(localStorage.getItem("darkMode") === "1");
   initApp();
   wsClient.connect();
+
+  // Admin header user dropdown'ını sayfa geçişi beklemeden doldur
+  setTimeout(() => {
+    if (window.initUserFilter) initUserFilter();
+  }, 800);
 });

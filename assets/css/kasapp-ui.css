@@ -2057,3 +2057,480 @@ body.modal-open {
   font-weight: 700 !important;
   color: #111827 !important;
 }
+
+/* =================================================
+   DARK MODE BUTTON
+================================================= */
+
+.dark-mode-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  margin-right: 6px;
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  transition: .2s;
+  padding: 0;
+}
+
+.dark-mode-btn:hover {
+  background: #f1f5f9;
+  color: #111827;
+}
+
+/* =================================================
+   DARK MODE  — siyah tonlar, renkli yazılar korunur
+   Palette:
+     bg page  : #111111
+     bg card  : #1c1c1c
+     bg row   : #242424
+     border   : #2e2e2e
+     text     : #e0e0e0
+     muted    : #888888
+================================================= */
+
+body.dark-mode,
+body.dark-mode .main-wrapper,
+body.dark-mode .content-body {
+  background: #111111 !important;
+  color: #e0e0e0 !important;
+}
+
+/* HEADER */
+body.dark-mode .header-section {
+  background: #161616 !important;
+  border-bottom-color: #2e2e2e !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,.5) !important;
+}
+
+body.dark-mode .header-title h4 { color: #e0e0e0 !important; }
+body.dark-mode .header-action-btn { color: #888 !important; }
+body.dark-mode .dark-mode-btn { color: #f59e0b !important; }
+body.dark-mode .dark-mode-btn:hover { background: #2a2a2a !important; }
+
+/* SIDEBAR */
+body.dark-mode .side-header {
+  background: #161616 !important;
+  border-right-color: #2e2e2e !important;
+  box-shadow: 4px 0 20px rgba(0,0,0,.4) !important;
+}
+
+/* CARDS & BOXES */
+body.dark-mode .box,
+body.dark-mode .dashboard-card,
+body.dark-mode .chart-panel {
+  background: #1c1c1c !important;
+  border-color: #2e2e2e !important;
+}
+
+/* Box başlık metni — KPI H2 renklerine dokunma */
+body.dark-mode .box .box-head {
+  border-bottom-color: #2e2e2e !important;
+  color: #e0e0e0 !important;
+}
+
+body.dark-mode .box .box-head .title {
+  color: #e0e0e0 !important;
+}
+
+/* KPI card alt yazıları (h4.title üstü) */
+body.dark-mode .top-report.dashboard-card h4 {
+  color: #888 !important;
+}
+
+/* TABLE */
+body.dark-mode .users-table tbody tr.user-row,
+body.dark-mode .users-table tbody tr.user-row td {
+  background: #242424 !important;
+  color: #e0e0e0 !important;
+}
+
+body.dark-mode .users-table tbody tr.user-row:hover td {
+  background: #2e2e2e !important;
+}
+
+body.dark-mode .users-table thead th,
+body.dark-mode .table thead th {
+  color: #888 !important;
+}
+
+body.dark-mode .table tbody tr,
+body.dark-mode .table tbody td {
+  background: #242424 !important;
+  color: #e0e0e0 !important;
+}
+
+/* INPUTS */
+body.dark-mode input,
+body.dark-mode textarea,
+body.dark-mode select {
+  background: #1c1c1c !important;
+  border-color: #2e2e2e !important;
+  color: #e0e0e0 !important;
+}
+
+body.dark-mode input:focus,
+body.dark-mode textarea:focus,
+body.dark-mode select:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59,130,246,.18) !important;
+}
+
+body.dark-mode label { color: #888 !important; }
+
+/* SUMMARY BAR */
+body.dark-mode .summary-bar {
+  background: #1c1c1c !important;
+  border-color: #2e2e2e !important;
+}
+
+body.dark-mode .summary-income  { background: #0d2318 !important; border-color: #1a4a2e !important; }
+body.dark-mode .summary-expense { background: #2a0e0e !important; border-color: #5a1a1a !important; }
+body.dark-mode .summary-net     { background: #0d1a2e !important; border-color: #1a3a6e !important; }
+body.dark-mode .summary-label   { color: #888 !important; }
+
+/* DROPDOWN */
+body.dark-mode .dropdown-menu-user {
+  background: #1c1c1c !important;
+  border-color: #2e2e2e !important;
+}
+
+body.dark-mode .dropdown-menu-user .head { border-bottom-color: #2e2e2e !important; }
+
+body.dark-mode .dropdown-menu-user .body ul li a { color: #e0e0e0 !important; }
+body.dark-mode .dropdown-menu-user .body ul li a:hover { background: #2a2a2a !important; }
+
+/* NOTIFICATIONS */
+body.dark-mode .notif-dropdown {
+  background: #1c1c1c !important;
+  box-shadow: 0 5px 20px rgba(0,0,0,.5) !important;
+}
+
+body.dark-mode .notif-item {
+  border-bottom-color: #2e2e2e !important;
+  color: #e0e0e0 !important;
+}
+
+/* MODAL */
+body.dark-mode .kasa-modal-card {
+  background: #1c1c1c !important;
+}
+
+body.dark-mode .kasa-modal-row {
+  background: #242424 !important;
+  border-color: #2e2e2e !important;
+}
+
+body.dark-mode .kasa-modal-row span  { color: #888 !important; }
+body.dark-mode .kasa-modal-row strong { color: #e0e0e0 !important; }
+body.dark-mode .kasa-modal-title      { color: #e0e0e0 !important; }
+body.dark-mode .kasa-modal-subtitle   { color: #888 !important; }
+body.dark-mode .kasa-modal-close      { color: #888 !important; }
+body.dark-mode .kasa-modal-close:hover { color: #e0e0e0 !important; }
+
+/* FORM GROUP */
+body.dark-mode .kasa-form-group label { color: #aaa !important; }
+body.dark-mode .kasa-modal-input,
+body.dark-mode .kasa-modal-textarea {
+  background: #242424 !important;
+  border-color: #2e2e2e !important;
+  color: #e0e0e0 !important;
+}
+
+/* NAV MENU */
+body.dark-mode .mini-flyout                   { background: #1c1c1c !important; }
+body.dark-mode .mini-flyout li a              { color: #e0e0e0 !important; }
+body.dark-mode .mini-flyout li a:hover        { background: #2a2a2a !important; color: #fff !important; }
+
+/* TABLE page: tarih sütunu rengi */
+body.dark-mode .users-table td[style*="font-weight:700"] { color: #e0e0e0 !important; }
+
+/* DETAIL POPUP */
+body.dark-mode .detail-popup {
+  background: #1c1c1c !important;
+  border-color: #2e2e2e !important;
+  color: #e0e0e0 !important;
+}
+
+body.dark-mode .detail-popup-row { border-bottom-color: #2e2e2e !important; }
+body.dark-mode .detail-popup-label { color: #888 !important; }
+
+/* =============================================
+   DARK MODE — FullCalendar
+============================================= */
+
+body.dark-mode .fc-toolbar-title { color: #e0e0e0 !important; }
+
+body.dark-mode .fc-button {
+  background: #2a2a2a !important;
+  border-color: #2e2e2e !important;
+  color: #e0e0e0 !important;
+}
+
+body.dark-mode .fc-button:hover,
+body.dark-mode .fc-button:focus {
+  background: #333 !important;
+  border-color: #3b82f6 !important;
+  color: #fff !important;
+}
+
+body.dark-mode .fc-button-primary:not(:disabled).fc-button-active {
+  background: #3b82f6 !important;
+  border-color: #3b82f6 !important;
+}
+
+body.dark-mode .fc-col-header-cell-cushion,
+body.dark-mode .fc-daygrid-day-number,
+body.dark-mode .fc-daygrid-more-link { color: #e0e0e0 !important; }
+
+body.dark-mode .fc-day-today { background: rgba(59,130,246,0.12) !important; }
+
+body.dark-mode .fc-scrollgrid,
+body.dark-mode .fc-scrollgrid-section > td,
+body.dark-mode .fc-col-header-cell,
+body.dark-mode .fc-daygrid-day {
+  border-color: #2e2e2e !important;
+}
+
+body.dark-mode .fc-theme-standard td,
+body.dark-mode .fc-theme-standard th { border-color: #2e2e2e !important; }
+
+body.dark-mode .fc-daygrid-day { background: #1c1c1c !important; }
+body.dark-mode .fc-col-header-cell { background: #161616 !important; }
+
+/* =============================================
+   DARK MODE — Check / Note / Loan cards
+============================================= */
+
+body.dark-mode .check-card,
+body.dark-mode .cek-card,
+body.dark-mode .note-card,
+body.dark-mode .loan-card {
+  background: #1c1c1c !important;
+  border-color: #2e2e2e !important;
+  color: #e0e0e0 !important;
+}
+
+body.dark-mode .check-card *,
+body.dark-mode .cek-card *,
+body.dark-mode .note-card * {
+  color: #e0e0e0 !important;
+}
+
+body.dark-mode .cek-card-title { color: #888 !important; }
+body.dark-mode .cek-card-amount { color: #f59e0b !important; }
+
+body.dark-mode .check-amount { color: #22c55e !important; }
+body.dark-mode .check-description { color: #94a3b8 !important; }
+
+/* =============================================
+   DARK MODE — generic page text (safe override)
+   Sadece yapısal text — renkli badge/amount dokunulmuyor
+============================================= */
+
+body.dark-mode .box-body,
+body.dark-mode .box-body p,
+body.dark-mode .box-body span:not(.badge):not(.text-success):not(.text-danger):not(.text-primary):not(.text-warning):not([class*="amount"]):not(.summary-value):not(.summary-label),
+body.dark-mode td:not([class*="text-"]):not(.td-desc) {
+  color: #e0e0e0;
+}
+
+body.dark-mode .text-muted { color: #888 !important; }
+
+/* page titles */
+body.dark-mode .box .box-head h4,
+body.dark-mode .box .box-head .title,
+body.dark-mode h4.title { color: #e0e0e0 !important; }
+
+/* user-name inside tables */
+body.dark-mode .user-name { color: #e0e0e0 !important; }
+
+/* filter bar */
+body.dark-mode .filter-bar .filter-item label { color: #888 !important; }
+
+/* progress bars */
+body.dark-mode .loan-progress-bar { background: #2a2a2a !important; }
+
+/* KPI top-report card text that wasn't a number */
+body.dark-mode .top-report.dashboard-card .box-body > p,
+body.dark-mode .top-report.dashboard-card .box-body > span:not([id]) {
+  color: #888 !important;
+}
+
+/* Sidebar menu links */
+body.dark-mode .side-header a,
+body.dark-mode .side-header .nav-link,
+body.dark-mode .side-header li a {
+  color: #c0c0c0 !important;
+}
+
+body.dark-mode .side-header li a:hover,
+body.dark-mode .side-header li a.active {
+  color: #fff !important;
+  background: rgba(255,255,255,0.06) !important;
+}
+
+/* =================================================
+   CHANGE REQUEST DETAIL BUTTON
+================================================= */
+
+.cr-detail-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #3b82f6;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: .15s;
+}
+
+.cr-detail-btn:hover {
+  background: #dbeafe;
+  box-shadow: 0 2px 8px rgba(59,130,246,.2);
+}
+
+body.dark-mode .cr-detail-btn {
+  background: #0d1a2e !important;
+  border-color: #1a3a6e !important;
+  color: #60a5fa !important;
+}
+
+/* =================================================
+   CHANGE DETAIL POPUP CONTENT
+================================================= */
+
+.detail-popup {
+  margin-top: 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.detail-popup-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 13px;
+  gap: 12px;
+}
+
+.detail-popup-row:last-child { border-bottom: none; }
+
+.detail-popup-row.detail-changed { background: #fefce8; }
+
+body.dark-mode .detail-popup-row.detail-changed { background: #1a1500 !important; }
+
+.detail-popup-label {
+  font-weight: 600;
+  color: #6b7280;
+  min-width: 80px;
+}
+
+.detail-popup-vals {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.detail-old  { color: #ef4444; text-decoration: line-through; font-size: 13px; }
+.detail-new  { color: #374151; font-size: 13px; }
+.detail-new-highlight { color: #16a34a !important; font-weight: 700; }
+
+/* =================================================
+   TABLE-FIXED — sütun genişliği sabit kalsın
+================================================= */
+
+.table-fixed {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.table-fixed thead th,
+.table-fixed tbody td {
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Açıklama sütunu uzun metni kesiyor */
+.table-fixed tbody td.td-desc {
+  white-space: normal;
+  word-break: break-word;
+  overflow: visible;
+}
+
+/* =================================================
+   SUMMARY BAR — toplam tutar şeridi
+================================================= */
+
+.summary-bar {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 10px;
+  padding: 14px 18px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  min-width: 140px;
+}
+
+.summary-income {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+}
+
+.summary-expense {
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+}
+
+.summary-net {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+}
+
+.summary-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: #6b7280;
+}
+
+.summary-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.summary-income .summary-value { color: #16a34a; }
+.summary-expense .summary-value { color: #dc2626; }
+.summary-pos { color: #16a34a !important; }
+.summary-neg { color: #dc2626 !important; }

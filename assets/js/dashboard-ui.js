@@ -38,12 +38,26 @@ function loadKasaChart(girisData, cikisData, labels) {
       animation: { duration: 800 },
       scales: {
         x: {
-          grid: { color: "rgba(0, 0, 0, 0.28)", lineWidth: 1.2 },
-          ticks: { color: "#0e0e0e", font: { weight: "bold" } }
+          grid: {
+            color: document.body.classList.contains("dark-mode")
+              ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)",
+            lineWidth: 1.2
+          },
+          ticks: {
+            color: document.body.classList.contains("dark-mode") ? "#ccc" : "#333",
+            font: { weight: "bold" }
+          }
         },
         y: {
-          grid: { color: "rgba(0, 0, 0, 0.27)", lineWidth: 1.2 },
-          ticks: { color: "#000000", font: { weight: "bold" } }
+          grid: {
+            color: document.body.classList.contains("dark-mode")
+              ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)",
+            lineWidth: 1.2
+          },
+          ticks: {
+            color: document.body.classList.contains("dark-mode") ? "#ccc" : "#333",
+            font: { weight: "bold" }
+          }
         }
       }
     }

@@ -160,7 +160,7 @@ async function loadCalendar() {
       height: 600,
 
       headerToolbar: {
-        left: "",
+        left: "prev,next today",
         center: "title",
         right: "",
       },

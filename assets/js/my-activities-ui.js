@@ -1,16 +1,37 @@
 const CHANGE_REQUEST_ACTIONS = [
     "CASH_UPDATE_REQUEST",
+    "CASH_UPDATE_REQUEST_CREATED",
+    "CASH_UPDATE_REQUEST_APPROVED",
+    "CASH_UPDATE_REQUEST_REJECTED",
     "CHECK_UPDATE_REQUEST",
+    "CHECK_UPDATE_REQUEST_CREATED",
+    "CHECK_UPDATE_REQUEST_APPROVED",
+    "CHECK_UPDATE_REQUEST_REJECTED",
     "NOTE_UPDATE_REQUEST",
+    "NOTE_UPDATE_REQUEST_CREATED",
+    "NOTE_UPDATE_REQUEST_APPROVED",
+    "NOTE_UPDATE_REQUEST_REJECTED",
     "LOAN_UPDATE_REQUEST",
+    "LOAN_UPDATE_REQUEST_CREATED",
+    "LOAN_UPDATE_REQUEST_APPROVED",
+    "LOAN_UPDATE_REQUEST_REJECTED",
     "CHANGE_REQUEST",
     "PENDING",
 ];
 
 function isChangeRequestItem(item) {
+    if (item.source === "CHANGE_REQUEST") return true;
+    if (!item.action) return false;
     return CHANGE_REQUEST_ACTIONS.includes(item.action)
-        || item.source === "CHANGE_REQUEST";
+        || item.action.includes("UPDATE_REQUEST");
 }
+
+const NORMAL_ACTIONS = new Set([
+    "CASH_INCOME", "CASH_EXPENSE",
+    "CHECK_IN", "CHECK_COLLECT", "CHECK_ENDORSE", "CHECK_OUT",
+    "NOTE_IN", "NOTE_COLLECT", "NOTE_ENDORSE",
+    "LOAN_CREATE", "EXPENSE_ADD",
+]);
 
 function renderMyActivities(list) {
 
@@ -19,14 +40,23 @@ function renderMyActivities(list) {
 
     tbody.innerHTML = "";
 
-    list.forEach(item => {
+    // Audit kaydı (CASH_UPDATE_REQUEST_CREATED vb.) ile aynı entityId için
+    // zaten CHANGE_REQUEST kaydı geliyor — audit kopyasını gizle.
+    const filtered = list.filter(item =>
+        !(item.source === "AUDIT" && (item.action || "").includes("UPDATE_REQUEST"))
+    );
+
+    let totalIncome = 0, totalExpense = 0;
+
+    filtered.forEach(item => {
 
         const tr = document.createElement("tr");
+        tr.classList.add("user-row");
 
         const isChangeReq = isChangeRequestItem(item);
-        const isPending   = isChangeReq && item.status === "PENDING";
-        const isApproved  = isChangeReq && item.status === "APPROVED";
-        const isRejected  = isChangeReq && item.status === "REJECTED";
+        const isPending   = isChangeReq && (item.status === "PENDING"  || (item.action || "").includes("CREATED"));
+        const isApproved  = isChangeReq && (item.status === "APPROVED" || (item.action || "").includes("APPROVED"));
+        const isRejected  = isChangeReq && (item.status === "REJECTED" || (item.action || "").includes("REJECTED"));
 
         const isIncome = item.action === "CASH_INCOME"
             || item.action === "CHECK_IN"
@@ -34,6 +64,12 @@ function renderMyActivities(list) {
             || item.action === "NOTE_IN"
             || item.action === "NOTE_COLLECT"
             || item.action === "LOAN_CREATE";
+
+        if (!isChangeReq) {
+            const amount = Number(item.amount || 0);
+            if (isIncome) totalIncome += amount;
+            else totalExpense += amount;
+        }
 
         // Düzenleme isteklerinde tutar gösterme — 0 TL sırıtmasın
         const amountCell = isChangeReq
@@ -62,11 +98,11 @@ function renderMyActivities(list) {
                            </button>`;
 
         tr.innerHTML = `
-  <td style="font-weight:700">${date}</td>
-  <td>${actionCell}</td>
-  <td>${item.description || item.newDescription || "-"}</td>
-  <td class="text-end">${amountCell}</td>
-  <td class="text-center">${statusCell}</td>
+  <td style="font-weight:700;vertical-align:middle">${date}</td>
+  <td class="text-center" style="vertical-align:middle">${actionCell}</td>
+  <td class="td-desc" style="vertical-align:middle">${item.description || item.newDescription || "-"}</td>
+  <td class="text-end" style="vertical-align:middle">${amountCell}</td>
+  <td class="text-center" style="vertical-align:middle">${statusCell}</td>
 `;
         if (!isChangeReq) {
             const btn = tr.querySelector("button");
@@ -85,6 +121,21 @@ function renderMyActivities(list) {
 
         tbody.appendChild(tr);
     });
+
+    updateMyTotals(totalIncome, totalExpense);
+}
+
+function updateMyTotals(income, expense) {
+    const bar = document.getElementById("myActivitiesTotals");
+    if (!bar) return;
+    const net = income - expense;
+    const fmt = v => Math.abs(v).toLocaleString("tr-TR", { minimumFractionDigits: 2 }) + " TL";
+    document.getElementById("myTotalIncome").textContent  = "+" + fmt(income);
+    document.getElementById("myTotalExpense").textContent = "-" + fmt(expense);
+    const netEl = document.getElementById("myTotalNet");
+    netEl.textContent = (net >= 0 ? "+" : "-") + fmt(net);
+    netEl.className = "summary-value " + (net >= 0 ? "summary-pos" : "summary-neg");
+    bar.style.display = "flex";
 }
 
 async function initMyActivitiesPage() {

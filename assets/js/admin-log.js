@@ -18,10 +18,25 @@ LOAN_CREATE: '<span class="badge badge-primary">Kredi Ekleme</span>',
 
 EXPENSE_ADD: '<span class="badge badge-danger">Masraf</span>',
 
-CASH_UPDATE_REQUEST:  '<span class="badge badge-warning">Kasa Düzenleme</span>',
-CHECK_UPDATE_REQUEST: '<span class="badge badge-warning">Çek Düzenleme</span>',
-NOTE_UPDATE_REQUEST:  '<span class="badge badge-warning">Senet Düzenleme</span>',
-LOAN_UPDATE_REQUEST:  '<span class="badge badge-warning">Kredi Düzenleme</span>'
+CASH_UPDATE_REQUEST:           '<span class="badge badge-warning">Kasa Düzenleme</span>',
+CASH_UPDATE_REQUEST_CREATED:   '<span class="badge badge-warning">Düzenleme Talebi</span>',
+CASH_UPDATE_REQUEST_APPROVED:  '<span class="badge badge-success">Düzenleme Onaylandı</span>',
+CASH_UPDATE_REQUEST_REJECTED:  '<span class="badge badge-danger">Düzenleme Reddedildi</span>',
+
+CHECK_UPDATE_REQUEST:           '<span class="badge badge-warning">Çek Düzenleme</span>',
+CHECK_UPDATE_REQUEST_CREATED:   '<span class="badge badge-warning">Çek Düzenleme Talebi</span>',
+CHECK_UPDATE_REQUEST_APPROVED:  '<span class="badge badge-success">Çek Düzenleme Onaylandı</span>',
+CHECK_UPDATE_REQUEST_REJECTED:  '<span class="badge badge-danger">Çek Düzenleme Reddedildi</span>',
+
+NOTE_UPDATE_REQUEST:            '<span class="badge badge-warning">Senet Düzenleme</span>',
+NOTE_UPDATE_REQUEST_CREATED:    '<span class="badge badge-warning">Senet Düzenleme Talebi</span>',
+NOTE_UPDATE_REQUEST_APPROVED:   '<span class="badge badge-success">Senet Düzenleme Onaylandı</span>',
+NOTE_UPDATE_REQUEST_REJECTED:   '<span class="badge badge-danger">Senet Düzenleme Reddedildi</span>',
+
+LOAN_UPDATE_REQUEST:            '<span class="badge badge-warning">Kredi Düzenleme</span>',
+LOAN_UPDATE_REQUEST_CREATED:    '<span class="badge badge-warning">Kredi Düzenleme Talebi</span>',
+LOAN_UPDATE_REQUEST_APPROVED:   '<span class="badge badge-success">Kredi Düzenleme Onaylandı</span>',
+LOAN_UPDATE_REQUEST_REJECTED:   '<span class="badge badge-danger">Kredi Düzenleme Reddedildi</span>'
 
 };
 
@@ -91,37 +106,65 @@ async function loadMovements(page = 0, start = "", end = "", action = "", userna
     if(username) url += `&username=${username}`;
     if(q) url += `&q=${q}`;
 
-    const res = await fetch(url,{
-        headers:{ "Authorization":"Bearer " + token }
-    });
-
-    const data = await res.json();
-
-    renderTable(data.content || data.data || []);
+    try {
+        const res = await fetch(url,{
+            headers:{ "Authorization":"Bearer " + token }
+        });
+        const data = await res.json();
+        // Backend bazen array, bazen {content:[]} döndürebilir
+        const rows = Array.isArray(data) ? data : (data.content || data.data || []);
+        renderTable(rows);
+    } catch(err) {
+        console.error("[loadMovements] Hata:", err);
+        renderTable([]);
+    }
 }
 
 async function loadChangeRequests(token){
 
-    const res = await fetch(`${API_BASE}/change-requests/all`, {
-        headers:{ "Authorization":"Bearer " + token }
-    });
+    // Önce tüm change-request'leri (onaylananlar dahil) getirmeyi dene
+    let list = await changeRequestApi.getAll();
+    let onlyPending = false;
 
-    if(!res.ok){
-        renderTable([]);
-        return;
+    if (list === null) {
+        // Tüm endpointler başarısız — sadece bekleyenleri göster
+        onlyPending = true;
+        try {
+            const res = await fetch(`${API_BASE}/change-requests/pending`, {
+                headers:{ "Authorization":"Bearer " + token }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                list = Array.isArray(data) ? data
+                     : Array.isArray(data?.content) ? data.content
+                     : Array.isArray(data?.data)    ? data.data
+                     : [];
+            } else {
+                list = [];
+            }
+        } catch(err) {
+            console.error("[loadChangeRequests] Hata:", err);
+            list = [];
+        }
     }
 
-    const list = await res.json();
+    if (onlyPending) {
+        showToast("Sadece bekleyen düzenleme talepleri gösteriliyor (tüm kayıtlara erişim yok)", "warning");
+    }
 
-    // audit-log formatına dönüştür
+    console.log("[loadChangeRequests] gelen kayıt sayısı:", list.length, "ilk kayıt:", list[0]);
+
     const mapped = list.map(item => ({
-        createdAt:   item.requestedAt,
-        username:    item.requestedByUsername || ("ID:" + item.requestedBy),
+        createdAt:   item.requestedAt || item.createdAt,
+        username:    item.requestedByUsername || item.username || ("ID:" + item.requestedBy),
         action:      item.entityType ? item.entityType + "_UPDATE_REQUEST" : "CASH_UPDATE_REQUEST",
-        description: "Düzenleme isteği → " + (item.status || ""),
+        description: item.description || ("Düzenleme → " + (item.status || "")),
         amount:      null,
         _isChangeReq: true,
         _status:     item.status,
+        _oldData:    item.oldData,
+        _newData:    item.newData,
+        _entityType: item.entityType,
     }));
 
     renderTable(mapped);
@@ -143,15 +186,29 @@ tbody.innerHTML = "";
 
 if(list.length === 0){
     tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted" style="padding:20px">Kayıt bulunamadı</td></tr>`;
+    updateAdminTotals(0, 0);
     return;
 }
+
+let totalIncome = 0, totalExpense = 0;
 
 list.forEach(item => {
 
     const tr = document.createElement("tr");
     tr.classList.add("user-row");
 
-    const isChangeReq = !!item._isChangeReq;
+    const isChangeReq = !!item._isChangeReq
+        || (item.action || "").includes("UPDATE_REQUEST");
+
+    // detailsJson string veya object olarak gelebilir
+    const detailsRaw  = item.detailsJson || item.details || {};
+    const detailsJson = typeof detailsRaw === "string" ? (() => { try { return JSON.parse(detailsRaw); } catch { return {}; } })() : detailsRaw;
+    const payload     = detailsJson.payload || {};
+    const oldData     = payload.oldData || item._oldData || null;
+    const newData     = payload.newData || item._newData || null;
+    const entityType  = item.entityType || detailsJson.entityType || item._entityType || null;
+    const hasDetail   = !!(oldData || newData);
+    if (isChangeReq) console.log("[renderTable] ham item:", item);
 
     const isIncome = !isChangeReq && (
               item.action === "CASH_INCOME"
@@ -161,28 +218,210 @@ list.forEach(item => {
               || item.action === "NOTE_COLLECT"
               || item.action === "LOAN_CREATE");
 
+    if (!isChangeReq) {
+        const amount = Number(item.amount || 0);
+        if (isIncome) totalIncome += amount;
+        else totalExpense += amount;
+    }
+
     const amountClass = isIncome ? "text-success" : "text-danger";
 
+    const changeReqStatus = item._status || item.status;
     const amountCell = isChangeReq
-        ? (STATUS_BADGE[item._status] || "-")
+        ? (STATUS_BADGE[changeReqStatus] || '<span style="color:#94a3b8;font-size:12px">—</span>')
         : `${isIncome ? "+" : "-"}${Number(item.amount || 0).toLocaleString("tr-TR", { minimumFractionDigits:2 })} TL`;
 
     const date = new Date(item.createdAt).toLocaleString("tr-TR");
 
+    // Sadece oldData/newData varsa Detay butonu göster
+    let descCell;
+    if (isChangeReq && hasDetail) {
+        descCell = `<button class="cr-detail-btn"><i class="zmdi zmdi-info-outline"></i> Detay</button>`;
+    } else {
+        descCell = `<span class="td-desc">${escapeHtml(item.description) || "-"}</span>`;
+    }
+
     tr.innerHTML = `
-        <td>${date}</td>
-        <td>${escapeHtml(item.username)}</td>
-        <td>${actionBadge(item.action)}</td>
-        <td>${escapeHtml(item.description) ?? "-"}</td>
-        <td class="text-end ${isChangeReq ? "" : amountClass}">
-            ${amountCell}
+        <td style="vertical-align:middle">${date}</td>
+        <td style="vertical-align:middle">${escapeHtml(item.username)}</td>
+        <td class="text-center" style="vertical-align:middle">${actionBadge(item.action)}</td>
+        <td style="vertical-align:middle">${descCell}</td>
+        <td class="text-end" style="vertical-align:middle">
+            <span class="${isChangeReq ? "" : amountClass}" style="font-weight:600">${amountCell}</span>
         </td>
     `;
+
+    if (isChangeReq && hasDetail) {
+        const btn = tr.querySelector(".cr-detail-btn");
+        btn.addEventListener("click", function () {
+            showChangeDetail(oldData, newData, entityType, item);
+        });
+    }
 
     tbody.appendChild(tr);
 
 });
 
+updateAdminTotals(totalIncome, totalExpense);
+
+}
+
+const FIELD_LABELS = {
+    amount:          "Tutar",
+    description:     "Açıklama",
+    type:            "İşlem Türü",
+    transactionDate: "Tarih",
+    dueDate:         "Vade Tarihi",
+    checkNo:         "Çek No",
+    noteNo:          "Senet No",
+    bankName:        "Banka",
+    monthlyPayment:  "Aylık Ödeme",
+    remainingDebt:   "Kalan Borç",
+    paymentDay:      "Ödeme Günü",
+    status:          "Durum",
+    username:        "Kullanıcı",
+    userId:          "Kullanıcı",
+};
+
+// Gösterilmeyecek alanlar
+const SKIP_FIELDS = new Set(["id", "active", "companyId", "createdAt", "updatedAt"]);
+
+// Değer çevirileri
+const VALUE_LABELS = {
+    INCOME:  "Kasa Giriş",
+    EXPENSE: "Kasa Çıkış",
+    CHECK:   "Çek",
+    NOTE:    "Senet",
+    LOAN:    "Kredi",
+    true:    "Aktif",
+    false:   "Pasif",
+    PENDING:  "Beklemede",
+    APPROVED: "Onaylandı",
+    REJECTED: "Reddedildi",
+};
+
+// Tarih alanlarını normalize et (karşılaştırma için milisaniye/zaman dilimine dikkat)
+const DATE_FIELDS = new Set(["transactionDate", "dueDate", "createdAt", "updatedAt"]);
+
+function parseData(raw) {
+    if (!raw) return {};
+    if (typeof raw === "object") return raw;
+    try {
+        const p = JSON.parse(raw);
+        return typeof p === "string" ? JSON.parse(p) : p;
+    } catch { return {}; }
+}
+
+function formatFieldValue(key, val) {
+    if (val === null || val === undefined) return "-";
+    if (key === "amount" || key === "monthlyPayment" || key === "remainingDebt") {
+        return Number(val).toLocaleString("tr-TR", { minimumFractionDigits: 2 }) + " TL";
+    }
+    if (key === "userId") {
+        return escapeHtml(userIdMap[val] || String(val));
+    }
+    if (DATE_FIELDS.has(key)) {
+        try { return new Date(val).toLocaleString("tr-TR"); } catch { return escapeHtml(String(val)); }
+    }
+    const strVal = String(val);
+    return escapeHtml(VALUE_LABELS[strVal] ?? strVal);
+}
+
+function normalizeForCompare(key, val) {
+    if (val === null || val === undefined) return "";
+    if (DATE_FIELDS.has(key)) {
+        try { return new Date(val).toLocaleDateString("tr-TR"); } catch { return String(val); }
+    }
+    return String(val);
+}
+
+function showChangeDetail(oldData, newData, entityType, item) {
+    try {
+        const o = parseData(oldData);
+        const n = parseData(newData);
+
+        // Tüm alanları göster: newData + oldData key birleşimi
+        const allKeys = [...new Set([...Object.keys(n), ...Object.keys(o)])];
+
+        let rows = "";
+        let hasAnyRow = false;
+
+        allKeys.forEach(k => {
+            if (SKIP_FIELDS.has(k)) return;
+
+            // newData'da yoksa bu alan değişmemiştir
+            const changed = n[k] !== undefined
+                && normalizeForCompare(k, o[k]) !== normalizeForCompare(k, n[k]);
+            const oldVal  = formatFieldValue(k, o[k]);
+            const newVal  = formatFieldValue(k, n[k]);
+            hasAnyRow = true;
+            const label = FIELD_LABELS[k] || k;
+
+            if (changed) {
+                rows += `
+                    <div class="detail-popup-row detail-changed">
+                        <span class="detail-popup-label">${label}</span>
+                        <span class="detail-popup-vals">
+                            <span class="detail-old">${oldVal}</span>
+                            <i class="zmdi zmdi-long-arrow-right" style="margin:0 8px;color:#64748b"></i>
+                            <span class="detail-new detail-new-highlight">${newVal}</span>
+                        </span>
+                    </div>`;
+            } else {
+                rows += `
+                    <div class="detail-popup-row">
+                        <span class="detail-popup-label">${label}</span>
+                        <span class="detail-popup-vals">
+                            <span style="color:#cbd5e1">${oldVal}</span>
+                        </span>
+                    </div>`;
+            }
+        });
+
+        if (!hasAnyRow) {
+            rows = `<div style="color:#94a3b8;font-size:13px;padding:12px 0">Değişen alan bulunamadı.</div>`;
+        }
+
+        const entityTypeLabel = { CASH: "Kasa", CHECK: "Çek", NOTE: "Senet", LOAN: "Kredi" };
+        const subtitle = entityTypeLabel[entityType] || entityType || "";
+        const dateStr  = item?.createdAt ? new Date(item.createdAt).toLocaleString("tr-TR") : "";
+
+        document.getElementById("crDetailPopup")?.remove();
+
+        const popup = document.createElement("div");
+        popup.id = "crDetailPopup";
+        popup.className = "kasa-modal active";
+        popup.innerHTML = `
+            <div class="kasa-modal-overlay" onclick="document.getElementById('crDetailPopup').remove()"></div>
+            <div class="kasa-modal-card" style="max-width:520px">
+                <button class="kasa-modal-close" onclick="document.getElementById('crDetailPopup').remove()">×</button>
+                <div class="kasa-modal-header">
+                    <div class="kasa-modal-icon"><i class="zmdi zmdi-edit"></i></div>
+                    <div>
+                        <h3 class="kasa-modal-title">Düzenleme Detayı</h3>
+                        <div class="kasa-modal-subtitle">${subtitle ? subtitle + " kaydı" : ""}${dateStr ? " &nbsp;·&nbsp; " + dateStr : ""}</div>
+                    </div>
+                </div>
+                <div class="detail-popup">${rows}</div>
+            </div>`;
+        document.body.appendChild(popup);
+    } catch(e) {
+        console.error("[showChangeDetail] Hata:", e);
+        showToast("Detay gösterilemedi", "error");
+    }
+}
+
+function updateAdminTotals(income, expense) {
+    const bar = document.getElementById("adminTotals");
+    if (!bar) return;
+    const net = income - expense;
+    const fmt = v => Math.abs(v).toLocaleString("tr-TR", { minimumFractionDigits: 2 }) + " TL";
+    document.getElementById("adminTotalIncome").textContent  = "+" + fmt(income);
+    document.getElementById("adminTotalExpense").textContent = "-" + fmt(expense);
+    const netEl = document.getElementById("adminTotalNet");
+    netEl.textContent = (net >= 0 ? "+" : "-") + fmt(net);
+    netEl.className = "summary-value " + (net >= 0 ? "summary-pos" : "summary-neg");
+    bar.style.display = "flex";
 }
 
 let adminLogsLoaded = false;
@@ -235,16 +474,21 @@ function initAdminLogs(){
 
 setInterval(initAdminLogs, 300);
 
+const userIdMap = {}; // { userId: username }
+
 async function loadUsers() {
     const token = localStorage.getItem("token");
 
     const res = await fetch(API_BASE + "/admin/profiles", {
-        headers: {
-            "Authorization": "Bearer " + token
-        }
+        headers: { "Authorization": "Bearer " + token }
     });
 
     const users = await res.json();
+
+    // ID → username haritası
+    users.forEach(u => {
+        if (u.id) userIdMap[u.id] = u.username;
+    });
 
     const select = document.getElementById("filterUser");
     if (!select) return;
@@ -252,12 +496,10 @@ async function loadUsers() {
     select.innerHTML = '<option value="">Tümü</option>';
 
     users.forEach(u => {
-        
         const option = document.createElement("option");
         option.value = u.username;
         option.textContent = u.username;
         select.appendChild(option);
     });
-    
 }
 

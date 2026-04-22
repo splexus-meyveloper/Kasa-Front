@@ -112,28 +112,30 @@ function renderApprovals(list) {
     });
 }
 
-async function approve(id) {
-    if (!confirm("Bu işlemi onaylamak istediğinize emin misiniz?")) return;
-    try {
-        await changeRequestApi.approve(id);
-        showToast("Onaylandı", "success");
-        loadApprovals();
-    } catch (err) {
-        console.error("[approve] Hata:", err);
-        showToast(err.message || "Onaylama başarısız", "error");
-    }
+function approve(id) {
+    showConfirmToast("Bu işlemi onaylamak istediğinize emin misiniz?", async () => {
+        try {
+            await changeRequestApi.approve(id);
+            showToast("Onaylandı", "success");
+            loadApprovals();
+        } catch (err) {
+            console.error("[approve] Hata:", err);
+            showToast(err.message || "Onaylama başarısız", "error");
+        }
+    });
 }
 
-async function reject(id) {
-    if (!confirm("Bu işlemi reddetmek istediğinize emin misiniz?")) return;
-    try {
-        await changeRequestApi.reject(id);
-        showToast("Reddedildi", "error");
-        loadApprovals();
-    } catch (err) {
-        console.error("[reject] Hata:", err);
-        showToast(err.message || "Reddetme başarısız", "error");
-    }
+function reject(id) {
+    showConfirmToast("Bu işlemi reddetmek istediğinize emin misiniz?", async () => {
+        try {
+            await changeRequestApi.reject(id);
+            showToast("Reddedildi", "error");
+            loadApprovals();
+        } catch (err) {
+            console.error("[reject] Hata:", err);
+            showToast(err.message || "Reddetme başarısız", "error");
+        }
+    });
 }
 
 window.initApprovalsPage = loadApprovals;
