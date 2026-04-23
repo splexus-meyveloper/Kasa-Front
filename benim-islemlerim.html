@@ -57,17 +57,57 @@
   <div class="kasa-modal-card">
 
     <button class="kasa-modal-close" onclick="closeEditModal()">×</button>
-
-    <h3>İşlem Düzenle</h3>
+    <h3 id="editModalTitle" style="margin:0 0 20px">İşlem Düzenle</h3>
 
     <div class="kasa-form-group">
-      <label>Tutar</label>
-      <input id="editAmount" class="kasa-modal-input" type="number">
+      <label for="editAmount">Tutar</label>
+      <input id="editAmount" class="kasa-modal-input" type="number" placeholder="0.00">
+    </div>
+
+    <!-- Çek alanları -->
+    <div id="editCheckFields" style="display:none">
+      <div class="kasa-form-group">
+        <label for="editCheckNo">Çek No</label>
+        <input id="editCheckNo" class="kasa-modal-input" type="text" placeholder="Çek numarası">
+      </div>
+      <div class="kasa-form-group">
+        <label for="editBank">Banka</label>
+        <select id="editBank" class="kasa-modal-input">
+          <option value="">Seçiniz...</option>
+          <option value="ZIRAAT">Ziraat</option>
+          <option value="IS_BANKASI">İş Bankası</option>
+          <option value="GARANTI_BBVA">Garanti</option>
+          <option value="AKBANK">Akbank</option>
+          <option value="YAPI_KREDI">Yapı Kredi</option>
+          <option value="HALKBANK">Halkbank</option>
+          <option value="VAKIFBANK">Vakıfbank</option>
+          <option value="QNB_FINANSBANK">QNB Finansbank</option>
+          <option value="DENIZBANK">Denizbank</option>
+          <option value="TEB">TEB</option>
+          <option value="DIGER">Diğer</option>
+        </select>
+      </div>
+      <div class="kasa-form-group">
+        <label for="editDueDate">Vade Tarihi</label>
+        <input id="editDueDate" class="kasa-modal-input" type="date">
+      </div>
+    </div>
+
+    <!-- Senet alanları -->
+    <div id="editNoteFields" style="display:none">
+      <div class="kasa-form-group">
+        <label for="editNoteNo">Senet No</label>
+        <input id="editNoteNo" class="kasa-modal-input" type="text" placeholder="Senet numarası">
+      </div>
+      <div class="kasa-form-group">
+        <label for="editNoteDueDate">Vade Tarihi</label>
+        <input id="editNoteDueDate" class="kasa-modal-input" type="date">
+      </div>
     </div>
 
     <div class="kasa-form-group">
-      <label>Açıklama</label>
-      <textarea id="editDesc" class="kasa-modal-textarea"></textarea>
+      <label for="editDesc">Açıklama</label>
+      <textarea id="editDesc" class="kasa-modal-textarea" placeholder="Açıklama (opsiyonel)"></textarea>
     </div>
 
     <div class="kasa-modal-footer">

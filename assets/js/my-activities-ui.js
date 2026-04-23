@@ -1,3 +1,20 @@
+function actionBadge(action) {
+    const map = {
+        CASH_INCOME:  '<span class="badge badge-success">Kasa Giriş</span>',
+        CASH_EXPENSE: '<span class="badge badge-danger">Kasa Çıkış</span>',
+        CHECK_IN:     '<span class="badge badge-primary">Çek Giriş</span>',
+        CHECK_COLLECT:'<span class="badge badge-success">Çek Tahsil</span>',
+        CHECK_ENDORSE:'<span class="badge badge-warning">Çek Ciro</span>',
+        CHECK_OUT:    '<span class="badge badge-warning">Çek Ödendi</span>',
+        NOTE_IN:      '<span class="badge badge-primary">Senet Giriş</span>',
+        NOTE_COLLECT: '<span class="badge badge-success">Senet Tahsil</span>',
+        NOTE_ENDORSE: '<span class="badge badge-warning">Senet Ciro</span>',
+        LOAN_CREATE:  '<span class="badge badge-primary">Kredi Ekleme</span>',
+        EXPENSE_ADD:  '<span class="badge badge-danger">Masraf</span>',
+    };
+    return map[action] || `<span class="badge">${action}</span>`;
+}
+
 const CHANGE_REQUEST_ACTIONS = [
     "CASH_UPDATE_REQUEST",
     "CASH_UPDATE_REQUEST_CREATED",
@@ -107,14 +124,9 @@ function renderMyActivities(list) {
         if (!isChangeReq) {
             const btn = tr.querySelector("button");
             if (btn) {
-                btn.dataset.description = item.description || "";
+                btn._item = item;
                 btn.addEventListener("click", function () {
-                    openEditModal(
-                        this.dataset.entityId,
-                        this.dataset.action,
-                        this.dataset.description,
-                        this.dataset.amount
-                    );
+                    openEditModal(this._item);
                 });
             }
         }
@@ -143,14 +155,45 @@ async function initMyActivitiesPage() {
     renderMyActivities(data);
 }
 
-let currentEditId = null;
+let currentEditId   = null;
 let currentEditType = null;
 
-function openEditModal(id, action, desc, amount) {
-    currentEditId = id;
-    currentEditType = action;
-    document.getElementById("editAmount").value = amount || "";
-    document.getElementById("editDesc").value = desc || "";
+const CHECK_ACTIONS = new Set(["CHECK_IN", "CHECK_COLLECT", "CHECK_ENDORSE", "CHECK_OUT"]);
+const NOTE_ACTIONS  = new Set(["NOTE_IN",  "NOTE_COLLECT",  "NOTE_ENDORSE"]);
+
+function openEditModal(item) {
+    console.log("[openEditModal] item:", JSON.stringify(item));
+    currentEditId   = item.entityId || item.id;
+    currentEditType = item.action;
+
+    const isCheck = CHECK_ACTIONS.has(item.action);
+    const isNote  = NOTE_ACTIONS.has(item.action);
+
+    // Başlık
+    const title = document.getElementById("editModalTitle");
+    if (title) title.textContent = isCheck ? "Çek Düzenle" : isNote ? "Senet Düzenle" : "İşlem Düzenle";
+
+    // Alanları göster/gizle
+    document.getElementById("editCheckFields").style.display = isCheck ? "" : "none";
+    document.getElementById("editNoteFields").style.display  = isNote  ? "" : "none";
+
+    // Ortak alanlar
+    document.getElementById("editAmount").value = item.amount || "";
+    document.getElementById("editDesc").value   = item.description || "";
+
+    // Çek alanları
+    if (isCheck) {
+        document.getElementById("editCheckNo").value  = item.checkNo  || "";
+        document.getElementById("editBank").value     = item.bank     || "";
+        document.getElementById("editDueDate").value  = item.dueDate  || "";
+    }
+
+    // Senet alanları
+    if (isNote) {
+        document.getElementById("editNoteNo").value       = item.noteNo  || "";
+        document.getElementById("editNoteDueDate").value  = item.dueDate || "";
+    }
+
     document.getElementById("editModal").classList.add("active");
 }
 
@@ -159,30 +202,49 @@ function closeEditModal() {
 }
 
 async function submitEditRequest() {
-
     const amountRaw = document.getElementById("editAmount").value;
-    const desc = document.getElementById("editDesc").value.trim();
-    const amount = parseFloat(amountRaw);
+    const amount    = parseFloat(amountRaw);
+    const desc      = document.getElementById("editDesc").value.trim();
 
     if (!amountRaw || isNaN(amount) || amount <= 0) {
         showToast("Geçerli bir tutar giriniz", "error");
         return;
     }
 
-    try {
-        const result = await myActivityApi.submitUpdateRequest(
-            currentEditId,
-            currentEditType,
-            { amount, description: desc }
-        );
+    const isCheck = CHECK_ACTIONS.has(currentEditType);
+    const isNote  = NOTE_ACTIONS.has(currentEditType);
 
-        console.log("[submitEditRequest] Sunucu yanıtı:", result);
-        showToast("İstek gönderildi", "success");
+    let data = { amount, description: desc };
+
+    if (isCheck) {
+        data.checkNo = document.getElementById("editCheckNo").value.trim();
+        data.bank    = document.getElementById("editBank").value.trim();
+        data.dueDate = document.getElementById("editDueDate").value;
+    }
+
+    if (isNote) {
+        data.noteNo  = document.getElementById("editNoteNo").value.trim();
+        data.dueDate = document.getElementById("editNoteDueDate").value;
+    }
+
+    try {
+        await myActivityApi.submitUpdateRequest(currentEditId, currentEditType, data);
+        showToast("İstek gönderildi, onay bekleniyor", "success");
         closeEditModal();
 
-        const data = await myActivityStore.load();
-        renderMyActivities(data);
-
+        // Sadece o satırın butonunu "Onay Bekliyor" badge'ine çevir — full reload yok
+        const editedBtn = document.querySelector(
+            `button[data-entity-id="${currentEditId}"][data-action="${currentEditType}"]`
+        );
+        if (editedBtn) {
+            editedBtn.replaceWith(
+                Object.assign(document.createElement("span"), {
+                    className: "badge badge-warning",
+                    style:     "font-size:11px",
+                    textContent: "Onay Bekliyor"
+                })
+            );
+        }
     } catch (err) {
         console.error("[submitEditRequest] Hata:", err);
         showToast(err.message || "Hata oluştu", "error");

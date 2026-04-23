@@ -77,7 +77,7 @@ if (isPortfoyde) {
           <button onclick="collectCheck(${c.id})">
             <i class="zmdi zmdi-money"></i> Tahsil Et
           </button>
-          <button onclick="endorseCheck(${c.id})">
+          <button onclick="openEndorseModal(${c.id}, 'check')">
             <i class="zmdi zmdi-share"></i> Ciro Et
           </button>
         </div>
@@ -87,7 +87,7 @@ if (isPortfoyde) {
 }
 
   return `
-<div class="col-xl-4 col-md-6 mb-30">
+<div class="col-xl-4 col-md-6 mb-30" data-check-id="${c.id}">
   <div class="box check-card ${statusClass} ${dueClass}">
     <div class="box-head d-flex justify-content-between align-items-center">
       <h5 class="title mb-0">${escapeHtml(formatBank(c.bank))}</h5>
@@ -109,7 +109,88 @@ if (isPortfoyde) {
 </div>`;
 }
 
-let selectedCheckId = null;
+let selectedCheckId  = null;
+let _endorseId       = null;
+let _endorseType     = null; // 'check' | 'note'
+
+function openEndorseModal(id, type) {
+  _endorseId   = id;
+  _endorseType = type;
+
+  const modal    = document.getElementById("dynamicModal");
+  const body     = document.getElementById("dynamicModalBody");
+  const title    = document.getElementById("dynamicModalTitle");
+  const subtitle = document.getElementById("dynamicModalSubtitle");
+  const icon     = document.getElementById("dynamicModalIcon");
+
+  if (!modal || !body) return;
+
+  const label = type === "check" ? "Çek" : "Senet";
+  title.textContent    = `${label} Ciro Et`;
+  subtitle.textContent = "Ciro bilgilerini girin";
+  icon.innerHTML       = `<i class="zmdi zmdi-share"></i>`;
+
+  body.innerHTML = `
+    <div class="kasa-form-group">
+      <label>Ciro Edilen Kişi / Firma</label>
+      <input id="endorsedTo" class="kasa-modal-input" type="text" placeholder="Ad Soyad veya Firma Adı">
+    </div>
+    <div class="kasa-form-group">
+      <label>Açıklama</label>
+      <textarea id="endorseDesc" class="kasa-modal-textarea" placeholder="Opsiyonel açıklama"></textarea>
+    </div>
+  `;
+
+  modal.classList.add("active");
+}
+
+async function submitEndorse() {
+  const endorsedTo = document.getElementById("endorsedTo")?.value?.trim();
+  const desc       = document.getElementById("endorseDesc")?.value?.trim() || "";
+
+  if (!endorsedTo) {
+    showToast("Ciro edilen kişi/firma adını girin", "error");
+    return;
+  }
+
+  try {
+    const payload = { id: _endorseId, endorsedTo, description: desc };
+
+    if (_endorseType === "check") {
+      await checkApi.endorse(payload);
+      showToast("Çek ciro edildi", "success");
+      document.getElementById("dynamicModal")?.classList.remove("active");
+      _removeCheckCard(_endorseId);
+    } else {
+      await noteApi.endorse(payload);
+      showToast("Senet ciro edildi", "success");
+      document.getElementById("dynamicModal")?.classList.remove("active");
+      _removeNoteCard(_endorseId);
+    }
+  } catch (e) {
+    showToast("Ciro işlemi başarısız: " + (e.message || ""), "error");
+  }
+}
+
+window.openEndorseModal = openEndorseModal;
+window.submitEndorse    = submitEndorse;
+
+// Dynamic modal'ın tek submit noktası — hangi modal açıksa onu çalıştırır
+function submitDynamicModal() {
+  if (_endorseId !== null) {
+    submitEndorse();
+  } else {
+    submitPaid();
+  }
+}
+// Modal kapandığında state'i temizle
+document.addEventListener("click", function (e) {
+  if (e.target.closest("[data-close='dynamicModal']")) {
+    _endorseId   = null;
+    _endorseType = null;
+  }
+});
+window.submitDynamicModal = submitDynamicModal;
 
 function openPaidModal(id) {
   selectedCheckId = id;
@@ -154,7 +235,7 @@ async function submitPaid() {
 
     showToast("Çek ödendi olarak işaretlendi", "success");
     document.getElementById("dynamicModal")?.classList.remove("active");
-    loadChecks();
+    _removeCheckCard(selectedCheckId);
   } catch (err) {
     showToast(err.message || "Hata oluştu", "error");
   }
@@ -163,17 +244,20 @@ async function submitPaid() {
 window.openPaidModal = openPaidModal;
 window.submitPaid = submitPaid;
 
-async function loadChecks() {
+async function loadChecks({ silent = false } = {}) {
   const musteriContainer = document.getElementById("checkContainer-musteri");
   const kendiContainer   = document.getElementById("checkContainer-kendi");
   const legacyContainer  = document.getElementById("checkContainer");
 
   if (!musteriContainer && !kendiContainer && !legacyContainer) return;
+  if (document.querySelector(".kasa-card-exit")) return;
 
-  const loading = "<div style='padding:20px'>Yükleniyor...</div>";
-  if (musteriContainer) musteriContainer.innerHTML = loading;
-  if (kendiContainer)   kendiContainer.innerHTML   = loading;
-  if (legacyContainer)  legacyContainer.innerHTML  = loading;
+  if (!silent) {
+    const loading = "<div style='padding:20px'>Yükleniyor...</div>";
+    if (musteriContainer) musteriContainer.innerHTML = loading;
+    if (kendiContainer)   kendiContainer.innerHTML   = loading;
+    if (legacyContainer)  legacyContainer.innerHTML  = loading;
+  }
 
   let checks = [];
   try {
@@ -183,6 +267,8 @@ async function loadChecks() {
     showToast("Çekler alınamadı: " + e.message, "error");
     return;
   }
+
+  if (document.querySelector(".kasa-card-exit")) return;
 
   if (musteriContainer) musteriContainer.innerHTML = "";
   if (kendiContainer)   kendiContainer.innerHTML   = "";
@@ -252,12 +338,30 @@ async function loadCheckSummary() {
 // CHECK ACTIONS
 // ==============================
 
+function _removeCheckCard(id) {
+  const card = document.querySelector(`[data-check-id="${id}"]`);
+  if (card) {
+    card.classList.add("kasa-card-exit");
+    setTimeout(() => card.remove(), 580);
+  }
+  checkStore.removeCheck(id);
+  _refreshCheckSummaryFromCache();
+}
+
+function _refreshCheckSummaryFromCache() {
+  const checks = checkStore.checks;
+  const total = checks.reduce((s, c) => s + Number(c.amount || 0), 0);
+  const tutarEl = document.getElementById("cekToplamTutar");
+  const adetEl  = document.getElementById("cekAdet");
+  if (tutarEl) animateValue(tutarEl, total);
+  if (adetEl)  adetEl.innerText = `${checks.length} adet çek`;
+}
+
 async function collectCheck(id) {
   try {
     await checkApi.collect({ id });
     showToast("Çek tahsil edildi", "success");
-    loadChecks();
-    loadCheckSummary();
+    _removeCheckCard(id);
   } catch (e) {
     showToast("Tahsil işlemi başarısız: " + e.message, "error");
   }
@@ -267,8 +371,7 @@ async function endorseCheck(id) {
   try {
     await checkApi.endorse({ id });
     showToast("Çek ciro edildi", "success");
-    loadChecks();
-    loadCheckSummary();
+    _removeCheckCard(id);
   } catch (e) {
     showToast("Ciro işlemi başarısız: " + e.message, "error");
   }

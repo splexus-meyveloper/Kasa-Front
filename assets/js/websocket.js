@@ -62,10 +62,10 @@ const wsClient = {
       window.loadCashTransactions?.();
       window.initDashboard?.();
     } else if (m === "CEK") {
-      window.loadChecks?.();
+      window.loadChecks?.({ silent: true });
       window.loadCheckSummary?.();
     } else if (m === "SENET") {
-      window.loadNotes?.();
+      window.loadNotes?.({ silent: true });
       window.loadNotesDashboard?.();
     } else if (m === "KREDI") {
       window.loadLoans?.();

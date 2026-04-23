@@ -273,8 +273,10 @@ const FIELD_LABELS = {
     transactionDate: "Tarih",
     dueDate:         "Vade Tarihi",
     checkNo:         "Çek No",
-    noteNo:          "Senet No",
+    checkType:       "Çek Tipi",
+    bank:            "Banka",
     bankName:        "Banka",
+    noteNo:          "Senet No",
     monthlyPayment:  "Aylık Ödeme",
     remainingDebt:   "Kalan Borç",
     paymentDay:      "Ödeme Günü",
@@ -284,7 +286,7 @@ const FIELD_LABELS = {
 };
 
 // Gösterilmeyecek alanlar
-const SKIP_FIELDS = new Set(["id", "active", "companyId", "createdAt", "updatedAt"]);
+const SKIP_FIELDS = new Set(["id", "active", "companyId", "createdAt", "updatedAt", "createdBy"]);
 
 // Değer çevirileri
 const VALUE_LABELS = {
@@ -295,9 +297,30 @@ const VALUE_LABELS = {
     LOAN:    "Kredi",
     true:    "Aktif",
     false:   "Pasif",
-    PENDING:  "Beklemede",
-    APPROVED: "Onaylandı",
-    REJECTED: "Reddedildi",
+    PENDING:   "Beklemede",
+    APPROVED:  "Onaylandı",
+    REJECTED:  "Reddedildi",
+    PORTFOYDE: "Kasada",
+    TAHSIL_EDILDI: "Tahsil Edildi",
+    CIRO_EDILDI:   "Ciro Edildi",
+    ODENDI:        "Ödendi",
+    MUSTERI: "Müşteri",
+    KENDI:   "Kendi",
+};
+
+// var kullan — approval-ui.js'deki BANK_LABELS const'u ile çakışmasın
+var BANK_LABELS = {
+    ZIRAAT:        "Ziraat",
+    IS_BANKASI:    "İş Bankası",
+    GARANTI_BBVA:  "Garanti BBVA",
+    AKBANK:        "Akbank",
+    YAPI_KREDI:    "Yapı Kredi",
+    HALKBANK:      "Halkbank",
+    VAKIFBANK:     "Vakıfbank",
+    QNB_FINANSBANK:"QNB Finansbank",
+    DENIZBANK:     "Denizbank",
+    TEB:           "TEB",
+    DIGER:         "Diğer",
 };
 
 // Tarih alanlarını normalize et (karşılaştırma için milisaniye/zaman dilimine dikkat)
@@ -319,6 +342,9 @@ function formatFieldValue(key, val) {
     }
     if (key === "userId") {
         return escapeHtml(userIdMap[val] || String(val));
+    }
+    if (key === "bank" || key === "bankName") {
+        return escapeHtml(BANK_LABELS[String(val)] || String(val));
     }
     if (DATE_FIELDS.has(key)) {
         try { return new Date(val).toLocaleString("tr-TR"); } catch { return escapeHtml(String(val)); }
@@ -372,7 +398,7 @@ function showChangeDetail(oldData, newData, entityType, item) {
                     <div class="detail-popup-row">
                         <span class="detail-popup-label">${label}</span>
                         <span class="detail-popup-vals">
-                            <span style="color:#cbd5e1">${oldVal}</span>
+                            <span class="detail-new">${oldVal}</span>
                         </span>
                     </div>`;
             }
@@ -385,6 +411,17 @@ function showChangeDetail(oldData, newData, entityType, item) {
         const entityTypeLabel = { CASH: "Kasa", CHECK: "Çek", NOTE: "Senet", LOAN: "Kredi" };
         const subtitle = entityTypeLabel[entityType] || entityType || "";
         const dateStr  = item?.createdAt ? new Date(item.createdAt).toLocaleString("tr-TR") : "";
+
+        const username = item?.username;
+        if (username) {
+            rows = `
+                <div class="detail-popup-row">
+                    <span class="detail-popup-label">Düzenleyen</span>
+                    <span class="detail-popup-vals">
+                        <span class="detail-new" style="font-weight:600">${escapeHtml(username)}</span>
+                    </span>
+                </div>` + rows;
+        }
 
         document.getElementById("crDetailPopup")?.remove();
 

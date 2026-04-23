@@ -3,6 +3,13 @@ const VISIBLE_FIELDS = {
     description:     "Açıklama",
     type:            "İşlem Türü",
     transactionDate: "Tarih",
+    // Çek
+    checkNo:         "Çek No",
+    bank:            "Banka",
+    dueDate:         "Vade Tarihi",
+    // Senet
+    noteNo:          "Senet No",
+    debtor:          "Borçlu",
 };
 
 const TYPE_LABELS = {
@@ -15,30 +22,60 @@ const TYPE_LABELS = {
     LOAN_CREATE:   "Kredi Ekleme",
 };
 
-function formatData(raw) {
-    if (!raw) return "-";
+var BANK_LABELS = {
+    ZIRAAT: "Ziraat", IS_BANKASI: "İş Bankası", GARANTI_BBVA: "Garanti BBVA",
+    AKBANK: "Akbank", YAPI_KREDI: "Yapı Kredi", HALKBANK: "Halkbank",
+    VAKIFBANK: "Vakıfbank", QNB_FINANSBANK: "QNB Finansbank",
+    DENIZBANK: "Denizbank", TEB: "TEB", DIGER: "Diğer",
+};
 
-    let obj = raw;
-    if (typeof raw === "string") {
-        try { obj = JSON.parse(raw); } catch { return escapeHtml(raw); }
-    }
+function parseRaw(raw) {
+    if (!raw) return {};
+    if (typeof raw === "string") { try { return JSON.parse(raw); } catch { return {}; } }
+    return raw;
+}
 
-    const entries = Object.entries(obj)
-        .filter(([k]) => VISIBLE_FIELDS[k])
-        .map(([k, v]) => {
-            const label = VISIBLE_FIELDS[k];
-            let val = v;
-            if (k === "amount") val = Number(v).toLocaleString("tr-TR", { minimumFractionDigits: 2 }) + " TL";
-            if (k === "transactionDate") val = new Date(v).toLocaleString("tr-TR");
-            if (k === "type") val = TYPE_LABELS[v] || v;
-            return `
-              <div style="margin-bottom:3px">
+function formatVal(k, v) {
+    if (v === null || v === undefined) return "-";
+    if (k === "amount")          return Number(v).toLocaleString("tr-TR", { minimumFractionDigits: 2 }) + " TL";
+    if (k === "transactionDate") return new Date(v).toLocaleString("tr-TR");
+    if (k === "dueDate")         return new Date(v).toLocaleDateString("tr-TR");
+    if (k === "type")            return TYPE_LABELS[v] || v;
+    if (k === "bank")            return BANK_LABELS[v] || v;
+    return String(v);
+}
+
+// Sabit sıra — her zaman aynı sırada göster
+const FIELD_ORDER = ["checkNo", "noteNo", "bank", "dueDate", "amount", "description", "type", "transactionDate", "debtor"];
+
+function buildAlignedColumns(oldRaw, newRaw) {
+    const o = parseRaw(oldRaw);
+    const n = parseRaw(newRaw);
+
+    // Birleşik key listesi, FIELD_ORDER'a göre sırala
+    const allKeys = [...new Set([...FIELD_ORDER, ...Object.keys(o), ...Object.keys(n)])]
+        .filter(k => VISIBLE_FIELDS[k] && (k in o || k in n));
+
+    let oldCol = "";
+    let newCol = "";
+
+    allKeys.forEach(k => {
+        const label = VISIBLE_FIELDS[k];
+        const oldVal = escapeHtml(formatVal(k, o[k]));
+        const newVal = escapeHtml(formatVal(k, n[k]));
+        const changed = formatVal(k, o[k]) !== formatVal(k, n[k]);
+
+        const row = (val, isNew) => `
+            <div style="margin-bottom:6px">
                 <span style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px">${label}</span>
-                <span style="display:block;font-weight:600;color:#1e293b">${escapeHtml(String(val))}</span>
-              </div>`;
-        });
+                <span class="approval-field-val${isNew && changed ? " approval-field-changed" : ""}">${val}</span>
+            </div>`;
 
-    return entries.length ? entries.join("") : "-";
+        oldCol += row(oldVal, false);
+        newCol += row(newVal, true);
+    });
+
+    return { oldCol: oldCol || "-", newCol: newCol || "-" };
 }
 
 const entityTypeLabel = {
@@ -89,12 +126,15 @@ function renderApprovals(list) {
                 ? `<span style="opacity:.6;font-size:11px">ID:</span> <strong>${item.requestedBy}</strong>`
                 : "-";
 
+        const { oldCol, newCol } = buildAlignedColumns(item.oldData, item.newData);
+
+        tr.dataset.requestId = item.id;
         tr.innerHTML = `
       <td style="white-space:nowrap">${escapeHtml(date)}</td>
       <td>${requester}</td>
       <td><span class="badge badge-primary">${typeLabel}</span></td>
-      <td>${formatData(item.oldData)}</td>
-      <td>${formatData(item.newData)}</td>
+      <td>${oldCol}</td>
+      <td>${newCol}</td>
       <td style="white-space:nowrap">
         <button class="btn-modern" data-id="${item.id}" data-action="approve">Onayla</button>
         <button class="btn-delete" data-id="${item.id}" data-action="reject">Reddet</button>
@@ -112,12 +152,27 @@ function renderApprovals(list) {
     });
 }
 
+function _removeApprovalRow(id) {
+  const row = document.querySelector(`tr[data-request-id="${id}"]`);
+  if (!row) return;
+  row.style.transition = "opacity .25s, transform .25s";
+  row.style.opacity = "0";
+  row.style.transform = "translateX(20px)";
+  setTimeout(() => {
+    row.remove();
+    const tbody = document.getElementById("approvalTableBody");
+    if (tbody && tbody.querySelectorAll("tr").length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">Bekleyen istek yok</td></tr>`;
+    }
+  }, 260);
+}
+
 function approve(id) {
     showConfirmToast("Bu işlemi onaylamak istediğinize emin misiniz?", async () => {
         try {
             await changeRequestApi.approve(id);
             showToast("Onaylandı", "success");
-            loadApprovals();
+            _removeApprovalRow(id);
         } catch (err) {
             console.error("[approve] Hata:", err);
             showToast(err.message || "Onaylama başarısız", "error");
@@ -130,7 +185,7 @@ function reject(id) {
         try {
             await changeRequestApi.reject(id);
             showToast("Reddedildi", "error");
-            loadApprovals();
+            _removeApprovalRow(id);
         } catch (err) {
             console.error("[reject] Hata:", err);
             showToast(err.message || "Reddetme başarısız", "error");

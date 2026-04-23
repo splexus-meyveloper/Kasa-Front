@@ -85,14 +85,19 @@ async function loadDashboard(selectedUserId = null) {
 
     if (!d) return;
 
-    // 🔥 animasyonlu bas
-    animateValue(gi, Number(d.todayIncome || 0));
-    animateValue(gc, Number(d.todayExpense || 0));
-    animateValue(an, Number(d.monthlyNet || 0));
-    animateValue(kb, Number(d.balance || 0));
+    // Animasyonu preloader kapandıktan sonra başlat
+    const runAnims = () => {
+      animateValue(gi, Number(d.todayIncome || 0));
+      animateValue(gc, Number(d.todayExpense || 0));
+      animateValue(an, Number(d.monthlyNet || 0));
+      animateValue(kb, Number(d.balance || 0));
+      if (krediBorc) animateValue(krediBorc, Number(d.totalLoanDebt || 0));
+    };
 
-    if (krediBorc) {
-      animateValue(krediBorc, Number(d.totalLoanDebt || 0));
+    if (window._appVisible) {
+      runAnims();
+    } else {
+      document.addEventListener("appVisible", runAnims, { once: true });
     }
 
     // 🔥 progress bar

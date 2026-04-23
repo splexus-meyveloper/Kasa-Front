@@ -27,7 +27,7 @@ function createFinancialCard(data, type) {
   }
 
   return `
-<div class="col-xl-4 col-md-6 mb-30">
+<div class="col-xl-4 col-md-6 mb-30" data-note-id="${data.id}">
   <div class="box check-card ${dueClass}">
     <div class="box-head d-flex justify-content-between align-items-center">
       <h5 class="title mb-0">${escapeHtml(title)}</h5>
@@ -37,12 +37,10 @@ function createFinancialCard(data, type) {
         <div class="check-menu">
           <button class="check-menu-btn"><i class="zmdi zmdi-more-vert"></i></button>
           <div class="check-menu-dropdown">
-            <button
-              onclick="collectNote(${data.id})"
+            <button onclick="collectNote(${data.id})">
               <i class="zmdi zmdi-money"></i> Tahsil Et
             </button>
-            <button
-              onclick="endorseNote(${data.id})"
+            <button onclick="openEndorseModal(${data.id}, 'note')">
               <i class="zmdi zmdi-share"></i> Ciro Et
             </button>
           </div>
@@ -65,11 +63,12 @@ function createFinancialCard(data, type) {
 // ==============================
 // LOAD NOTES
 // ==============================
-async function loadNotes() {
+async function loadNotes({ silent = false } = {}) {
   const container = document.getElementById("noteContainer");
   if (!container) return;
+  if (document.querySelector(".kasa-card-exit")) return;
 
-  container.innerHTML = "Yükleniyor...";
+  if (!silent) container.innerHTML = "Yükleniyor...";
 
   let notes = [];
 
@@ -80,6 +79,8 @@ async function loadNotes() {
     showToast("Senetler alınamadı", "error");
     return;
   }
+
+  if (document.querySelector(".kasa-card-exit")) return;
 
   container.innerHTML = "";
 
@@ -125,33 +126,41 @@ async function loadNotesDashboard() {
 // ACTIONS
 // ==============================
 
+function _removeNoteCard(id) {
+  const card = document.querySelector(`[data-note-id="${id}"]`);
+  if (card) {
+    card.classList.add("kasa-card-exit");
+    setTimeout(() => card.remove(), 580);
+  }
+  noteStore.removeNote(id);
+  _refreshNoteSummaryFromCache();
+}
+
+function _refreshNoteSummaryFromCache() {
+  const notes = noteStore.notes;
+  const total = notes.reduce((s, n) => s + Number(n.amount || 0), 0);
+  const adetEl  = document.getElementById("senetAdet");
+  const tutarEl = document.getElementById("senetToplamTutar");
+  if (adetEl)  adetEl.innerText = `${notes.length} adet`;
+  if (tutarEl) animateValue(tutarEl, total);
+}
+
 async function collectNote(id) {
   try {
-    console.log("COLLECT NOTE ID:", id);
-
     await noteApi.collect({ id });
-
     showToast("Senet tahsil edildi", "success");
-    loadNotes();
-    loadNotesDashboard();
-
+    _removeNoteCard(id);
   } catch (e) {
     console.error(e);
     showToast("Tahsil işlemi başarısız", "error");
   }
 }
 
-
 async function endorseNote(id) {
   try {
-    console.log("ENDORSE NOTE ID:", id);
-
     await noteApi.endorse({ id });
-
     showToast("Senet ciro edildi", "success");
-    loadNotes();
-    loadNotesDashboard();
-
+    _removeNoteCard(id);
   } catch (e) {
     console.error(e);
     showToast("Ciro işlemi başarısız", "error");
@@ -195,7 +204,8 @@ document.addEventListener("click", async function (e) {
 // GLOBAL EXPORT
 // ==============================
 
-window.loadNotes = loadNotes;
+window.loadNotes          = loadNotes;
 window.loadNotesDashboard = loadNotesDashboard;
-window.collectNote = collectNote;
-window.endorseNote = endorseNote;
+window.collectNote        = collectNote;
+window.endorseNote        = endorseNote;
+window._removeNoteCard    = _removeNoteCard;

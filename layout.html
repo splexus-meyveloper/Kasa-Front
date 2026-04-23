@@ -267,7 +267,7 @@
       <button type="button" class="button button-secondary" data-close="dynamicModal">
         Vazgeç
       </button>
-      <button type="button" class="button button-primary" onclick="submitPaid()">
+      <button type="button" class="button button-primary" id="dynamicModalSubmitBtn" onclick="submitDynamicModal()">
        Kaydet
       </button>
     </div>
@@ -408,6 +408,8 @@ window.addEventListener("load", function () {
 
         setTimeout(() => {
             loader.style.display = "none";
+            window._appVisible = true;
+            document.dispatchEvent(new CustomEvent("appVisible"));
         }, 800);
 
     }, 3000); // 🔥 BURASI ANA SÜRE

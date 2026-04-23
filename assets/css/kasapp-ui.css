@@ -774,6 +774,18 @@ opacity:.8;
 opacity:1;
 }
 
+/* CARD EXIT ANIMATION */
+
+@keyframes kasaCardExit {
+  0%   { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-10px) scale(0.97); }
+}
+
+.kasa-card-exit {
+  animation: kasaCardExit 0.55s ease forwards;
+  pointer-events: none;
+}
+
 /* CHECK CARD */
 
 .check-card{
@@ -781,7 +793,7 @@ opacity:1;
   border-radius:10px;
   transition:all .2s ease;
   overflow:hidden;
-  border-left:4px solid #3a7afe; /* normalde mavi */
+  border-left:5px solid #3a7afe;
 }
 
 .check-card:hover{
@@ -953,25 +965,33 @@ opacity:1;
 /* Kartın sol çizgisi - sadece vade durumuna göre değişsin */
 
 .check-card.due-warning{
-  border-left-color:#ffc107 !important;
+  border-left-color:#fbbf24 !important;
 }
 
 .check-card.due-critical{
-  border-left-color:#ff9800 !important;
+  border-left-color:#f97316 !important;
 }
 
 .check-card.due-over{
-  border-left-color:#dc3545 !important;
+  border-left-color:#ef4444 !important;
 }
 
 .check-card.due-today{
-  border-left-color:#dc3545 !important;
+  border-left-color:#ef4444 !important;
 }
 
 .box.check-card{
   opacity:1 !important;
   color:#000000;
+  border-left-width: 5px !important;
+  border-left-style: solid !important;
+  border-left-color: #3a7afe !important;
 }
+
+.box.check-card.due-warning  { border-left-color: #fbbf24 !important; }
+.box.check-card.due-critical { border-left-color: #f97316 !important; }
+.box.check-card.due-over     { border-left-color: #ef4444 !important; }
+.box.check-card.due-today    { border-left-color: #ef4444 !important; }
 
 /* ICON INPUT */
 
@@ -1729,13 +1749,20 @@ body.login-page.skin-dark {
 .kasa-form-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.kasa-form-group:last-child {
+  margin-bottom: 0;
 }
 
 .kasa-form-group label {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: #334155;
+  margin: 0;
+  padding: 0;
 }
 
 .kasa-modal-input,
@@ -2230,6 +2257,7 @@ body.dark-mode .kasa-modal-row {
 body.dark-mode .kasa-modal-row span  { color: #888 !important; }
 body.dark-mode .kasa-modal-row strong { color: #e0e0e0 !important; }
 body.dark-mode .kasa-modal-title      { color: #e0e0e0 !important; }
+body.dark-mode .kasa-modal-card h3    { color: #e0e0e0 !important; }
 body.dark-mode .kasa-modal-subtitle   { color: #888 !important; }
 body.dark-mode .kasa-modal-close      { color: #888 !important; }
 body.dark-mode .kasa-modal-close:hover { color: #e0e0e0 !important; }
@@ -2237,7 +2265,9 @@ body.dark-mode .kasa-modal-close:hover { color: #e0e0e0 !important; }
 /* FORM GROUP */
 body.dark-mode .kasa-form-group label { color: #aaa !important; }
 body.dark-mode .kasa-modal-input,
-body.dark-mode .kasa-modal-textarea {
+body.dark-mode .kasa-modal-textarea,
+body.dark-mode .kasa-modal-input select,
+body.dark-mode select.kasa-modal-input {
   background: #242424 !important;
   border-color: #2e2e2e !important;
   color: #e0e0e0 !important;
@@ -2250,6 +2280,23 @@ body.dark-mode .mini-flyout li a:hover        { background: #2a2a2a !important; 
 
 /* TABLE page: tarih sütunu rengi */
 body.dark-mode .users-table td[style*="font-weight:700"] { color: #e0e0e0 !important; }
+
+/* APPROVAL PAGE */
+.approval-field-val { display: block; font-weight: 600; color: #1e293b; font-size: 13px; }
+.approval-field-changed { color: #16a34a !important; }
+body.dark-mode .approval-field-val { color: #e0e0e0 !important; }
+body.dark-mode .approval-field-changed { color: #4ade80 !important; }
+
+/* Sayfa başlıkları — ID'li KPI h2'lerine dokunma */
+body.dark-mode #pageContent h3,
+body.dark-mode #pageContent h2:not([id]) { color: #e0e0e0 !important; }
+
+/* CHECK/NOTE CARD — dark mode sol kenar renkleri */
+body.dark-mode .check-card                { border-left-width: 5px; border-left-color: #3a7afe !important; }
+body.dark-mode .check-card.due-warning    { border-left-color: #fbbf24 !important; }
+body.dark-mode .check-card.due-critical   { border-left-color: #f97316 !important; }
+body.dark-mode .check-card.due-over       { border-left-color: #ef4444 !important; }
+body.dark-mode .check-card.due-today      { border-left-color: #ef4444 !important; }
 
 /* DETAIL POPUP */
 body.dark-mode .detail-popup {
@@ -2313,9 +2360,17 @@ body.dark-mode .cek-card,
 body.dark-mode .note-card,
 body.dark-mode .loan-card {
   background: #1c1c1c !important;
-  border-color: #2e2e2e !important;
+  border-top-color: #2e2e2e !important;
+  border-right-color: #2e2e2e !important;
+  border-bottom-color: #2e2e2e !important;
   color: #e0e0e0 !important;
 }
+
+body.dark-mode .box.check-card                { border-left-color: #3a7afe !important; }
+body.dark-mode .box.check-card.due-warning    { border-left-color: #fbbf24 !important; }
+body.dark-mode .box.check-card.due-critical   { border-left-color: #f97316 !important; }
+body.dark-mode .box.check-card.due-over       { border-left-color: #ef4444 !important; }
+body.dark-mode .box.check-card.due-today      { border-left-color: #ef4444 !important; }
 
 body.dark-mode .check-card *,
 body.dark-mode .cek-card *,
@@ -2435,8 +2490,9 @@ body.dark-mode .detail-popup-row.detail-changed { background: #1a1500 !important
 
 .detail-popup-label {
   font-weight: 600;
-  color: #6b7280;
-  min-width: 80px;
+  color: #374151;
+  min-width: 90px;
+  font-size: 13px;
 }
 
 .detail-popup-vals {
@@ -2446,9 +2502,13 @@ body.dark-mode .detail-popup-row.detail-changed { background: #1a1500 !important
   gap: 4px;
 }
 
-.detail-old  { color: #ef4444; text-decoration: line-through; font-size: 13px; }
-.detail-new  { color: #374151; font-size: 13px; }
+.detail-old  { color: #ef4444; text-decoration: line-through; font-size: 13px; font-weight: 600; }
+.detail-new  { color: #111827; font-size: 13px; font-weight: 600; }
 .detail-new-highlight { color: #16a34a !important; font-weight: 700; }
+
+body.dark-mode .detail-popup-label   { color: #9ca3af !important; }
+body.dark-mode .detail-new:not(.detail-new-highlight) { color: #e0e0e0 !important; }
+body.dark-mode .detail-new-highlight  { color: #4ade80 !important; }
 
 /* =================================================
    TABLE-FIXED — sütun genişliği sabit kalsın

@@ -1,25 +1,23 @@
 const noteStore = {
+  notes: [],
 
   async fetchNotes() {
-    return await noteApi.getAll();
+    this.notes = await noteApi.getAll();
+    return this.notes;
   },
 
   async fetchPortfolioNotes() {
-    return await noteApi.getPortfolio();
+    this.notes = await noteApi.getPortfolio();
+    return this.notes;
   },
 
   async createNote(data) {
     return await noteApi.create(data);
   },
 
-  async collectNote(data) {
-    return await noteApi.collect(data);
-  },
-
-  async endorseNote(data) {
-    return await noteApi.endorse(data);
+  removeNote(id) {
+    this.notes = this.notes.filter(n => String(n.id) !== String(id));
   }
-
 };
 
 window.noteStore = noteStore;

@@ -137,6 +137,7 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
         localStorage.setItem("role", data.role);
         localStorage.setItem("permissions", JSON.stringify(data.permissions));
 
+        sessionStorage.setItem("justLoggedIn", "1");
         window.location.href = "layout.html";
 
     } catch (err) {
