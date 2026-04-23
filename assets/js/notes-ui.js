@@ -37,10 +37,10 @@ function createFinancialCard(data, type) {
         <div class="check-menu">
           <button class="check-menu-btn"><i class="zmdi zmdi-more-vert"></i></button>
           <div class="check-menu-dropdown">
-            <button onclick="collectNote(${data.id})">
+            <button onclick="collectNote(${parseInt(data.id, 10)})">
               <i class="zmdi zmdi-money"></i> Tahsil Et
             </button>
-            <button onclick="openEndorseModal(${data.id}, 'note')">
+            <button onclick="openEndorseModal(${parseInt(data.id, 10)}, 'note')">
               <i class="zmdi zmdi-share"></i> Ciro Et
             </button>
           </div>
@@ -85,8 +85,6 @@ async function loadNotes({ silent = false } = {}) {
   container.innerHTML = "";
 
   notes.forEach((n) => {
-  console.log("NOTE ITEM:", n);
-
   container.insertAdjacentHTML(
     "beforeend",
     createFinancialCard(n, "note")

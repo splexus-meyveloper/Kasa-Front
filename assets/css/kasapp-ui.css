@@ -1217,7 +1217,7 @@ padding:24px;
 
 border-bottom:1px solid #e5e7eb;
 
-padding-bottom:12px;
+padding:0 0 12px 0;
 
 margin-bottom:20px;
 
@@ -2229,6 +2229,7 @@ body.dark-mode .dropdown-menu-user {
 }
 
 body.dark-mode .dropdown-menu-user .head { border-bottom-color: #2e2e2e !important; }
+body.dark-mode .dropdown-menu-user .head .name a { color: #e0e0e0 !important; }
 
 body.dark-mode .dropdown-menu-user .body ul li a { color: #e0e0e0 !important; }
 body.dark-mode .dropdown-menu-user .body ul li a:hover { background: #2a2a2a !important; }
@@ -2314,6 +2315,30 @@ body.dark-mode .detail-popup-label { color: #888 !important; }
 
 body.dark-mode .fc-toolbar-title { color: #e0e0e0 !important; }
 
+/* "Finans Takvimi" custom button — düz metin gibi görünsün */
+.fc-calendarTitle-button,
+.fc-calendarTitle-button:hover,
+.fc-calendarTitle-button:focus,
+.fc-calendarTitle-button:active {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  color: #1f2937 !important;
+  cursor: default !important;
+  padding: 0 !important;
+  pointer-events: none;
+}
+
+body.dark-mode .fc-calendarTitle-button,
+body.dark-mode .fc-calendarTitle-button:hover,
+body.dark-mode .fc-calendarTitle-button:focus {
+  color: #e0e0e0 !important;
+  background: transparent !important;
+  border: none !important;
+}
+
 body.dark-mode .fc-button {
   background: #2a2a2a !important;
   border-color: #2e2e2e !important;
@@ -2336,7 +2361,14 @@ body.dark-mode .fc-col-header-cell-cushion,
 body.dark-mode .fc-daygrid-day-number,
 body.dark-mode .fc-daygrid-more-link { color: #e0e0e0 !important; }
 
-body.dark-mode .fc-day-today { background: rgba(59,130,246,0.12) !important; }
+body.dark-mode .fc-day-today {
+  background: rgba(245,158,11,0.18) !important;
+  border: 2px solid rgba(245,158,11,0.55) !important;
+}
+body.dark-mode .fc-day-today .fc-daygrid-day-number {
+  color: #f59e0b !important;
+  font-weight: 700 !important;
+}
 
 body.dark-mode .fc-scrollgrid,
 body.dark-mode .fc-scrollgrid-section > td,

@@ -85,7 +85,7 @@ async function loadLoans() {
 
       <div class="mt-20">
         <button class="button button-primary button-sm"
-          onclick="payLoanInstallment(${l.id})">
+          onclick="payLoanInstallment(${parseInt(l.id, 10)})">
           <i class="zmdi zmdi-money"></i> Taksiti Öde
         </button>
       </div>

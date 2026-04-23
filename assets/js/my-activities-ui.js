@@ -162,7 +162,6 @@ const CHECK_ACTIONS = new Set(["CHECK_IN", "CHECK_COLLECT", "CHECK_ENDORSE", "CH
 const NOTE_ACTIONS  = new Set(["NOTE_IN",  "NOTE_COLLECT",  "NOTE_ENDORSE"]);
 
 function openEditModal(item) {
-    console.log("[openEditModal] item:", JSON.stringify(item));
     currentEditId   = item.entityId || item.id;
     currentEditType = item.action;
 

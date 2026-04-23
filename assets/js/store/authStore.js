@@ -1,19 +1,19 @@
 const authStore = {
   getToken() {
-    return localStorage.getItem("token");
+    return sessionStorage.getItem("token");
   },
 
   getUsername() {
-    return localStorage.getItem("username");
+    return sessionStorage.getItem("username");
   },
 
   getRole() {
-    return localStorage.getItem("role");
+    return sessionStorage.getItem("role");
   },
 
   getPermissions() {
     try {
-      return JSON.parse(localStorage.getItem("permissions") || "[]");
+      return JSON.parse(sessionStorage.getItem("permissions") || "[]");
     } catch {
       return [];
     }
@@ -24,20 +24,20 @@ const authStore = {
   },
 
   setSession(data) {
-    localStorage.setItem("token", data.token || "");
-    localStorage.setItem("username", data.username || "");
-    localStorage.setItem("role", data.role || "");
-    localStorage.setItem(
+    sessionStorage.setItem("token", data.token || "");
+    sessionStorage.setItem("username", data.username || "");
+    sessionStorage.setItem("role", data.role || "");
+    sessionStorage.setItem(
       "permissions",
       JSON.stringify(data.permissions || [])
     );
   },
 
   clearSession() {
-    localStorage.removeItem("token");
-    localStorage.removeItem("username");
-    localStorage.removeItem("role");
-    localStorage.removeItem("permissions");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("username");
+    sessionStorage.removeItem("role");
+    sessionStorage.removeItem("permissions");
   },
 
   async login(credentials) {

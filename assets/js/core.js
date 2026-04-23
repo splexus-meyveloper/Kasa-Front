@@ -16,7 +16,10 @@ function showToast(message, type = "success") {
   if (type === "error") icon = "✖";
   if (type === "info") icon = "ℹ";
 
-  t.innerHTML = `<span>${icon}</span> ${message}`;
+  const iconSpan = document.createElement("span");
+  iconSpan.textContent = icon;
+  t.appendChild(iconSpan);
+  t.appendChild(document.createTextNode(" " + message));
   box.appendChild(t);
 
   setTimeout(() => {
@@ -66,7 +69,7 @@ function showConfirmToast(message, onConfirm) {
 // AUTH
 // ==============================
 function logout() {
-  localStorage.clear();
+  sessionStorage.clear();
   window.location.href = "login.html";
 }
 
@@ -212,6 +215,23 @@ document
       dynamicModalCallback();
     }
   });
+
+// ==============================
+// BANK LABELS (tek kaynak — tüm modüller buradan okur)
+// ==============================
+var BANK_LABELS = {
+  ZIRAAT:         "Ziraat",
+  IS_BANKASI:     "İş Bankası",
+  GARANTI_BBVA:   "Garanti BBVA",
+  AKBANK:         "Akbank",
+  YAPI_KREDI:     "Yapı Kredi",
+  HALKBANK:       "Halkbank",
+  VAKIFBANK:      "Vakıfbank",
+  QNB_FINANSBANK: "QNB Finansbank",
+  DENIZBANK:      "Denizbank",
+  TEB:            "TEB",
+  DIGER:          "Diğer",
+};
 
 // ==============================
 // GLOBAL EXPORT

@@ -1,6 +1,6 @@
 (function () {
 
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     if (!token) {
         window.location.href = "login.html";
         return;
@@ -15,12 +15,23 @@
             ).join(''));
             return JSON.parse(jsonPayload);
         } catch (e) {
-            console.error("JWT parse hatası", e);
-            return {};
+            return null;
         }
     }
 
     const jwt = parseJwt(token);
+    if (!jwt) {
+        sessionStorage.removeItem("token");
+        window.location.href = "login.html";
+        return;
+    }
+
+    if (jwt.exp && jwt.exp < Math.floor(Date.now() / 1000)) {
+        sessionStorage.removeItem("token");
+        window.location.href = "login.html";
+        return;
+    }
+
     const permissions = jwt.permissions || [];
 
     function has(p) {

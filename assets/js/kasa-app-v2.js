@@ -142,7 +142,6 @@ function runPageInit(page) {
 
 async function loadPage(page) {
   window.currentPage = page;
-  localStorage.setItem("lastPage", page);
 
   const container = document.getElementById("pageContent");
   if (!container) return;
@@ -201,7 +200,7 @@ function formatBank(bank) {
 
 function getAuthHeaders(json = false) {
   const headers = {
-    Authorization: "Bearer " + localStorage.getItem("token")
+    Authorization: "Bearer " + sessionStorage.getItem("token")
   };
 
   if (json) headers["Content-Type"] = "application/json";
@@ -249,7 +248,7 @@ function getDueColor(dueDate) {
 // ==============================
 function getPermissions() {
   try {
-    return JSON.parse(localStorage.getItem("permissions") || "[]");
+    return JSON.parse(sessionStorage.getItem("permissions") || "[]");
   } catch {
     return [];
   }

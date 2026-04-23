@@ -132,10 +132,10 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
 
         const data = await res.json();
 
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("username", data.username);
-        localStorage.setItem("role", data.role);
-        localStorage.setItem("permissions", JSON.stringify(data.permissions));
+        sessionStorage.setItem("token", data.token);
+        sessionStorage.setItem("username", data.username);
+        sessionStorage.setItem("role", data.role);
+        sessionStorage.setItem("permissions", JSON.stringify(data.permissions));
 
         sessionStorage.setItem("justLoggedIn", "1");
         window.location.href = "layout.html";

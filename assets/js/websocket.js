@@ -10,7 +10,7 @@ const wsClient = {
 
   _getCompanyId() {
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       if (!token) return null;
       const payload = JSON.parse(atob(token.split(".")[1]));
       return payload.companyId || null;
@@ -25,7 +25,7 @@ const wsClient = {
     this._companyId = this._getCompanyId();
     if (!this._companyId) return;
 
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     if (!token) return;
 
     const baseUrl = API_BASE.replace(/\/api$/, "");

@@ -5,7 +5,7 @@
 function initAppShell() {
   checkPagePermission();
 
-  const role = localStorage.getItem("role");
+  const role = sessionStorage.getItem("role");
   const adminDashboard = document.getElementById("adminDashboard");
   const userWelcome = document.getElementById("userWelcome");
 
@@ -17,7 +17,7 @@ function initAppShell() {
     if (userWelcome) userWelcome.style.display = "none";
   }
 
-  const username = localStorage.getItem("username");
+  const username = sessionStorage.getItem("username");
   const headerEl = document.getElementById("headerUserName");
   const dropdownEl = document.getElementById("dropdownUserName");
 

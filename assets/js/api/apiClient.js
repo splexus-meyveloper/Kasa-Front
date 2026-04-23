@@ -1,5 +1,5 @@
 async function request(url, options = {}) {
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
 
   const finalHeaders = {
     ...(options.headers || {}),
@@ -30,10 +30,10 @@ async function request(url, options = {}) {
   }
 
   if (response.status === 401) {
-    localStorage.removeItem("token");
-    localStorage.removeItem("username");
-    localStorage.removeItem("role");
-    localStorage.removeItem("permissions");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("username");
+    sessionStorage.removeItem("role");
+    sessionStorage.removeItem("permissions");
     window.location.href = "login.html";
     return null;
   }

@@ -1,6 +1,6 @@
 const authApi = {
   login: (data) =>
-    fetch("http://localhost:8080/api/auth/login", {
+    fetch(API_BASE + "/auth/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -27,7 +27,7 @@ const authApi = {
     }),
 
   registerCompany: (data) =>
-    fetch("http://localhost:8080/api/auth/register-company", {
+    fetch(API_BASE + "/auth/register-company", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -22,12 +22,7 @@ const TYPE_LABELS = {
     LOAN_CREATE:   "Kredi Ekleme",
 };
 
-var BANK_LABELS = {
-    ZIRAAT: "Ziraat", IS_BANKASI: "İş Bankası", GARANTI_BBVA: "Garanti BBVA",
-    AKBANK: "Akbank", YAPI_KREDI: "Yapı Kredi", HALKBANK: "Halkbank",
-    VAKIFBANK: "Vakıfbank", QNB_FINANSBANK: "QNB Finansbank",
-    DENIZBANK: "Denizbank", TEB: "TEB", DIGER: "Diğer",
-};
+// BANK_LABELS → core.js'de tanımlı
 
 function parseRaw(raw) {
     if (!raw) return {};

@@ -159,10 +159,18 @@ async function loadCalendar() {
       locale: "tr",
       height: 600,
 
+      customButtons: {
+        calendarTitle: { text: "Finans Takvimi" }
+      },
+
       headerToolbar: {
-        left: "prev,next today",
+        left: "calendarTitle",
         center: "title",
-        right: "",
+        right: "prev,next today",
+      },
+
+      buttonText: {
+        today: "Bugün",
       },
 
       events,

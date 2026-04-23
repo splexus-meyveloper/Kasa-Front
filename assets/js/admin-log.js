@@ -40,7 +40,7 @@ LOAN_UPDATE_REQUEST_REJECTED:   '<span class="badge badge-danger">Kredi Düzenle
 
 };
 
-return map[action] || action;
+return map[action] || `<span class="badge">${escapeHtml(String(action || ""))}</span>`;
 
 }
 
@@ -70,7 +70,6 @@ function translateAction(action){
 
 }
 
-console.log("ADMIN LOG JS YÜKLENDİ");
 
 function initAdminLogs(){
 
@@ -86,7 +85,7 @@ function initAdminLogs(){
 
 async function loadMovements(page = 0, start = "", end = "", action = "", username = "", q = ""){
 
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
 
     // "Düzenlemeler" filtresi → ayrı endpoint
     if(action === "CASH_UPDATE_REQUEST"){
@@ -152,7 +151,6 @@ async function loadChangeRequests(token){
         showToast("Sadece bekleyen düzenleme talepleri gösteriliyor (tüm kayıtlara erişim yok)", "warning");
     }
 
-    console.log("[loadChangeRequests] gelen kayıt sayısı:", list.length, "ilk kayıt:", list[0]);
 
     const mapped = list.map(item => ({
         createdAt:   item.requestedAt || item.createdAt,
@@ -208,7 +206,6 @@ list.forEach(item => {
     const newData     = payload.newData || item._newData || null;
     const entityType  = item.entityType || detailsJson.entityType || item._entityType || null;
     const hasDetail   = !!(oldData || newData);
-    if (isChangeReq) console.log("[renderTable] ham item:", item);
 
     const isIncome = !isChangeReq && (
               item.action === "CASH_INCOME"
@@ -308,20 +305,7 @@ const VALUE_LABELS = {
     KENDI:   "Kendi",
 };
 
-// var kullan — approval-ui.js'deki BANK_LABELS const'u ile çakışmasın
-var BANK_LABELS = {
-    ZIRAAT:        "Ziraat",
-    IS_BANKASI:    "İş Bankası",
-    GARANTI_BBVA:  "Garanti BBVA",
-    AKBANK:        "Akbank",
-    YAPI_KREDI:    "Yapı Kredi",
-    HALKBANK:      "Halkbank",
-    VAKIFBANK:     "Vakıfbank",
-    QNB_FINANSBANK:"QNB Finansbank",
-    DENIZBANK:     "Denizbank",
-    TEB:           "TEB",
-    DIGER:         "Diğer",
-};
+// BANK_LABELS → core.js'de tanımlı
 
 // Tarih alanlarını normalize et (karşılaştırma için milisaniye/zaman dilimine dikkat)
 const DATE_FIELDS = new Set(["transactionDate", "dueDate", "createdAt", "updatedAt"]);
@@ -463,17 +447,6 @@ function updateAdminTotals(income, expense) {
 
 let adminLogsLoaded = false;
 
-const adminLogInterval = setInterval(() => {
-    const table = document.getElementById("kasaTableBody");
-
-    if (table && !adminLogsLoaded) {
-        adminLogsLoaded = true;
-        console.log("KASA TABLE BULUNDU");
-        loadMovements();
-        clearInterval(adminLogInterval);
-    }
-}, 500);
-
 function applyFilter(){
 
     const startDate = document.getElementById("filterStartDate").value;
@@ -509,12 +482,18 @@ function initAdminLogs(){
 
 }
 
-setInterval(initAdminLogs, 300);
+const _adminLogInitInterval = setInterval(() => {
+    const table = document.getElementById("kasaTableBody");
+    if (table) {
+        clearInterval(_adminLogInitInterval);
+        initAdminLogs();
+    }
+}, 300);
 
 const userIdMap = {}; // { userId: username }
 
 async function loadUsers() {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
 
     const res = await fetch(API_BASE + "/admin/profiles", {
         headers: { "Authorization": "Bearer " + token }

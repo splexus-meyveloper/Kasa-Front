@@ -59,7 +59,7 @@ if (isPortfoyde) {
           <i class="zmdi zmdi-more-vert"></i>
         </button>
         <div class="check-menu-dropdown">
-          <button onclick="openPaidModal(${c.id})">
+          <button onclick="openPaidModal(${parseInt(c.id, 10)})">
             <i class="zmdi zmdi-check"></i> Ödendi
           </button>
         </div>
@@ -74,10 +74,10 @@ if (isPortfoyde) {
           <i class="zmdi zmdi-more-vert"></i>
         </button>
         <div class="check-menu-dropdown">
-          <button onclick="collectCheck(${c.id})">
+          <button onclick="collectCheck(${parseInt(c.id, 10)})">
             <i class="zmdi zmdi-money"></i> Tahsil Et
           </button>
-          <button onclick="openEndorseModal(${c.id}, 'check')">
+          <button onclick="openEndorseModal(${parseInt(c.id, 10)}, 'check')">
             <i class="zmdi zmdi-share"></i> Ciro Et
           </button>
         </div>
