@@ -1,7 +1,7 @@
 const cashApi = {
 
-  getTransactions: () =>
-    apiClient.request("/cash/transactions"),
+  getTransactions: (page = 0, size = 50) =>
+    apiClient.request(`/cash/transactions?page=${page}&size=${size}`),
 
   addIncome: (data) =>
     apiClient.request("/cash/income", {

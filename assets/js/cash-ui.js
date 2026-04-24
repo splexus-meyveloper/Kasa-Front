@@ -40,7 +40,7 @@ async function submitCash(endpoint, successMessage) {
 }
 
 
-async function loadCashTransactions() {
+async function loadCashTransactions(page = 0) {
   const tbody = document.getElementById("cashTableBody");
   if (!tbody) return;
 
@@ -49,7 +49,7 @@ async function loadCashTransactions() {
   let data = [];
 
   try {
-    data = await cashStore.fetchTransactions();
+    data = await cashStore.fetchTransactions(page);
   } catch (e) {
     console.error("Cash transactions yüklenemedi:", e);
     showToast("Kasa hareketleri alınamadı", "error");
@@ -80,6 +80,20 @@ async function loadCashTransactions() {
 
     tbody.insertAdjacentHTML("beforeend", row);
   });
+
+  _renderCashPagination(cashStore.pagination);
+}
+
+function _renderCashPagination({ page, totalPages }) {
+  const container = document.getElementById("cashPagination");
+  if (!container) return;
+  if (totalPages <= 1) { container.innerHTML = ""; return; }
+
+  let html = "";
+  for (let i = 0; i < totalPages; i++) {
+    html += `<button class="btn-page${i === page ? " active" : ""}" onclick="loadCashTransactions(${i})">${i + 1}</button>`;
+  }
+  container.innerHTML = html;
 }
 
 

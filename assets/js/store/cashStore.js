@@ -1,8 +1,18 @@
 const cashStore = {
   transactions: [],
+  pagination: { page: 0, size: 50, totalElements: 0, totalPages: 1 },
 
-  async fetchTransactions() {
-    this.transactions = await cashApi.getTransactions();
+  async fetchTransactions(page = 0, size = 50) {
+    const res = await cashApi.getTransactions(page, size);
+    this.transactions = Array.isArray(res) ? res : (res.content || []);
+    if (!Array.isArray(res)) {
+      this.pagination = {
+        page:          res.page          ?? 0,
+        size:          res.size          ?? size,
+        totalElements: res.totalElements ?? 0,
+        totalPages:    res.totalPages    ?? 1,
+      };
+    }
     return this.transactions;
   },
 
