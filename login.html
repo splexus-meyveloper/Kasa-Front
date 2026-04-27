@@ -1,151 +1,449 @@
 <!doctype html>
-<html class="no-js" lang="tr">
-
+<html lang="tr">
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>Giriş Yap</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Giriş Yap — KASAPP</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    <link rel="shortcut icon" type="image/x-icon" href="assets/images/favicon.ico">
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #070c1a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
 
-    <link rel="stylesheet" href="assets/css/vendor/bootstrap.min.css">
-    <link rel="stylesheet" href="assets/css/vendor/material-design-iconic-font.min.css">
-    <link rel="stylesheet" href="assets/css/plugins/plugins.css">
-    <link rel="stylesheet" href="assets/css/helper.css">
-    <link rel="stylesheet" href="assets/css/style.css">
-    <link id="cus-style" rel="stylesheet" href="assets/css/style-primary.css">
-    <link rel="stylesheet" href="assets/css/login-page.css">
+    /* ── BG ── */
+    .bg {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+    }
+    .bg-base {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 70% 60% at 15% 50%, rgba(59,130,246,.13) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 50% at 85% 15%, rgba(139,92,246,.10) 0%, transparent 65%),
+        #070c1a;
+    }
+    .bg-grid {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(59,130,246,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59,130,246,.04) 1px, transparent 1px);
+      background-size: 64px 64px;
+    }
+    .orb {
+      position: absolute; border-radius: 50%;
+      filter: blur(90px); opacity: .13;
+      animation: orbFloat 9s ease-in-out infinite;
+    }
+    .orb-1 { width: 480px; height: 480px; background: #3b82f6; top: -120px; left: -80px; }
+    .orb-2 { width: 380px; height: 380px; background: #8b5cf6; bottom: -80px; right: -60px; animation-delay: 4s; }
+    @keyframes orbFloat {
+      0%,100% { transform: translateY(0) scale(1); }
+      50%      { transform: translateY(-24px) scale(1.05); }
+    }
+
+    /* ── LAYOUT ── */
+    .page {
+      position: relative; z-index: 1;
+      display: flex; min-height: 100vh;
+    }
+
+    /* ── LEFT — FORM ── */
+    .form-side {
+      width: 440px; min-width: 340px;
+      display: flex; align-items: center; justify-content: center;
+      padding: 48px 40px;
+      background: rgba(255,255,255,.025);
+      backdrop-filter: blur(24px);
+      border-right: 1px solid rgba(255,255,255,.07);
+      animation: slideInLeft .6s ease both;
+    }
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-30px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    .form-inner { width: 100%; max-width: 340px; }
+
+    .back-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 13px; color: #64748b; text-decoration: none;
+      margin-bottom: 36px;
+      transition: color .2s;
+    }
+    .back-link:hover { color: #94a3b8; }
+
+    .logo {
+      font-size: 22px; font-weight: 800; letter-spacing: 2.5px;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: block; margin-bottom: 32px;
+    }
+
+    .form-head { margin-bottom: 32px; }
+    .form-head h1 { font-size: 26px; font-weight: 700; color: #f1f5f9; margin-bottom: 8px; }
+    .form-head p  { font-size: 14px; color: #64748b; }
+
+    .field { margin-bottom: 18px; }
+    .field label {
+      display: block; font-size: 12px; font-weight: 600;
+      color: #94a3b8; letter-spacing: .5px; margin-bottom: 7px;
+      text-transform: uppercase;
+    }
+    .field input {
+      width: 100%;
+      background: rgba(255,255,255,.055);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 14px;
+      color: #f1f5f9;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .field input::placeholder { color: #475569; }
+    .field input:focus {
+      border-color: rgba(59,130,246,.55);
+      box-shadow: 0 0 0 3px rgba(59,130,246,.12);
+    }
+
+    .btn-submit {
+      width: 100%; padding: 13px;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: #fff; font-family: 'Poppins', sans-serif;
+      font-size: 15px; font-weight: 600;
+      border: none; border-radius: 10px; cursor: pointer;
+      box-shadow: 0 4px 18px rgba(59,130,246,.4);
+      transition: all .22s ease;
+      margin-top: 8px;
+    }
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(59,130,246,.55);
+    }
+    .btn-submit:active { transform: translateY(0); }
+
+    .form-footer {
+      text-align: center; margin-top: 22px;
+      font-size: 13px; color: #475569;
+    }
+    .form-footer a { color: #3b82f6; text-decoration: none; }
+    .form-footer a:hover { text-decoration: underline; }
+
+    /* ── RIGHT — VISUAL ── */
+    .visual-side {
+      flex: 1;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 60px 48px;
+      text-align: center;
+      animation: fadeIn .8s ease .2s both;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .visual-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(59,130,246,.11);
+      border: 1px solid rgba(59,130,246,.28);
+      padding: 6px 18px; border-radius: 50px;
+      font-size: 12px; color: #93c5fd;
+      margin-bottom: 28px;
+    }
+    .bdot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #3b82f6;
+      animation: blink 2s ease-in-out infinite;
+    }
+    @keyframes blink {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: .4; transform: scale(1.5); }
+    }
+
+    .visual-title {
+      font-size: clamp(28px, 3.5vw, 46px);
+      font-weight: 800; line-height: 1.15;
+      margin-bottom: 18px;
+    }
+    .grad {
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #10b981 100%);
+      background-size: 200% 200%;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradMove 5s ease infinite;
+    }
+    @keyframes gradMove {
+      0%,100% { background-position: 0% 50%; }
+      50%      { background-position: 100% 50%; }
+    }
+
+    .visual-sub {
+      font-size: 15px; color: #64748b; line-height: 1.75;
+      max-width: 440px; margin: 0 auto 44px;
+    }
+
+    /* feature pills */
+    .feat-pills {
+      display: flex; flex-wrap: wrap; gap: 12px;
+      justify-content: center; max-width: 520px;
+      margin: 0 auto 48px;
+    }
+    .pill {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 50px;
+      padding: 8px 18px;
+      font-size: 13px; color: #94a3b8;
+      transition: all .3s ease;
+      animation: floatPill 4s ease-in-out infinite;
+    }
+    .pill:nth-child(2) { animation-delay: .8s; }
+    .pill:nth-child(3) { animation-delay: 1.6s; }
+    .pill:nth-child(4) { animation-delay: 2.4s; }
+    .pill:nth-child(5) { animation-delay: 3.2s; }
+    .pill:nth-child(6) { animation-delay: .4s;  }
+    @keyframes floatPill {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-5px); }
+    }
+    .pill:hover {
+      border-color: rgba(59,130,246,.35);
+      color: #e2e8f0;
+      background: rgba(59,130,246,.08);
+    }
+    .pill-icon { font-size: 16px; }
+
+    /* stats */
+    .vis-stats {
+      display: flex; gap: 40px; flex-wrap: wrap;
+      justify-content: center;
+      padding-top: 36px;
+      border-top: 1px solid rgba(255,255,255,.055);
+    }
+    .vs-val {
+      font-size: 28px; font-weight: 800;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .vs-lbl { font-size: 11px; color: #475569; margin-top: 3px; letter-spacing: .4px; }
+
+    /* ── PRELOADER ── */
+    #preloader {
+      display: none; position: fixed; inset: 0;
+      background: rgba(7,12,26,.85);
+      backdrop-filter: blur(8px);
+      z-index: 9999;
+      align-items: center; justify-content: center;
+      flex-direction: column; gap: 16px;
+    }
+    .spin {
+      width: 44px; height: 44px; border-radius: 50%;
+      border: 3px solid rgba(59,130,246,.2);
+      border-top-color: #3b82f6;
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #preloader p { font-size: 14px; color: #94a3b8; }
+
+    /* error msg */
+    .err-msg {
+      background: rgba(239,68,68,.1);
+      border: 1px solid rgba(239,68,68,.3);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px; color: #fca5a5;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    @media (max-width: 900px) {
+      .visual-side { display: none; }
+      .form-side {
+        width: 100%; min-width: unset;
+        border-right: none;
+      }
+    }
+  </style>
 </head>
+<body>
 
-<body class="skin-dark">
+<div class="bg">
+  <div class="bg-base"></div>
+  <div class="bg-grid"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+</div>
 
-<div class="main-wrapper">
-    <div class="content-body m-0 p-0">
-        <div class="login-register-wrap">
-            <div class="row m-0">
+<div class="page">
 
-                <div class="col-lg-5 col-12 p-0 login-left-side">
-                    <div class="login-left-inner">
-                        <div class="login-register-form-wrap">
+  <!-- FORM -->
+  <div class="form-side">
+    <div class="form-inner">
 
-                            <div class="content">
-                                <h1>Giriş Yap</h1>
-                                <p>Yönetim paneline giriş yapın</p>
-                            </div>
+      <a href="index.html" class="back-link">← Ana Sayfa</a>
+      <span class="logo">KASAPP</span>
 
-                            <div class="login-register-form">
-                                <form id="loginForm">
-                                    <div class="row">
+      <div class="form-head">
+        <h1>Hoş Geldiniz</h1>
+        <p>Hesabınıza giriş yapın</p>
+      </div>
 
-                                        <div class="col-12 mb-20">
-                                            <input class="form-control" type="text" id="companyCode" placeholder="Firma Kodu">
-                                        </div>
+      <div class="err-msg" id="errMsg"></div>
 
-                                        <div class="col-12 mb-20">
-                                            <input class="form-control" type="text" id="username" placeholder="Kullanıcı Adı">
-                                        </div>
-
-                                        <div class="col-12 mb-20">
-                                            <input class="form-control" type="password" id="password" placeholder="Şifre">
-                                        </div>
-
-                                        <div class="col-12 mt-10">
-                                            <button type="submit" class="button button-primary button-outline login-btn">
-                                                Giriş Yap
-                                            </button>
-                                        </div>
-
-                                    </div>
-                                </form>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-
-                <div class="login-register-bg col-lg-7 col-12 p-0 login-right-side">
-                    <div class="content">
-                    </div>
-                </div>
-
-            </div>
+      <form id="loginForm">
+        <div class="field">
+          <label>Firma Kodu</label>
+          <input type="text" id="companyCode" placeholder="Firma kodunuzu girin" autocomplete="off">
         </div>
+        <div class="field">
+          <label>Kullanıcı Adı</label>
+          <input type="text" id="username" placeholder="Kullanıcı adınız" autocomplete="username">
+        </div>
+        <div class="field">
+          <label>Şifre</label>
+          <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn-submit">Giriş Yap →</button>
+      </form>
+
+      <div class="form-footer">
+        Hesabın yok mu? <a href="register.html">Kayıt Ol</a>
+      </div>
+
     </div>
+  </div>
+
+  <!-- VISUAL -->
+  <div class="visual-side">
+
+    <div class="visual-badge">
+      <span class="bdot"></span>
+      Tüm finansal süreçleriniz tek panelde
+    </div>
+
+    <h2 class="visual-title">
+      İşletmenizin<br>
+      <span class="grad">Finansal Merkezi</span>
+    </h2>
+
+    <p class="visual-sub">
+      Kasa hareketleri, çek-senet takibi, masraf yönetimi,<br>
+      kredi planlaması ve detaylı raporlama — hepsi burada.
+    </p>
+
+    <div class="feat-pills">
+      <div class="pill"><span class="pill-icon">💰</span> Kasa Yönetimi</div>
+      <div class="pill"><span class="pill-icon">📄</span> Çek & Senet</div>
+      <div class="pill"><span class="pill-icon">📊</span> Raporlama</div>
+      <div class="pill"><span class="pill-icon">🏦</span> Kredi Takibi</div>
+      <div class="pill"><span class="pill-icon">🗓️</span> Finansal Takvim</div>
+      <div class="pill"><span class="pill-icon">🔐</span> Rol & Yetki</div>
+    </div>
+
+    <div class="vis-stats">
+      <div>
+        <div class="vs-val" data-target="10" data-suffix="+">0</div>
+        <div class="vs-lbl">Modül</div>
+      </div>
+      <div>
+        <div class="vs-val" data-target="500" data-suffix="+">0</div>
+        <div class="vs-lbl">İşlem / Gün</div>
+      </div>
+      <div>
+        <div class="vs-val" data-target="99" data-suffix="%">0</div>
+        <div class="vs-lbl">Uptime</div>
+      </div>
+    </div>
+
+  </div>
+
 </div>
 
 <!-- PRELOADER -->
-<div id="preloader" style="
-    display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,0.70);
-    z-index:9999;
-    align-items:center;
-    justify-content:center;
-">
-    <div style="text-align:center; color:white;">
-        <div class="spinner-border text-light" style="width:50px; height:50px;"></div>
-        <p style="margin-top:15px;">Giriş yapılıyor...</p>
-    </div>
+<div id="preloader">
+  <div class="spin"></div>
+  <p>Giriş yapılıyor...</p>
 </div>
 
-<script src="assets/js/vendor/jquery-3.3.1.min.js"></script>
-<script src="assets/js/vendor/bootstrap.min.js"></script>
-<script src="assets/js/main-v2.js"></script>
 <script src="assets/js/config.js"></script>
-
 <script>
 document.getElementById("loginForm").addEventListener("submit", async function(e) {
-    e.preventDefault();
+  e.preventDefault();
 
-    const companyCode = document.getElementById("companyCode").value.trim();
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value.trim();
+  const companyCode = document.getElementById("companyCode").value.trim();
+  const username    = document.getElementById("username").value.trim();
+  const password    = document.getElementById("password").value.trim();
+  const errMsg      = document.getElementById("errMsg");
 
-    if (!companyCode || !username || !password) {
-        alert("Firma kodu, kullanıcı adı ve şifre giriniz!");
-        return;
+  errMsg.style.display = "none";
+
+  if (!companyCode || !username || !password) {
+    errMsg.textContent = "Firma kodu, kullanıcı adı ve şifre giriniz!";
+    errMsg.style.display = "block";
+    return;
+  }
+
+  try {
+    document.getElementById("preloader").style.display = "flex";
+
+    const res = await fetch(API_BASE + "/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ companyCode, username, password })
+    });
+
+    if (!res.ok) {
+      document.getElementById("preloader").style.display = "none";
+      const err = await res.text();
+      errMsg.textContent = "Giriş başarısız: " + err;
+      errMsg.style.display = "block";
+      return;
     }
 
-    try {
-        document.getElementById("preloader").style.display = "flex";
+    const data = await res.json();
 
-        const res = await fetch(API_BASE + "/auth/login", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                companyCode: companyCode,
-                username: username,
-                password: password
-            })
-        });
+    sessionStorage.setItem("token",       data.token);
+    sessionStorage.setItem("username",    data.username);
+    sessionStorage.setItem("role",        data.role);
+    sessionStorage.setItem("permissions", JSON.stringify(data.permissions));
+    sessionStorage.setItem("justLoggedIn", "1");
 
-        if (!res.ok) {
-            document.getElementById("preloader").style.display = "none";
-            const err = await res.text();
-            alert("Giriş başarısız: " + err);
-            return;
-        }
+    window.location.href = "layout.html";
 
-        const data = await res.json();
-
-        sessionStorage.setItem("token", data.token);
-        sessionStorage.setItem("username", data.username);
-        sessionStorage.setItem("role", data.role);
-        sessionStorage.setItem("permissions", JSON.stringify(data.permissions));
-
-        sessionStorage.setItem("justLoggedIn", "1");
-        window.location.href = "layout.html";
-
-    } catch (err) {
-        console.error(err);
-        document.getElementById("preloader").style.display = "none";
-        alert("Sunucuya bağlanılamadı!");
-    }
+  } catch (err) {
+    console.error(err);
+    document.getElementById("preloader").style.display = "none";
+    errMsg.textContent = "Sunucuya bağlanılamadı!";
+    errMsg.style.display = "block";
+  }
 });
+
+// counter animation
+(function() {
+  function runCounter(el) {
+    const target = parseInt(el.dataset.target, 10);
+    const suffix = el.dataset.suffix || '';
+    const start  = performance.now();
+    const dur    = 1600;
+    function tick(now) {
+      const t = Math.min((now - start) / dur, 1);
+      const e = 1 - Math.pow(1 - t, 3);
+      el.textContent = Math.floor(e * target) + suffix;
+      if (t < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+  const co = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { runCounter(e.target); co.unobserve(e.target); } });
+  }, { threshold: 0.5 });
+  document.querySelectorAll('[data-target]').forEach(el => co.observe(el));
+})();
 </script>
 
 </body>

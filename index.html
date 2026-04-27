@@ -1,193 +1,589 @@
 <!doctype html>
 <html lang="tr">
-
 <head>
-    <meta charset="UTF-8">
-    <title>KASAPP - Finans Yönetimi</title>
+  <meta charset="UTF-8">
+  <title>KASAPP — Finans Yönetimi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    <!-- CSS -->
-    <link rel="stylesheet" href="assets/css/vendor/bootstrap.min.css">
-    <link rel="stylesheet" href="assets/css/style.css">
-    <link rel="stylesheet" href="assets/css/style-primary.css">
+    :root {
+      --blue: #3b82f6;
+      --purple: #8b5cf6;
+      --green: #10b981;
+    }
 
-    <style>
-        body {
-            background: linear-gradient(135deg,#eef2ff,#f8fafc);
-        }
+    html { scroll-behavior: smooth; }
 
-        .navbar {
-            background: white;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            padding: 15px 30px;
-        }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #070c1a;
+      color: #e2e8f0;
+      overflow-x: hidden;
+    }
 
-        .logo {
-            font-weight: 700;
-            font-size: 20px;
-            color: #3b82f6;
-        }
+    /* ─── BACKGROUND ─── */
+    .bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .bg-base {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 60% at 15% 50%, rgba(59,130,246,.13) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 50% at 85% 15%, rgba(139,92,246,.10) 0%, transparent 65%),
+        radial-gradient(ellipse 50% 40% at 60% 85%, rgba(16,185,129,.07) 0%, transparent 60%),
+        #070c1a;
+    }
+    .bg-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(59,130,246,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59,130,246,.04) 1px, transparent 1px);
+      background-size: 64px 64px;
+    }
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(90px);
+      opacity: .14;
+      animation: orbFloat 9s ease-in-out infinite;
+    }
+    .orb-1 { width: 520px; height: 520px; background: #3b82f6; top: -140px; left: -100px; }
+    .orb-2 { width: 420px; height: 420px; background: #8b5cf6; bottom: -120px; right: -80px; animation-delay: 3.5s; }
+    .orb-3 { width: 320px; height: 320px; background: #10b981; top: 45%; left: 48%; animation-delay: 7s; }
 
-        .hero {
-            padding: 120px 0;
-            text-align: center;
-        }
+    @keyframes orbFloat {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50%       { transform: translateY(-28px) scale(1.06); }
+    }
 
-        .hero h1 {
-            font-size: 42px;
-            font-weight: 700;
-            color: #1f2937;
-        }
+    /* ─── WRAP ─── */
+    .wrap { position: relative; z-index: 1; }
 
-        .hero p {
-            font-size: 18px;
-            color: #6b7280;
-            margin-top: 15px;
-        }
+    /* ─── NAVBAR ─── */
+    .navbar {
+      position: fixed;
+      inset: 0 0 auto;
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 60px;
+      background: rgba(7,12,26,.75);
+      backdrop-filter: blur(22px);
+      border-bottom: 1px solid rgba(255,255,255,.055);
+      animation: slideDown .6s ease both;
+    }
+    @keyframes slideDown {
+      from { transform: translateY(-100%); opacity: 0; }
+      to   { transform: translateY(0);     opacity: 1; }
+    }
+    .logo {
+      font-size: 21px;
+      font-weight: 800;
+      letter-spacing: 2.5px;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-decoration: none;
+    }
+    .nav-btns { display: flex; gap: 12px; }
 
-        .btn-main {
-            background: #3b82f6;
-            color: white;
-            border-radius: 10px;
-            padding: 12px 22px;
-            border: none;
-            margin: 5px;
-            transition: .2s;
-        }
+    /* ─── BUTTONS ─── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 22px;
+      border-radius: 10px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: all .22s ease;
+      line-height: 1;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(59,130,246,.38);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(59,130,246,.55);
+      color: #fff;
+    }
+    .btn-ghost {
+      background: rgba(255,255,255,.07);
+      color: #e2e8f0;
+      border: 1px solid rgba(255,255,255,.10);
+    }
+    .btn-ghost:hover {
+      background: rgba(255,255,255,.12);
+      color: #fff;
+      border-color: rgba(255,255,255,.20);
+    }
+    .btn-lg { padding: 14px 34px; font-size: 15px; border-radius: 12px; }
 
-        .btn-main:hover {
-            background: #2563eb;
-        }
+    /* ─── HERO ─── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 130px 24px 90px;
+    }
+    .hero-inner { max-width: 820px; }
 
-        .btn-outline {
-            background: transparent;
-            border: 1px solid #3b82f6;
-            color: #3b82f6;
-        }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(59,130,246,.11);
+      border: 1px solid rgba(59,130,246,.28);
+      padding: 6px 18px;
+      border-radius: 50px;
+      font-size: 13px;
+      color: #93c5fd;
+      margin-bottom: 30px;
+      animation: fadeUp .7s ease .15s both;
+    }
+    .badge-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #3b82f6;
+      animation: blink 2s ease-in-out infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: .4; transform: scale(1.5); }
+    }
 
-        .features {
-            padding: 80px 0;
-        }
+    .hero h1 {
+      font-size: clamp(38px, 6.5vw, 70px);
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 26px;
+      animation: fadeUp .7s ease .28s both;
+    }
+    .grad {
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #10b981 100%);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradMove 5s ease infinite;
+    }
+    @keyframes gradMove {
+      0%, 100% { background-position: 0% 50%; }
+      50%       { background-position: 100% 50%; }
+    }
 
-        .feature-card {
-            background: white;
-            border-radius: 14px;
-            padding: 25px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-            text-align: center;
-            transition: .2s;
-        }
+    .hero p {
+      font-size: 18px;
+      color: #94a3b8;
+      line-height: 1.75;
+      margin-bottom: 44px;
+      animation: fadeUp .7s ease .4s both;
+    }
+    .hero-cta {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      animation: fadeUp .7s ease .52s both;
+    }
 
-        .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 18px 35px rgba(0,0,0,0.1);
-        }
+    /* stats */
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 52px;
+      flex-wrap: wrap;
+      margin-top: 68px;
+      padding-top: 52px;
+      border-top: 1px solid rgba(255,255,255,.055);
+      animation: fadeUp .7s ease .68s both;
+    }
+    .stat-val {
+      font-size: 34px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-lbl { font-size: 12px; color: #475569; margin-top: 4px; letter-spacing: .4px; }
 
-        .section-title {
-            text-align: center;
-            margin-bottom: 50px;
-        }
+    /* ─── SECTION BASE ─── */
+    .section { padding: 100px 24px; }
+    .section-hd { text-align: center; margin-bottom: 64px; }
+    .section-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: #3b82f6;
+      margin-bottom: 14px;
+    }
+    .section-hd h2 {
+      font-size: clamp(26px, 4vw, 42px);
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-bottom: 14px;
+    }
+    .section-hd p { color: #64748b; font-size: 16px; max-width: 480px; margin: 0 auto; }
 
-        .section-title h2 {
-            font-size: 28px;
-            font-weight: 600;
-        }
+    /* ─── FEATURES ─── */
+    .feat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 22px;
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+    .feat-card {
+      background: rgba(255,255,255,.025);
+      border: 1px solid rgba(255,255,255,.065);
+      border-radius: 20px;
+      padding: 32px 28px;
+      position: relative;
+      overflow: hidden;
+      transition: transform .3s ease, border-color .3s ease, box-shadow .3s ease;
+    }
+    .feat-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(59,130,246,.06), transparent 60%);
+      opacity: 0;
+      transition: opacity .3s ease;
+    }
+    .feat-card:hover {
+      transform: translateY(-7px);
+      border-color: rgba(59,130,246,.28);
+      box-shadow: 0 24px 48px rgba(0,0,0,.35), 0 0 0 1px rgba(59,130,246,.08);
+    }
+    .feat-card:hover::after { opacity: 1; }
 
-        .cta {
-            background: #3b82f6;
-            color: white;
-            padding: 60px 0;
-            text-align: center;
-        }
+    .feat-icon {
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .ic-blue   { background: rgba(59,130,246,.14); }
+    .ic-green  { background: rgba(16,185,129,.14); }
+    .ic-purple { background: rgba(139,92,246,.14); }
+    .ic-yellow { background: rgba(245,158,11,.14); }
+    .ic-cyan   { background: rgba(6,182,212,.14);  }
+    .ic-red    { background: rgba(239,68,68,.14);  }
 
-        .footer {
-            padding: 30px;
-            text-align: center;
-            color: #6b7280;
-        }
-    </style>
+    .feat-card h3 { font-size: 16px; font-weight: 600; color: #f1f5f9; margin-bottom: 10px; }
+    .feat-card p  { font-size: 13.5px; color: #64748b; line-height: 1.75; }
 
+    /* ─── STEPS ─── */
+    .steps { max-width: 860px; margin: 0 auto; }
+    .step {
+      display: flex;
+      gap: 30px;
+      align-items: flex-start;
+      margin-bottom: 52px;
+      opacity: 0;
+      transform: translateX(-28px);
+      transition: opacity .6s ease, transform .6s ease;
+    }
+    .step:nth-child(even) { flex-direction: row-reverse; transform: translateX(28px); }
+    .step.vis { opacity: 1; transform: translateX(0) !important; }
+
+    .step-n {
+      min-width: 56px; height: 56px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 800; color: #fff;
+      box-shadow: 0 8px 22px rgba(59,130,246,.38);
+    }
+    .step-body h3 { font-size: 19px; font-weight: 700; color: #f1f5f9; margin-bottom: 10px; }
+    .step-body p  { color: #64748b; line-height: 1.75; }
+
+    /* ─── CTA ─── */
+    .cta-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .cta-box {
+      background: linear-gradient(135deg, rgba(59,130,246,.13), rgba(139,92,246,.13));
+      border: 1px solid rgba(59,130,246,.18);
+      border-radius: 28px;
+      padding: 90px 40px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-box::before {
+      content: '';
+      position: absolute;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(ellipse, rgba(59,130,246,.07) 0%, transparent 60%);
+      animation: spin 12s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .cta-box > * { position: relative; }
+    .cta-box h2 { font-size: clamp(26px, 4vw, 40px); font-weight: 800; margin-bottom: 16px; }
+    .cta-box p  { color: #94a3b8; font-size: 16px; margin-bottom: 38px; }
+
+    /* ─── FOOTER ─── */
+    .footer {
+      text-align: center;
+      padding: 30px;
+      color: #2d3b55;
+      font-size: 13px;
+      border-top: 1px solid rgba(255,255,255,.04);
+    }
+
+    /* ─── SCROLL REVEAL ─── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity .65s ease, transform .65s ease;
+    }
+    .reveal.vis { opacity: 1; transform: translateY(0); }
+
+    /* delay helpers */
+    .d1 { transition-delay: .08s; }
+    .d2 { transition-delay: .18s; }
+    .d3 { transition-delay: .28s; }
+    .d4 { transition-delay: .38s; }
+    .d5 { transition-delay: .48s; }
+    .d6 { transition-delay: .58s; }
+
+    /* float animation for feature cards */
+    .float { animation: cardFloat 4.5s ease-in-out infinite; }
+    .float.d2 { animation-delay: 1.5s; }
+    .float.d3 { animation-delay: 3s;   }
+    .float.d4 { animation-delay: .8s;  }
+    .float.d5 { animation-delay: 2.2s; }
+    .float.d6 { animation-delay: 3.8s; }
+    @keyframes cardFloat {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-7px); }
+    }
+    /* card float should combine with hover, so override */
+    .feat-card:hover { animation: none; }
+
+    @media (max-width: 768px) {
+      .navbar  { padding: 16px 22px; }
+      .hero-stats { gap: 30px; }
+      .step, .step:nth-child(even) { flex-direction: column; }
+    }
+  </style>
 </head>
-
 <body>
 
-<!-- NAVBAR -->
-<div class="navbar d-flex justify-content-between">
-    <img src="assets/images/logo/logo-blue.png" class="logo-light" alt="">
-    <div>
-        <a href="login.html" class="btn-main">Giriş Yap</a>
-        <a href="register.html" class="btn-main btn-outline">Kayıt Ol</a>
-    </div>
+<!-- BG -->
+<div class="bg">
+  <div class="bg-base"></div>
+  <div class="bg-grid"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
 </div>
 
-<!-- HERO -->
-<section class="hero">
-    <div class="container">
-        <h1>Finansınızı Kontrol Altına Alın</h1>
-        <p>Kasa, çek, senet ve masraf işlemlerinizi tek panelden yönetin</p>
+<div class="wrap">
 
-        <div style="margin-top:30px;">
-            <a href="register.html" class="btn-main">Hemen Başla</a>
-            <a href="login.html" class="btn-main btn-outline">Giriş Yap</a>
-        </div>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a class="logo" href="#">KASAPP</a>
+    <div class="nav-btns">
+      <a href="login.html"    class="btn btn-ghost">Giriş Yap</a>
+      <a href="register.html" class="btn btn-primary">Kayıt Ol →</a>
     </div>
-</section>
+  </nav>
 
-<!-- FEATURES -->
-<section class="features">
-    <div class="container">
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        Finans yönetimi artık çok daha kolay
+      </div>
 
-        <div class="section-title">
-            <h2>Özellikler</h2>
+      <h1>
+        İşletmenizin<br>
+        <span class="grad">Finansal Gücü</span><br>
+        Tek Panelde
+      </h1>
+
+      <p>Kasa hareketleri, çek-senet takibi, masraf yönetimi<br>ve kredi planlaması — hepsi bir arada, gerçek zamanlı.</p>
+
+      <div class="hero-cta">
+        <a href="register.html" class="btn btn-primary btn-lg">Ücretsiz Başla →</a>
+        <a href="login.html"    class="btn btn-ghost   btn-lg">Giriş Yap</a>
+      </div>
+
+      <div class="hero-stats">
+        <div>
+          <div class="stat-val" data-target="10" data-suffix="+">0</div>
+          <div class="stat-lbl">Modül</div>
         </div>
-
-        <div class="row">
-
-            <div class="col-md-4 mb-4">
-                <div class="feature-card">
-                    <h4>💰 Kasa Yönetimi</h4>
-                    <p>Gelir ve giderlerinizi anlık takip edin</p>
-                </div>
-            </div>
-
-            <div class="col-md-4 mb-4">
-                <div class="feature-card">
-                    <h4>📊 Raporlama</h4>
-                    <p>Günlük ve aylık analizlerle finansınızı görün</p>
-                </div>
-            </div>
-
-            <div class="col-md-4 mb-4">
-                <div class="feature-card">
-                    <h4>🔐 Güvenli Sistem</h4>
-                    <p>Şirket bazlı güvenli kullanıcı yönetimi</p>
-                </div>
-            </div>
-
+        <div>
+          <div class="stat-val" data-target="500" data-suffix="+">0</div>
+          <div class="stat-lbl">İşlem / Gün</div>
         </div>
-
+        <div>
+          <div class="stat-val" data-target="99" data-suffix="%">0</div>
+          <div class="stat-lbl">Uptime</div>
+        </div>
+      </div>
     </div>
-</section>
+  </section>
 
-<!-- CTA -->
-<section class="cta">
-    <div class="container">
-        <h2>Hemen Kullanmaya Başlayın</h2>
-        <p>Ücretsiz hesap oluşturun ve finansınızı yönetin</p>
-
-        <div style="margin-top:20px;">
-            <a href="register.html" class="btn-main" style="background:white; color:#3b82f6;">
-                Kayıt Ol
-            </a>
-        </div>
+  <!-- FEATURES -->
+  <section class="section">
+    <div class="section-hd reveal">
+      <div class="section-tag">Özellikler</div>
+      <h2>Finansınızı Yönetmek İçin<br>İhtiyacınız Her Şey</h2>
+      <p>İşletmenizin tüm finansal süreçlerini tek yerden takip edin</p>
     </div>
-</section>
 
-<!-- FOOTER -->
-<div class="footer">
-    © 2026 KASAPP - Tüm hakları saklıdır
+    <div class="feat-grid">
+      <div class="feat-card float reveal d1">
+        <div class="feat-icon ic-blue">💰</div>
+        <h3>Kasa Yönetimi</h3>
+        <p>Gelir ve gider hareketlerinizi gerçek zamanlı izleyin. Anlık kasa bakiyenizi her zaman görün.</p>
+      </div>
+      <div class="feat-card float reveal d2">
+        <div class="feat-icon ic-green">📄</div>
+        <h3>Çek & Senet Takibi</h3>
+        <p>Vadesi yaklaşan çek ve senetlerinizi otomatik bildirimlerle asla kaçırmayın.</p>
+      </div>
+      <div class="feat-card float reveal d3">
+        <div class="feat-icon ic-purple">📊</div>
+        <h3>Finansal Raporlama</h3>
+        <p>Aylık ve yıllık gelir-gider analizleri, Excel'e aktarım ve detaylı kategori raporları.</p>
+      </div>
+      <div class="feat-card float reveal d4">
+        <div class="feat-icon ic-yellow">🏦</div>
+        <h3>Kredi Yönetimi</h3>
+        <p>Aktif kredilerinizi, taksit planlarını ve kalan borçları tek ekrandan takip edin.</p>
+      </div>
+      <div class="feat-card float reveal d5">
+        <div class="feat-icon ic-cyan">🗓️</div>
+        <h3>Finansal Takvim</h3>
+        <p>Tüm finansal olaylarınızı görsel takvimde görün. Notlar ekleyin, hatırlatıcılar ayarlayın.</p>
+      </div>
+      <div class="feat-card float reveal d6">
+        <div class="feat-icon ic-red">🔐</div>
+        <h3>Rol & Yetki Sistemi</h3>
+        <p>Kullanıcılara özel izin seviyeleri tanımlayın. Onay akışlarıyla güvenli işlem yönetimi.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section" style="padding-top:0">
+    <div class="section-hd reveal">
+      <div class="section-tag">Nasıl Çalışır</div>
+      <h2>3 Adımda Başlayın</h2>
+      <p>Dakikalar içinde sistemi kurun ve kullanmaya başlayın</p>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-n">1</div>
+        <div class="step-body">
+          <h3>Hesap Oluşturun</h3>
+          <p>Şirket bilgilerinizi girerek ücretsiz hesabınızı açın. Kurulum gerektirmez, tarayıcıdan anında erişin.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-n">2</div>
+        <div class="step-body">
+          <h3>Ekibinizi Ekleyin</h3>
+          <p>Çalışanlarınızı sisteme davet edin ve her birine uygun yetki seviyesi tanımlayın.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-n">3</div>
+        <div class="step-body">
+          <h3>Finansınızı Yönetin</h3>
+          <p>Kasa hareketleri girin, çek-senetleri takip edin, raporlarınızı anında alın.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section" style="padding-top:0; padding-bottom:120px">
+    <div class="cta-inner">
+      <div class="cta-box reveal">
+        <h2>Finansınızın Kontrolünü<br><span class="grad">Bugün Alın</span></h2>
+        <p>Ücretsiz hesap oluşturun. Kredi kartı gerekmez.</p>
+        <a href="register.html" class="btn btn-primary btn-lg">Hemen Başla →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    © 2026 KASAPP — Tüm hakları saklıdır.
+  </footer>
+
 </div>
+
+<script>
+  // ── Scroll reveal
+  const ro = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('vis'); }
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.reveal, .step').forEach(el => ro.observe(el));
+
+  // ── Counter animation
+  function runCounter(el) {
+    const target = parseInt(el.dataset.target, 10);
+    const suffix = el.dataset.suffix || '';
+    const duration = 1600;
+    const start = performance.now();
+    function tick(now) {
+      const t = Math.min((now - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - t, 3);
+      el.textContent = Math.floor(ease * target) + suffix;
+      if (t < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  const co = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        runCounter(e.target);
+        co.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  document.querySelectorAll('[data-target]').forEach(el => co.observe(el));
+</script>
 
 </body>
 </html>
