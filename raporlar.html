@@ -1,0 +1,222 @@
+<div class="row justify-content-between align-items-center mb-20">
+  <div class="col-12 col-lg-auto">
+    <div class="page-heading"><h3>Finansal Rapor</h3></div>
+  </div>
+  <div class="col-12 col-lg-auto">
+    <button class="btn-modern" id="excelDownloadBtn">
+      <i class="zmdi zmdi-download"></i> Excel İndir
+    </button>
+  </div>
+</div>
+
+<!-- TARİH FİLTRESİ -->
+<div class="box mb-20">
+  <div class="box-body" style="padding:14px 22px">
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <button class="btn-modern report-period-btn active" data-period="thisMonth">Bu Ay</button>
+      <button class="btn-modern report-period-btn" data-period="lastMonth">Geçen Ay</button>
+      <button class="btn-modern report-period-btn" data-period="thisYear">Bu Yıl</button>
+      <button class="btn-modern report-period-btn" data-period="custom">Özel Aralık</button>
+      <div id="customDateRange" style="display:none" class="d-flex align-items-center gap-2 flex-wrap">
+        <input type="date" id="reportStartDate" class="form-control" style="width:160px;display:inline-block">
+        <span style="color:#94a3b8">—</span>
+        <input type="date" id="reportEndDate" class="form-control" style="width:160px;display:inline-block">
+        <button class="btn-modern" id="reportApplyBtn">Uygula</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ÖZET KARTLAR -->
+<div class="row mb-10">
+  <div class="col-xl-3 col-md-6 mb-20">
+    <div class="box check-card">
+      <div class="box-body" style="padding:22px 20px;display:flex;align-items:center;gap:16px">
+        <div class="report-icon-wrap" style="background:rgba(34,197,94,.15)">
+          <i class="zmdi zmdi-trending-up" style="color:#22c55e"></i>
+        </div>
+        <div>
+          <div class="report-card-label">Toplam Gelir</div>
+          <div id="rTotalIncome" class="report-card-value" style="color:#22c55e">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-3 col-md-6 mb-20">
+    <div class="box check-card">
+      <div class="box-body" style="padding:22px 20px;display:flex;align-items:center;gap:16px">
+        <div class="report-icon-wrap" style="background:rgba(239,68,68,.15)">
+          <i class="zmdi zmdi-trending-down" style="color:#ef4444"></i>
+        </div>
+        <div>
+          <div class="report-card-label">Toplam Gider</div>
+          <div id="rTotalExpense" class="report-card-value" style="color:#ef4444">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-3 col-md-6 mb-20">
+    <div class="box check-card">
+      <div class="box-body" style="padding:22px 20px;display:flex;align-items:center;gap:16px">
+        <div class="report-icon-wrap" style="background:rgba(59,130,246,.15)">
+          <i class="zmdi zmdi-balance" style="color:#3b82f6"></i>
+        </div>
+        <div>
+          <div class="report-card-label">Net Bakiye</div>
+          <div id="rNetBalance" class="report-card-value">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-3 col-md-6 mb-20">
+    <div class="box check-card">
+      <div class="box-body" style="padding:22px 20px;display:flex;align-items:center;gap:16px">
+        <div class="report-icon-wrap" style="background:rgba(139,92,246,.15)">
+          <i class="zmdi zmdi-money" style="color:#8b5cf6"></i>
+        </div>
+        <div>
+          <div class="report-card-label">Kasa Bakiyesi</div>
+          <div id="rCashBalance" class="report-card-value" style="color:#8b5cf6">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AYLIK DAĞILIM + MASRAF KATEGORİLERİ -->
+<div class="row mb-20">
+  <div class="col-lg-8 mb-20">
+    <div class="box">
+      <div class="box-head"><h4 class="title">Aylık Dağılım</h4></div>
+      <div class="box-body">
+        <div class="table-responsive">
+          <table class="table users-table">
+            <thead>
+              <tr>
+                <th>Ay</th>
+                <th class="text-end">Gelir</th>
+                <th class="text-end">Gider</th>
+                <th class="text-end">Net</th>
+              </tr>
+            </thead>
+            <tbody id="rMonthlyBody">
+              <tr><td colspan="4" class="text-center text-muted">Yükleniyor...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4 mb-20">
+    <div class="box" style="height:100%">
+      <div class="box-head"><h4 class="title">Masraf Kategorileri</h4></div>
+      <div class="box-body">
+        <div class="table-responsive">
+          <table class="table users-table">
+            <thead>
+              <tr>
+                <th>Kategori</th>
+                <th class="text-end">Tutar</th>
+              </tr>
+            </thead>
+            <tbody id="rExpenseCatBody">
+              <tr><td colspan="2" class="text-center text-muted">Yükleniyor...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VADESİ YAKLAŞAN ÇEKLER -->
+<div class="box mb-20">
+  <div class="box-head d-flex justify-content-between align-items-center">
+    <h4 class="title">Vadesi Yaklaşan Çekler</h4>
+    <span id="rCheckPortfolio" class="badge badge-primary" style="font-size:12px"></span>
+  </div>
+  <div class="box-body">
+    <div class="table-responsive">
+      <table class="table users-table">
+        <thead>
+          <tr>
+            <th>Çek No</th>
+            <th>Banka</th>
+            <th class="text-end">Tutar</th>
+            <th>Vade Tarihi</th>
+            <th class="text-center">Kalan Gün</th>
+          </tr>
+        </thead>
+        <tbody id="rUpcomingChecksBody">
+          <tr><td colspan="5" class="text-center text-muted">Yükleniyor...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- VADESİ YAKLAŞAN SENETLER -->
+<div class="box mb-20">
+  <div class="box-head d-flex justify-content-between align-items-center">
+    <h4 class="title">Vadesi Yaklaşan Senetler</h4>
+    <span id="rNotePortfolio" class="badge badge-primary" style="font-size:12px"></span>
+  </div>
+  <div class="box-body">
+    <div class="table-responsive">
+      <table class="table users-table">
+        <thead>
+          <tr>
+            <th>Senet No</th>
+            <th class="text-end">Tutar</th>
+            <th>Vade Tarihi</th>
+            <th class="text-center">Kalan Gün</th>
+          </tr>
+        </thead>
+        <tbody id="rUpcomingNotesBody">
+          <tr><td colspan="4" class="text-center text-muted">Yükleniyor...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- AKTİF KREDİLER -->
+<div class="box mb-20">
+  <div class="box-head d-flex justify-content-between align-items-center">
+    <h4 class="title">Aktif Krediler</h4>
+    <span id="rTotalLoanDebt" class="badge badge-primary" style="font-size:12px"></span>
+  </div>
+  <div class="box-body">
+    <div class="table-responsive">
+      <table class="table users-table">
+        <thead>
+          <tr>
+            <th>Banka</th>
+            <th class="text-end">Aylık Ödeme</th>
+            <th class="text-end">Kalan Borç</th>
+            <th class="text-center">Kalan Taksit</th>
+            <th>Sonraki Ödeme</th>
+          </tr>
+        </thead>
+        <tbody id="rActiveLoansBody">
+          <tr><td colspan="5" class="text-center text-muted">Yükleniyor...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<style>
+.report-icon-wrap {
+  width: 48px; height: 48px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.report-icon-wrap i { font-size: 22px; }
+.report-card-label {
+  font-size: 11px; font-weight: 600; color: #94a3b8;
+  text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px;
+}
+.report-card-value { font-size: 20px; font-weight: 700; }
+.report-period-btn.active { background: #3a7afe !important; color: #fff !important; }
+</style>

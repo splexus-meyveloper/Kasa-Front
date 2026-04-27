@@ -2147,6 +2147,9 @@ body.dark-mode .side-header {
   border-right-color: #2e2e2e !important;
   box-shadow: 4px 0 20px rgba(0,0,0,.4) !important;
 }
+body.dark-mode .sidebar-logo {
+  border-bottom-color: #2e2e2e !important;
+}
 
 /* CARDS & BOXES */
 body.dark-mode .box,
@@ -2228,7 +2231,8 @@ body.dark-mode .dropdown-menu-user {
   border-color: #2e2e2e !important;
 }
 
-body.dark-mode .dropdown-menu-user .head { border-bottom-color: #2e2e2e !important; }
+body.dark-mode .dropdown-menu-user .head { background: #1c1c1c !important; border-bottom-color: #2e2e2e !important; }
+body.dark-mode .dropdown-menu-user .head h5 { color: #e0e0e0 !important; }
 body.dark-mode .dropdown-menu-user .head .name a { color: #e0e0e0 !important; }
 
 body.dark-mode .dropdown-menu-user .body ul li a { color: #e0e0e0 !important; }
@@ -2382,6 +2386,21 @@ body.dark-mode .fc-theme-standard th { border-color: #2e2e2e !important; }
 
 body.dark-mode .fc-daygrid-day { background: #1c1c1c !important; }
 body.dark-mode .fc-col-header-cell { background: #161616 !important; }
+
+body.dark-mode .fc-event-title,
+body.dark-mode .fc-event-title i,
+body.dark-mode .fc-event-main,
+body.dark-mode .fc-event-main i,
+body.dark-mode .fc-event i { color: #fff !important; }
+
+body.dark-mode .fc-icon { color: #fff !important; }
+
+body.dark-mode input[type="date"]::-webkit-calendar-picker-indicator,
+body.dark-mode input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+body.dark-mode input[type="month"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
 
 /* =============================================
    DARK MODE — Check / Note / Loan cards

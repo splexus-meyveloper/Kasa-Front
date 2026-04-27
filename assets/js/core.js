@@ -208,13 +208,14 @@ function closeDynamicModal() {
   dynamicModalCallback = null;
 }
 
-document
-  .getElementById("dynamicModalConfirm")
-  .addEventListener("click", function () {
+const _dmConfirmBtn = document.getElementById("dynamicModalSubmitBtn");
+if (_dmConfirmBtn) {
+  _dmConfirmBtn.addEventListener("click", function () {
     if (dynamicModalCallback) {
       dynamicModalCallback();
     }
   });
+}
 
 // ==============================
 // BANK LABELS (tek kaynak — tüm modüller buradan okur)

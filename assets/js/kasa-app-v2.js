@@ -16,6 +16,7 @@ function getPageKey(page) {
   if (normalized.includes("bildirim")) return "notifications";
   if (normalized.includes("benim")) return "myActivities";
   if (normalized.includes("onay")) return "approvals";
+  if (normalized.includes("rapor")) return "reports";
 
   return "default";
 }
@@ -116,6 +117,12 @@ const pageInitMap = {
 approvals: () => {
   if (window.initApprovalsPage) {
     window.initApprovalsPage();
+  }
+},
+
+reports: () => {
+  if (window.initReportPage) {
+    window.initReportPage();
   }
 },
 

@@ -1,22 +1,27 @@
 let calendar;
 
-function getCalendarNotes() {
-  try {
-    return JSON.parse(localStorage.getItem("calendarNotes") || "[]");
-  } catch {
-    return [];
-  }
+// ==============================
+// CALENDAR NOTES API
+// ==============================
+
+async function fetchCalendarNotes() {
+  return apiClient.request("/calendar-notes");
 }
 
-function saveCalendarNotes(notes) {
-  localStorage.setItem("calendarNotes", JSON.stringify(notes));
+async function createCalendarNote(date, text) {
+  return apiClient.request("/calendar-notes", {
+    method: "POST",
+    body: JSON.stringify({ date, text }),
+  });
 }
 
-function addCalendarNote(note) {
-  const notes = getCalendarNotes();
-  notes.push(note);
-  saveCalendarNotes(notes);
+async function deleteCalendarNote(id) {
+  return apiClient.request("/calendar-notes/" + id, { method: "DELETE" });
 }
+
+// ==============================
+// EVENT BUILDERS
+// ==============================
 
 function buildCheckEvents(checks = []) {
   const events = [];
@@ -114,6 +119,10 @@ function buildManualNoteEvents(calendarNotes = []) {
   return events;
 }
 
+// ==============================
+// LOAD CALENDAR
+// ==============================
+
 async function loadCalendar() {
   const calendarEl = document.getElementById("calendar");
   if (!calendarEl) return;
@@ -128,6 +137,7 @@ async function loadCalendar() {
   let checks = [];
   let notesPortfolio = [];
   let loans = [];
+  let calendarNotes = [];
 
   try {
     checks = await checkStore.fetchChecks();
@@ -147,10 +157,16 @@ async function loadCalendar() {
     console.error("Krediler takvime yüklenemedi:", err);
   }
 
+  try {
+    calendarNotes = await fetchCalendarNotes() || [];
+  } catch (err) {
+    console.error("Takvim notları yüklenemedi:", err);
+  }
+
   events.push(...buildCheckEvents(checks));
   events.push(...buildNoteEvents(notesPortfolio));
   events.push(...buildLoanEvents(loans));
-  events.push(...buildManualNoteEvents(getCalendarNotes()));
+  events.push(...buildManualNoteEvents(calendarNotes));
 
   try {
     calendar = new FullCalendar.Calendar(calendarEl, {
@@ -222,18 +238,22 @@ function refreshCalendar() {
   loadCalendar();
 }
 
+// ==============================
+// EVENT MODAL
+// ==============================
+
 function openEventModal(event) {
   const data = event.extendedProps?.data || {};
   const type = event.extendedProps?.type || "";
 
-  const modalTitle = document.getElementById("modalTitle");
+  const modalTitle    = document.getElementById("modalTitle");
   const modalSubtitle = document.getElementById("modalSubtitle");
-  const modalIcon = document.getElementById("modalIcon");
-  const modalDate = document.getElementById("modalDate");
-  const modalAmount = document.getElementById("modalAmount");
-  const modalType = document.getElementById("modalType");
-  const modalDesc = document.getElementById("modalDesc");
-  const modalStatus = document.getElementById("modalStatus");
+  const modalIcon     = document.getElementById("modalIcon");
+  const modalDate     = document.getElementById("modalDate");
+  const modalAmount   = document.getElementById("modalAmount");
+  const modalType     = document.getElementById("modalType");
+  const modalDesc     = document.getElementById("modalDesc");
+  const modalStatus   = document.getElementById("modalStatus");
 
   if (!modalTitle || !modalSubtitle || !modalIcon || !modalDate || !modalDesc || !modalStatus) {
     console.error("Takvim modal elementleri eksik");
@@ -246,6 +266,11 @@ function openEventModal(event) {
   if (modalType?.parentElement) {
     modalType.parentElement.style.display = "flex";
   }
+
+  // NOT tipine özel silme butonu — her açılışta sıfırla
+  const modalCard = document.querySelector("#eventModal .kasa-modal-card");
+  const existingFooter = document.getElementById("eventModalFooter");
+  if (existingFooter) existingFooter.remove();
 
   let typeText = "";
   if (type === "CHECK") typeText = "Çek";
@@ -302,10 +327,32 @@ function openEventModal(event) {
 
     modalDesc.textContent = data.text || "-";
     modalStatus.textContent = "Not";
+
+    // Silme butonu ekle
+    const footer = document.createElement("div");
+    footer.id = "eventModalFooter";
+    footer.className = "kasa-modal-footer";
+    footer.innerHTML = `<button type="button" class="btn-delete" id="deleteCalendarNoteBtn">Notu Sil</button>`;
+    modalCard.appendChild(footer);
+
+    footer.querySelector("#deleteCalendarNoteBtn").addEventListener("click", async function () {
+      try {
+        await deleteCalendarNote(data.id);
+        showToast("Not silindi", "success");
+        closeModal("eventModal");
+        refreshCalendar();
+      } catch (err) {
+        showToast(err.message || "Not silinemedi", "error");
+      }
+    });
   }
 
   openModal("eventModal");
 }
+
+// ==============================
+// MODAL HELPERS
+// ==============================
 
 function openModal(modalId) {
   const modal = document.getElementById(modalId);
@@ -328,6 +375,10 @@ function closeAllCalendarModals() {
   closeModal("noteModal");
 }
 
+// ==============================
+// EVENT LISTENERS
+// ==============================
+
 document.addEventListener("click", function (e) {
   const closeTarget = e.target.closest("[data-close]");
   if (closeTarget) {
@@ -346,22 +397,23 @@ document.addEventListener("click", function (e) {
       return;
     }
 
-    addCalendarNote({
-      id: Date.now(),
-      date,
-      text,
-    });
+    saveNoteBtn.disabled = true;
 
-    showToast("Takvim notu eklendi", "success");
-    closeModal("noteModal");
+    createCalendarNote(date, text)
+      .then(() => {
+        showToast("Takvim notu eklendi", "success");
+        closeModal("noteModal");
 
-    const scrollY = window.scrollY;
-
-    refreshCalendar();
-
-    setTimeout(() => {
-      window.scrollTo(0, scrollY);
-    }, 50);
+        const scrollY = window.scrollY;
+        refreshCalendar();
+        setTimeout(() => window.scrollTo(0, scrollY), 50);
+      })
+      .catch((err) => {
+        showToast(err.message || "Not kaydedilemedi", "error");
+      })
+      .finally(() => {
+        saveNoteBtn.disabled = false;
+      });
 
     return;
   }
@@ -373,5 +425,5 @@ document.addEventListener("keydown", function (e) {
   }
 });
 
-window.loadCalendar = loadCalendar;
+window.loadCalendar    = loadCalendar;
 window.refreshCalendar = refreshCalendar;

@@ -78,8 +78,10 @@ async function loadLoans() {
 
       <div class="check-info">
         <div class="check-row"><span class="label">Toplam Kredi</span><span class="value">${formatMoney(l.loanAmount)}</span></div>
+        ${l.totalPayable != null ? `<div class="check-row"><span class="label">Toplam Ödenecek</span><span class="value">${formatMoney(l.totalPayable)}</span></div>` : ""}
         <div class="check-row"><span class="label">Kalan Borç</span><span class="value">${formatMoney(l.remainingDebt)}</span></div>
         <div class="check-row"><span class="label">Aylık Ödeme</span><span class="value">${formatMoney(l.monthlyPayment)}</span></div>
+        <div class="check-row"><span class="label">Faiz Oranı</span><span class="value">${l.interestRate ? `%${Number(l.interestRate).toFixed(2)}` : "Faizsiz"}</span></div>
         <div class="check-row"><span class="label">Ödeme Günü</span><span class="value">${l.paymentDay}</span></div>
       </div>
 
@@ -125,27 +127,44 @@ async function payLoanInstallment(loanId) {
 
 $(document).on("click", "#krediKaydetBtn", async function () {
 
-  const bankName = $("#krediBanka").val();
-  const loanAmount = parseMoney($("#krediTutar").val());
-  const installmentCount = $("#krediTaksit").val();
-  const monthlyPayment = parseMoney($("#krediAylik").val());
-  const paymentDay = $("#krediOdemeGunu").val();
-  const endDate = $("#krediBitis").val();
+  const bankName         = $("#krediBanka").val();
+  const loanAmount       = parseMoney($("#krediTutar").val());
+  const installmentCount = parseInt($("#krediTaksit").val());
+  const interestRateRaw  = $("#krediInterestRate").val();
+  const paymentDay       = parseInt($("#krediOdemeGunu").val());
 
-  if (!bankName || !loanAmount || !installmentCount || !monthlyPayment) {
-    showToast("Lütfen tüm alanları doldurun", "error");
+  if (!bankName || !loanAmount || !installmentCount || isNaN(installmentCount)) {
+    showToast("Banka, tutar ve taksit sayısı zorunludur", "error");
     return;
   }
 
+  if (!paymentDay || isNaN(paymentDay)) {
+    showToast("Ödeme günü seçiniz", "error");
+    return;
+  }
+
+  const interestRate = interestRateRaw !== "" ? parseFloat(interestRateRaw) : null;
+
+  // endDate = bugün + taksit sayısı ay (backend @NotNull şart koşuyor)
+  const _ed = new Date();
+  _ed.setMonth(_ed.getMonth() + installmentCount);
+  const endDate = [
+    _ed.getFullYear(),
+    String(_ed.getMonth() + 1).padStart(2, "0"),
+    String(_ed.getDate()).padStart(2, "0"),
+  ].join("-");
+
+  const payload = {
+    bankName,
+    loanAmount,
+    installmentCount,
+    interestRate,
+    paymentDay,
+    endDate,
+  };
+
   try {
-    await loanStore.createLoan({
-      bankName,
-      loanAmount,
-      installmentCount: parseInt(installmentCount),
-      monthlyPayment,
-      paymentDay: parseInt(paymentDay),
-      endDate
-    });
+    await loanStore.createLoan(payload);
 
     showToast("Kredi başarıyla oluşturuldu", "success");
 
@@ -155,7 +174,7 @@ $(document).on("click", "#krediKaydetBtn", async function () {
 
   } catch (err) {
     console.error(err);
-    showToast("Kredi oluşturulamadı", "error");
+    showToast(err.message || "Kredi oluşturulamadı", "error");
   }
 });
 

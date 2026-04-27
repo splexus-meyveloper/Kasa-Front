@@ -58,13 +58,17 @@
                         id="krediTaksit">
                 </div>
 
-                <!-- AYLIK TAKSİT -->
+                <!-- AYLIK FAİZ ORANI -->
                 <div class="col-md-4 mb-20">
-                    <label>Aylık Taksit</label>
+                    <label>Aylık Faiz Oranı (%) <small style="color:#94a3b8">— boş bırakılırsa faizsiz</small></label>
                     <input
-                        type="text"
-                        class="form-control money-input"
-                        id="krediAylik">
+                        type="number"
+                        class="form-control"
+                        id="krediInterestRate"
+                        min="0"
+                        max="100"
+                        step="0.01"
+                        placeholder="0.00">
                 </div>
 
                 <!-- ÖDEME GÜNÜ -->
@@ -109,15 +113,6 @@
                         <option value="31">31</option>
 
                     </select>
-                </div>
-
-                <!-- BİTİŞ TARİHİ -->
-                <div class="col-md-6 mb-20">
-                    <label>Bitiş Tarihi</label>
-                    <input
-                        type="date"
-                        class="form-control"
-                        id="krediBitis">
                 </div>
 
                 <!-- BUTON -->
