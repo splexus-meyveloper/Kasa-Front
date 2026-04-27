@@ -507,3 +507,52 @@ body.sidebar-collapsed .side-header-menu > ul > li {
   display: flex;
   justify-content: center;
 }
+
+/* =========================
+   DARK MODE MENU
+========================= */
+
+body.dark-mode {
+  --ka-menu-text:        #64748b;
+  --ka-menu-text-strong: #94a3b8;
+  --ka-menu-hover-text:  #93c5fd;
+  --ka-menu-hover-bg:    rgba(59,130,246,.10);
+  --ka-menu-active-bg:   linear-gradient(135deg, rgba(59,130,246,.18) 0%, rgba(139,92,246,.12) 100%);
+  --ka-menu-flyout-bg:   rgba(13,19,37,.97);
+  --ka-menu-border:      rgba(255,255,255,.07);
+  --ka-menu-shadow:      0 12px 34px rgba(0,0,0,.5);
+  --ka-menu-soft-shadow: 0 4px 16px rgba(59,130,246,.15);
+}
+
+body.dark-mode .side-header-menu li.open > a,
+body.dark-mode .side-header-menu li.active > a {
+  color: #93c5fd !important;
+}
+
+body.dark-mode .side-header-sub-menu li a {
+  color: #94a3b8 !important;
+}
+
+body.dark-mode .side-header-sub-menu li a:hover {
+  background: rgba(59,130,246,.12) !important;
+  color: #93c5fd !important;
+}
+
+body.dark-mode .side-header-sub-menu {
+  border-left-color: rgba(59,130,246,.2) !important;
+}
+
+body.dark-mode .flyout {
+  background: rgba(13,19,37,.97) !important;
+  border-color: rgba(255,255,255,.08) !important;
+  box-shadow: 0 18px 40px rgba(0,0,0,.55) !important;
+}
+
+body.dark-mode .flyout li a {
+  color: #94a3b8 !important;
+}
+
+body.dark-mode .flyout li a:hover {
+  background: rgba(59,130,246,.12) !important;
+  color: #93c5fd !important;
+}

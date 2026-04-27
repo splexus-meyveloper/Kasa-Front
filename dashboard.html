@@ -103,6 +103,28 @@
         </div>
     </div>
 
+    <!-- Vadesi Yaklaşan -->
+    <div class="col-xl-3 col-md-6 col-12 mb-30">
+        <div class="top-report dashboard-card" style="border-left:4px solid #f97316">
+            <div class="head" style="display:flex;align-items:center;justify-content:space-between">
+                <h4>Vadesi Yaklaşan</h4>
+                <span style="font-size:10px;font-weight:600;color:#f97316;background:rgba(249,115,22,.12);padding:2px 8px;border-radius:20px;letter-spacing:.4px">30 GÜN</span>
+            </div>
+            <div class="content">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <h5>Çek &amp; Senet</h5>
+                    <span id="vadesiBakliyeAdet" style="opacity:0.8;font-size:13px;">0 adet</span>
+                </div>
+                <h2 id="vadesiToplamTutar" style="color:#f97316">0 TL</h2>
+            </div>
+            <div class="footer">
+                <div class="progess">
+                    <div id="barVadesi" class="progess-bar" style="background:linear-gradient(90deg,#f97316,#ef4444)"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Toplam Kredi Borcu -->
     <div class="col-xlg-3 col-md-6 col-12 mb-30" data-perm="KULLANICI_YONETIMI">
     <div class="top-report dashboard-card">
@@ -134,26 +156,54 @@
 
 
     <!-- GRAFIK -->
-<div class="row mbn-30">
-  <div class="col-md-12 mb-30">
+<div class="row mbn-30" style="margin-bottom:30px">
 
-    <div class="box chart-panel">
-
-      <div class="box-head">
-        <h4 class="title">İşlem Grafiği</h4>
+  <!-- ANA GRAFİK -->
+  <div class="col-lg-8 mb-30">
+    <div class="box chart-panel" style="height:100%">
+      <div class="box-head d-flex align-items-center justify-content-between">
+        <h4 class="title mb-0">Kasa Hareketleri</h4>
+        <div class="d-flex gap-2" id="chartLegend" style="font-size:12px;color:#64748b"></div>
       </div>
-
-      <div class="box-body">
+      <div class="box-body" style="position:relative;height:280px">
         <canvas id="chartjs-revenue-statistics-chart"></canvas>
       </div>
-
     </div>
-
   </div>
+
+  <!-- PORTFÖY DOUGHNUT -->
+  <div class="col-lg-4 mb-30">
+    <div class="box chart-panel" style="height:100%">
+      <div class="box-head">
+        <h4 class="title mb-0">Finansal Portföy</h4>
+      </div>
+      <div class="box-body" style="padding:12px 20px 16px">
+
+        <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
+
+          <!-- Donut (daha büyük, merkez overlay yok) -->
+          <div style="flex-shrink:0;width:200px;height:200px">
+            <canvas id="portfolioChart" width="200" height="200"></canvas>
+          </div>
+
+          <!-- Sağ: toplam + legend -->
+          <div style="flex:1;min-width:130px;display:flex;flex-direction:column;gap:6px">
+            <div style="margin-bottom:6px">
+              <div style="font-size:11px;color:#64748b;font-weight:600;letter-spacing:.5px;text-transform:uppercase">Toplam Portföy</div>
+              <div id="portfolioTotal" style="font-size:20px;font-weight:800;color:#3b82f6;line-height:1.2">—</div>
+            </div>
+            <div id="portfolioLegend" style="display:flex;flex-direction:column;gap:10px"></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
     <!-- AJANDA -->
-    <div class="row">
+    <div class="row" style="margin-top:30px">
   <div class="col-12 mb-30">
     <div class="box dashboard-card">
       <div class="box-body">
