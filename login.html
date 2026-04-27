@@ -112,6 +112,24 @@
       box-shadow: 0 0 0 3px rgba(59,130,246,.12);
     }
 
+    .remember-field {
+      margin-bottom: 20px;
+    }
+    .checkbox {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: #cbd5e1;
+      font-size: 14px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .checkbox input {
+      width: auto;
+      accent-color: #3b82f6;
+      cursor: pointer;
+    }
+
     .btn-submit {
       width: 100%; padding: 13px;
       background: linear-gradient(135deg, #3b82f6, #2563eb);
@@ -309,6 +327,12 @@
           <label>Şifre</label>
           <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
         </div>
+        <div class="field remember-field">
+          <label class="checkbox">
+            <input type="checkbox" id="rememberMe">
+            <span>Beni Hatırla</span>
+          </label>
+        </div>
         <button type="submit" class="btn-submit">Giriş Yap →</button>
       </form>
 
@@ -373,12 +397,28 @@
 
 <script src="assets/js/config.js"></script>
 <script>
+(function() {
+  const companyInput   = document.getElementById("companyCode");
+  const usernameInput  = document.getElementById("username");
+  const rememberCheck  = document.getElementById("rememberMe");
+  const savedCompany   = localStorage.getItem("remember_companyCode");
+  const savedUsername  = localStorage.getItem("remember_username");
+  const savedRemember  = localStorage.getItem("remember_checked");
+
+  if (savedRemember === "1") {
+    rememberCheck.checked = true;
+    if (savedCompany) companyInput.value = savedCompany;
+    if (savedUsername) usernameInput.value = savedUsername;
+  }
+})();
+
 document.getElementById("loginForm").addEventListener("submit", async function(e) {
   e.preventDefault();
 
   const companyCode = document.getElementById("companyCode").value.trim();
   const username    = document.getElementById("username").value.trim();
   const password    = document.getElementById("password").value.trim();
+  const rememberMe  = document.getElementById("rememberMe").checked;
   const errMsg      = document.getElementById("errMsg");
 
   errMsg.style.display = "none";
@@ -387,6 +427,16 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
     errMsg.textContent = "Firma kodu, kullanıcı adı ve şifre giriniz!";
     errMsg.style.display = "block";
     return;
+  }
+
+  if (rememberMe) {
+    localStorage.setItem("remember_companyCode", companyCode);
+    localStorage.setItem("remember_username", username);
+    localStorage.setItem("remember_checked", "1");
+  } else {
+    localStorage.removeItem("remember_companyCode");
+    localStorage.removeItem("remember_username");
+    localStorage.removeItem("remember_checked");
   }
 
   try {
