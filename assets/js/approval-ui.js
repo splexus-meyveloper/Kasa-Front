@@ -118,7 +118,7 @@ function renderApprovals(list) {
         const requester = item.requestedByUsername
             ? escapeHtml(item.requestedByUsername)
             : item.requestedBy
-                ? `<span style="opacity:.6;font-size:11px">ID:</span> <strong>${item.requestedBy}</strong>`
+                ? `<span style="opacity:.6;font-size:11px">ID:</span> <strong>${escapeHtml(String(item.requestedBy))}</strong>`
                 : "-";
 
         const { oldCol, newCol } = buildAlignedColumns(item.oldData, item.newData);

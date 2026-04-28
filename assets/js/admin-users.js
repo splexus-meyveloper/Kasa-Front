@@ -22,26 +22,14 @@ function initUsersPage() {
  *********************************/
 async function loadUsers(){
 
-    console.log("LOAD USERS ÇALIŞTI");
-
     try {
 
         const tbody = document.getElementById("userTable");
-        if(!tbody){
-            console.error("TABLO YOK");
-            return;
-        }
-
-        console.log("FETCH ÖNCESİ");
+        if(!tbody) return;
 
         const data = await adminApi.getProfiles();
 
-        console.log("FETCH SONRASI");
-        console.log("DATA:", data);
-
         const users = Array.isArray(data) ? data : (data.content || []);
-
-        console.log("USERS:", users);
 
         tbody.innerHTML = "";
 

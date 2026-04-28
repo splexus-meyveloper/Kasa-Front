@@ -53,13 +53,14 @@ function toggleDarkMode() {
   const isDark = !document.body.classList.contains("dark-mode");
   localStorage.setItem("darkMode", isDark ? "1" : "0");
   applyDarkMode(isDark);
-  // Chart varsa yeniden çiz — renkleri dark/light modda güncelle
-  if (window.loadChart) loadChart();
+  document.dispatchEvent(new CustomEvent("darkModeChanged"));
 }
 
 async function _showLoginNotifications() {
   if (!sessionStorage.getItem("justLoggedIn")) return;
   sessionStorage.removeItem("justLoggedIn");
+
+  if (sessionStorage.getItem("role") !== "ADMIN") return;
 
   const show = async () => {
     try {

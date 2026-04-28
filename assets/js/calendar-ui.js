@@ -132,40 +132,48 @@ async function loadCalendar() {
     calendar = null;
   }
 
+  const isAdmin = sessionStorage.getItem("role") === "ADMIN";
   const events = [];
 
-  let checks = [];
-  let notesPortfolio = [];
-  let loans = [];
   let calendarNotes = [];
 
-  try {
-    checks = await checkStore.fetchChecks();
-  } catch (err) {
-    console.error("Çekler takvime yüklenemedi:", err);
+  // Finansal olaylar (Çek, Senet, Kredi) yalnızca ADMIN görür
+  if (isAdmin) {
+    let checks = [];
+    let notesPortfolio = [];
+    let loans = [];
+
+    try {
+      checks = await checkStore.fetchChecks();
+    } catch (err) {
+      console.error("Çekler takvime yüklenemedi:", err);
+    }
+
+    try {
+      notesPortfolio = await noteStore.fetchPortfolioNotes();
+    } catch (err) {
+      console.error("Senetler takvime yüklenemedi:", err);
+    }
+
+    try {
+      loans = await loanStore.fetchLoans();
+    } catch (err) {
+      console.error("Krediler takvime yüklenemedi:", err);
+    }
+
+    events.push(...buildCheckEvents(checks));
+    events.push(...buildNoteEvents(notesPortfolio));
+    events.push(...buildLoanEvents(loans));
   }
 
-  try {
-    notesPortfolio = await noteStore.fetchPortfolioNotes();
-  } catch (err) {
-    console.error("Senetler takvime yüklenemedi:", err);
-  }
-
-  try {
-    loans = await loanStore.fetchLoans();
-  } catch (err) {
-    console.error("Krediler takvime yüklenemedi:", err);
-  }
-
+  // Kişisel takvim notları: herkes kendi notunu görür
+  // (backend token'a göre sadece o kullanıcının notlarını döndürür)
   try {
     calendarNotes = await fetchCalendarNotes() || [];
   } catch (err) {
     console.error("Takvim notları yüklenemedi:", err);
   }
 
-  events.push(...buildCheckEvents(checks));
-  events.push(...buildNoteEvents(notesPortfolio));
-  events.push(...buildLoanEvents(loans));
   events.push(...buildManualNoteEvents(calendarNotes));
 
   try {

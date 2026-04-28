@@ -117,7 +117,7 @@ function renderMyActivities(list) {
         tr.innerHTML = `
   <td style="font-weight:700;vertical-align:middle">${date}</td>
   <td class="text-center" style="vertical-align:middle">${actionCell}</td>
-  <td class="td-desc" style="vertical-align:middle">${item.description || item.newDescription || "-"}</td>
+  <td class="td-desc" style="vertical-align:middle">${escapeHtml(item.description || item.newDescription || "") || "-"}</td>
   <td class="text-end" style="vertical-align:middle">${amountCell}</td>
   <td class="text-center" style="vertical-align:middle">${statusCell}</td>
 `;

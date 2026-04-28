@@ -2,9 +2,18 @@ async function loadHeaderNotifications() {
   const container = document.getElementById("notifList");
   if (!container) return;
 
+  const badge = document.getElementById("notificationCount");
+
+  // Finansal bildirimler sadece ADMIN'e gösterilir
+  if (sessionStorage.getItem("role") !== "ADMIN") {
+    if (badge) badge.style.display = "none";
+    const notifBtn = document.querySelector(".notif-btn");
+    if (notifBtn) notifBtn.style.display = "none";
+    return;
+  }
+
   const list = await notificationStore.build();
 
-  const badge = document.getElementById("notificationCount");
   if (badge) {
     badge.innerText = list.length;
     badge.style.display = list.length ? "inline-block" : "none";
@@ -18,8 +27,6 @@ async function loadHeaderNotifications() {
   }
 
   list.forEach(n => {
-
-    // 🔥 ICON SEÇİMİ
     let icon = "";
     if (n.level === "danger") {
       icon = "⚠️";

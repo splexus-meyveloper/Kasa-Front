@@ -149,7 +149,7 @@ function loadKasaChart(girisData, cikisData, labels) {
         style="
           display:inline-flex;align-items:center;gap:6px;margin-left:12px;
           cursor:pointer;user-select:none;padding:4px 8px;border-radius:6px;
-          transition:opacity .2s,background .2s;
+          transition:opacity .2s,background .2s;opacity:1;
         "
         title="Göster / Gizle"
       >
@@ -162,15 +162,18 @@ function loadKasaChart(girisData, cikisData, labels) {
         <span style="font-weight:500;font-size:12px">${l.label}</span>
       </span>`).join("");
 
-    legend.addEventListener("click", (e) => {
-      const btn = e.target.closest("[data-chart-toggle]");
-      if (!btn || !kasaChart) return;
-      const idx = parseInt(btn.dataset.chartToggle, 10);
-      const meta = kasaChart.getDatasetMeta(idx);
-      meta.hidden = !meta.hidden;
-      kasaChart.update();
-      btn.style.opacity = meta.hidden ? "0.35" : "1";
-    });
+    if (!legend.dataset.legendBound) {
+      legend.dataset.legendBound = "true";
+      legend.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-chart-toggle]");
+        if (!btn || !kasaChart) return;
+        const idx = parseInt(btn.dataset.chartToggle, 10);
+        const meta = kasaChart.getDatasetMeta(idx);
+        meta.hidden = !meta.hidden;
+        kasaChart.update();
+        btn.style.opacity = meta.hidden ? "0.35" : "1";
+      });
+    }
   }
 }
 
@@ -193,7 +196,7 @@ function loadPortfolioChart(data) {
       datasets: [{
         data:             items.map(d => d.value),
         backgroundColor:  items.map(d => d.color),
-        borderColor:      dark ? "#0d1325" : "#ffffff",
+        borderColor:      dark ? "#070c1a" : "#f8fafc",
         borderWidth:      3,
         hoverBorderWidth: 4,
         hoverOffset:      8
@@ -362,6 +365,12 @@ async function loadDashboard(selectedUserId = null) {
 
 // ── VADESİ YAKLAŞAN KART ─────────────────────────────────
 async function loadVadesiKart() {
+  const wrapper = document.getElementById("vadesiKartWrapper");
+  if (sessionStorage.getItem("role") !== "ADMIN") {
+    if (wrapper) wrapper.style.display = "none";
+    return;
+  }
+
   const tutarEl = document.getElementById("vadesiToplamTutar");
   const adetEl  = document.getElementById("vadesiBakliyeAdet");
   if (!tutarEl || !adetEl) return;
@@ -435,6 +444,8 @@ document.addEventListener("darkModeChanged", () => {
       (d.expenses || []).map(Number),
       d.labels || []
     );
+  } else if (window.loadChart) {
+    loadChart();
   }
   if (dashboardStore.summary) {
     loadPortfolio(dashboardStore.summary);
