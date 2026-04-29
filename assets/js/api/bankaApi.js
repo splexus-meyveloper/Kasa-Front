@@ -13,6 +13,8 @@ const bankaApi = {
   deleteIslem: (hesapId, islemId) =>
     apiClient.request(`/banka/hesaplar/${hesapId}/islemler/${islemId}`, { method: "DELETE" }),
   getIslemKodlari: () => apiClient.request("/banka/islem-kodlari"),
+  createIslemKodu: (data) => apiClient.request("/banka/islem-kodlari", { method: "POST", body: JSON.stringify(data) }),
+  deleteIslemKodu: (id)  => apiClient.request(`/banka/islem-kodlari/${id}`, { method: "DELETE" }),
 };
 
 window.bankaApi = bankaApi;

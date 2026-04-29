@@ -7,6 +7,7 @@
 async function initBankaHesaplari() {
   await _renderHesaplar();
   _bindHesaplarEvents();
+  _bindIslemKodlariPanel();
 }
 
 async function _renderHesaplar() {
@@ -618,6 +619,124 @@ function _bindDetayEvents() {
     });
   }
 }
+
+// ── İŞLEM KODLARI YÖNETİM PANELİ ────────────────────────
+
+const _HAZIR_KODLAR = [
+  { kod: "309.01.001", aciklama: "6796 NOLU HALK KK (3818)", direction: "OUT" },
+  { kod: "309.01.002", aciklama: "1152 NOLU GB KK",          direction: "OUT" },
+  { kod: "309.01.003", aciklama: "9134 NOLU GB KK",          direction: "OUT" },
+  { kod: "309.02.003", aciklama: "4017 NOLU GB KK",          direction: "OUT" },
+  { kod: "309.03.001", aciklama: "9048 NOLU İŞ KK",          direction: "OUT" },
+  { kod: "309.03.002", aciklama: "4291 NOLU İŞ KK",          direction: "OUT" },
+  { kod: "309.03.003", aciklama: "6760 NOLU İŞ KK",          direction: "OUT" },
+  { kod: "309.04.003", aciklama: "4730 NOLU TEB KK",         direction: "OUT" },
+  { kod: "309.05.001", aciklama: "5547 NOLU YKB K.K",        direction: "OUT" },
+  { kod: "309.05.002", aciklama: "6753 NOLU YKB K.K",        direction: "OUT" },
+  { kod: "309.05.003", aciklama: "5858 NOLU ZİRAAT KK",      direction: "OUT" },
+  { kod: "309.06.004", aciklama: "8780 NOLU ZİRAAT KK",      direction: "OUT" },
+];
+
+async function _renderIslemKodlariAdmin() {
+  const listEl = document.getElementById("islemKodlariAdminList");
+  if (!listEl) return;
+
+  listEl.innerHTML = `<span style="font-size:11px;color:#64748b">Yükleniyor...</span>`;
+
+  try {
+    const kodlar = await bankaApi.getIslemKodlari() || [];
+    if (!kodlar.length) {
+      listEl.innerHTML = `<span style="font-size:11px;color:#64748b">Henüz kod eklenmemiş.</span>`;
+      return;
+    }
+
+    listEl.innerHTML = kodlar.map(k => {
+      const kod   = k.kod || k.code || String(k);
+      const acik  = k.aciklama || k.description || k.name || "";
+      const isIn  = (k.direction || k.yon || "").toUpperCase() === "IN";
+      const renk  = isIn ? "#10b981" : "#ef4444";
+      const bg    = isIn ? "rgba(16,185,129,.12)" : "rgba(239,68,68,.12)";
+      const border = isIn ? "rgba(16,185,129,.3)" : "rgba(239,68,68,.3)";
+      return `
+        <div style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:5px;
+             background:${bg};border:1px solid ${border};font-size:12px">
+          <span style="font-weight:700;color:${renk}">${escapeHtml(kod)}</span>
+          ${acik ? `<span style="color:#94a3b8">${escapeHtml(acik)}</span>` : ""}
+          ${k.id ? `<button onclick="window._islemKoduSil(${k.id})" style="background:none;border:none;cursor:pointer;color:#64748b;padding:0 0 0 4px;font-size:14px;line-height:1" title="Sil">×</button>` : ""}
+        </div>`;
+    }).join("");
+  } catch {
+    listEl.innerHTML = `<span style="font-size:11px;color:#ef4444">Yüklenemedi</span>`;
+  }
+}
+
+function _bindIslemKodlariPanel() {
+  const toggleBtn = document.getElementById("btnIslemKodlariToggle");
+  const body      = document.getElementById("islemKodlariBody");
+  const kaydetBtn = document.getElementById("btnIslemKoduKaydet");
+  const hazirBtn  = document.getElementById("btnHazirKodlariEkle");
+
+  if (toggleBtn && body) {
+    toggleBtn.addEventListener("click", () => {
+      const open = body.style.display !== "none";
+      body.style.display = open ? "none" : "";
+      if (!open) _renderIslemKodlariAdmin();
+    });
+  }
+
+  if (kaydetBtn) {
+    kaydetBtn.addEventListener("click", async () => {
+      const kod     = document.getElementById("yeniKodKod")?.value.trim();
+      const aciklama = document.getElementById("yeniKodAciklama")?.value.trim();
+      const direction = document.getElementById("yeniKodYon")?.value || "OUT";
+
+      if (!kod) { showToast("İşlem kodu zorunludur", "error"); return; }
+
+      kaydetBtn.disabled = true;
+      try {
+        await bankaApi.createIslemKodu({ kod, aciklama, direction });
+        showToast("Kod eklendi", "success");
+        document.getElementById("yeniKodKod").value      = "";
+        document.getElementById("yeniKodAciklama").value = "";
+        await _renderIslemKodlariAdmin();
+      } catch (e) {
+        showToast(e.message || "Kod eklenemedi", "error");
+      } finally {
+        kaydetBtn.disabled = false;
+      }
+    });
+  }
+
+  if (hazirBtn) {
+    hazirBtn.addEventListener("click", async () => {
+      hazirBtn.disabled = true;
+      hazirBtn.innerHTML = '<i class="zmdi zmdi-refresh zmdi-hc-spin"></i> Ekleniyor...';
+      let basari = 0, hata = 0;
+      for (const k of _HAZIR_KODLAR) {
+        try {
+          await bankaApi.createIslemKodu(k);
+          basari++;
+        } catch {
+          hata++;
+        }
+      }
+      showToast(`${basari} kod eklendi${hata ? `, ${hata} hata` : ""}`, hata ? "warning" : "success");
+      await _renderIslemKodlariAdmin();
+      hazirBtn.disabled = false;
+      hazirBtn.innerHTML = '<i class="zmdi zmdi-playlist-plus"></i> 309.xx Kodlarını Toplu Ekle';
+    });
+  }
+}
+
+window._islemKoduSil = async function(id) {
+  try {
+    await bankaApi.deleteIslemKodu(id);
+    showToast("Kod silindi", "success");
+    await _renderIslemKodlariAdmin();
+  } catch (e) {
+    showToast(e.message || "Kod silinemedi", "error");
+  }
+};
 
 // ── GLOBAL EXPORT ────────────────────────────────────────
 window.initBankaHesaplari = initBankaHesaplari;
