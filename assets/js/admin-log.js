@@ -71,17 +71,6 @@ function translateAction(action){
 }
 
 
-function initAdminLogs(){
-
-    const table = document.getElementById("kasaTableBody");
-
-    if(!table) return;
-
-    console.log("KASA TABLE BULUNDU");
-
-    loadMovements();
-
-}
 
 async function loadMovements(page = 0, start = "", end = "", action = "", username = "", q = ""){
 
@@ -445,7 +434,63 @@ function updateAdminTotals(income, expense) {
     bar.style.display = "flex";
 }
 
-let adminLogsLoaded = false;
+function switchAdminTab(tab) {
+  const kasaPanel  = document.getElementById("kasaTable")?.closest(".table-responsive");
+  const posPanel   = document.getElementById("posLoglarPanel");
+  const filterArea = document.querySelector(".row.mb-20");
+  const totalsBar  = document.getElementById("adminTotals");
+  const tabKasa    = document.getElementById("tabKasaBtn");
+  const tabPos     = document.getElementById("tabPosBtn");
+
+  if (tab === "pos") {
+    if (kasaPanel)  kasaPanel.style.display  = "none";
+    if (filterArea) filterArea.style.display = "none";
+    if (totalsBar)  totalsBar.style.display  = "none";
+    if (posPanel)   posPanel.style.display   = "";
+    if (tabKasa) { tabKasa.style.background = ""; tabKasa.style.color = ""; tabKasa.style.border = ""; }
+    if (tabPos)  { tabPos.style.background  = "rgba(59,130,246,.15)"; tabPos.style.color = "#3b82f6"; tabPos.style.border = "1px solid rgba(59,130,246,.3)"; }
+    loadPosLogs();
+  } else {
+    if (kasaPanel)  kasaPanel.style.display  = "";
+    if (filterArea) filterArea.style.display = "";
+    if (posPanel)   posPanel.style.display   = "none";
+    if (tabKasa) { tabKasa.style.background = "rgba(59,130,246,.15)"; tabKasa.style.color = "#3b82f6"; tabKasa.style.border = "1px solid rgba(59,130,246,.3)"; }
+    if (tabPos)  { tabPos.style.background  = ""; tabPos.style.color = ""; tabPos.style.border = ""; }
+  }
+}
+
+async function loadPosLogs() {
+  const tbody = document.getElementById("posLogsBody");
+  if (!tbody) return;
+  tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted" style="padding:24px">Yükleniyor...</td></tr>`;
+  try {
+    const data = await posApi.getLogs();
+    const logs = Array.isArray(data) ? data : (data.content || data.data || []);
+    if (!logs.length) {
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted" style="padding:24px">Kayıt bulunamadı</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = "";
+    logs.forEach(l => {
+      const tarih = l.createdAt || l.date ? new Date(l.createdAt || l.date).toLocaleString("tr-TR") : "-";
+      tbody.insertAdjacentHTML("beforeend", `
+        <tr>
+          <td style="font-size:12px;white-space:nowrap">${escapeHtml(tarih)}</td>
+          <td style="font-size:12px">${escapeHtml(l.username || l.user || "-")}</td>
+          <td style="font-size:12px">${escapeHtml(l.posType  || "-")}</td>
+          <td style="font-size:12px">${escapeHtml(l.terminal || "-")}</td>
+          <td class="text-end" style="font-size:12px;font-weight:600;color:#10b981">
+            +${Number(l.amount||0).toLocaleString("tr-TR",{minimumFractionDigits:2})} TL
+          </td>
+          <td style="font-size:12px">${escapeHtml(l.description || "-")}</td>
+        </tr>`);
+    });
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center" style="color:#ef4444;padding:24px">Yüklenemedi</td></tr>`;
+  }
+}
+
+window.switchAdminTab = switchAdminTab;
 
 function applyFilter(){
 
@@ -470,52 +515,43 @@ function clearFilter(){
 function initAdminLogs(){
 
     const table = document.getElementById("kasaTableBody");
-
     if(!table) return;
 
-    if(table.dataset.loaded === "true") return;
-
-    table.dataset.loaded = "true";
-
     loadMovements();
-    loadUsers(); // 🔥 kullanıcı dropdownu doldur
-
+    loadUsersForFilter();
 }
 
-const _adminLogInitInterval = setInterval(() => {
-    const table = document.getElementById("kasaTableBody");
-    if (table) {
-        clearInterval(_adminLogInitInterval);
-        initAdminLogs();
-    }
-}, 300);
+window.initAdminLogs = initAdminLogs;
 
 const userIdMap = {}; // { userId: username }
 
-async function loadUsers() {
-    const token = sessionStorage.getItem("token");
+async function loadUsersForFilter() {
+    try {
+        const token = sessionStorage.getItem("token");
+        const res = await fetch(API_BASE + "/admin/profiles", {
+            headers: { "Authorization": "Bearer " + token }
+        });
+        if (!res.ok) return;
 
-    const res = await fetch(API_BASE + "/admin/profiles", {
-        headers: { "Authorization": "Bearer " + token }
-    });
+        const data = await res.json();
+        const users = Array.isArray(data) ? data : (data.content || data.data || []);
 
-    const users = await res.json();
+        users.forEach(u => {
+            if (u.id) userIdMap[u.id] = u.username;
+        });
 
-    // ID → username haritası
-    users.forEach(u => {
-        if (u.id) userIdMap[u.id] = u.username;
-    });
+        const select = document.getElementById("filterUser");
+        if (!select) return;
 
-    const select = document.getElementById("filterUser");
-    if (!select) return;
-
-    select.innerHTML = '<option value="">Tümü</option>';
-
-    users.forEach(u => {
-        const option = document.createElement("option");
-        option.value = u.username;
-        option.textContent = u.username;
-        select.appendChild(option);
-    });
+        select.innerHTML = '<option value="">Tümü</option>';
+        users.forEach(u => {
+            const opt = document.createElement("option");
+            opt.value = u.username;
+            opt.textContent = u.username;
+            select.appendChild(opt);
+        });
+    } catch(e) {
+        console.error("[loadUsersForFilter] Hata:", e);
+    }
 }
 

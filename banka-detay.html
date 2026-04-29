@@ -1,0 +1,157 @@
+<!-- ÜST BİLGİ BANDI -->
+<div class="row mb-20">
+  <div class="col-12">
+    <div class="box" style="border-left:4px solid #3b82f6">
+      <div class="box-body" style="padding:16px 24px">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+
+          <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+            <div style="width:44px;height:44px;border-radius:12px;background:rgba(59,130,246,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <i class="zmdi zmdi-card" style="font-size:22px;color:#3b82f6"></i>
+            </div>
+            <div>
+              <div id="detayHesapKodu" style="font-size:11px;font-weight:600;color:#64748b;letter-spacing:.5px;text-transform:uppercase">—</div>
+              <div id="detayBankaAdi" style="font-size:18px;font-weight:700;color:#f1f5f9;margin:1px 0">—</div>
+              <div id="detayHesapNo" style="font-size:12px;color:#64748b">—</div>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+            <div style="text-align:right">
+              <div style="font-size:11px;color:#64748b;font-weight:600;letter-spacing:.4px;text-transform:uppercase">Güncel Bakiye</div>
+              <div id="detayBakiye" style="font-size:24px;font-weight:800;color:#10b981">—</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button class="button button-primary" id="btnExcelYukle">
+                <i class="zmdi zmdi-upload"></i> Excel Yükle
+              </button>
+              <button class="button button-secondary" id="btnGeriBanka"
+                onclick="loadPage('banka-hesaplari.html'); return false;">
+                <i class="zmdi zmdi-arrow-left"></i> Geri
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GİZLİ FILE INPUT -->
+<input type="file" id="excelFileInput" accept=".xlsx,.xls" style="display:none">
+
+<!-- EXCEL FORMAT BİLGİSİ -->
+<div class="row mb-20">
+  <div class="col-12">
+    <div class="box" style="border-left:4px solid #f59e0b">
+      <div class="box-body" style="padding:12px 20px">
+        <div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap">
+          <div style="flex-shrink:0;padding-top:2px">
+            <i class="zmdi zmdi-info-outline" style="color:#f59e0b;font-size:18px"></i>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#f59e0b;margin-bottom:4px">Excel Dosya Formatı</div>
+            <div style="font-size:12px;color:#94a3b8;line-height:1.8">
+              <span style="margin-right:16px"><strong style="color:#e2e8f0">A</strong> — Açıklama</span>
+              <span style="margin-right:16px"><strong style="color:#e2e8f0">B</strong> — Tutar (sayısal)</span>
+              <span style="margin-right:16px"><strong style="color:#e2e8f0">C</strong> — İşlem Kodu</span>
+              <span><strong style="color:#e2e8f0">D</strong> — Tarih (GG-AA-YYYY)</span>
+            </div>
+          </div>
+          <div style="margin-left:auto">
+            <div style="font-size:11px;color:#64748b;font-weight:600;margin-bottom:6px">İşlem Kodları</div>
+            <div id="islemKodlariList" style="display:flex;gap:6px;flex-wrap:wrap">
+              <span style="font-size:11px;color:#64748b">Yükleniyor...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FİLTRE BANDI -->
+<div class="row mb-16" id="bankaFiltreRow">
+  <div class="col-12">
+    <div class="box">
+      <div class="box-body" style="padding:12px 20px">
+        <div style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap">
+
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <label style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.4px">Yön</label>
+            <select id="filtreYon" style="height:36px;min-width:130px;font-size:13px;padding:0 10px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:#0f172a;color:#e2e8f0;outline:none">
+              <option value="">Tümü</option>
+              <option value="IN">Giriş</option>
+              <option value="OUT">Çıkış</option>
+            </select>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <label style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.4px">Başlangıç</label>
+            <input type="date" id="filtreTarihBaslangic"
+              style="height:36px;font-size:13px;padding:0 10px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:#0f172a;color:#e2e8f0;outline:none;min-width:150px">
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <label style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.4px">Bitiş</label>
+            <input type="date" id="filtreTarihBitis"
+              style="height:36px;font-size:13px;padding:0 10px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:#0f172a;color:#e2e8f0;outline:none;min-width:150px">
+          </div>
+
+          <div style="display:flex;gap:8px">
+            <button class="button button-primary" id="btnFiltrele" style="height:36px;padding:0 18px;font-size:13px">
+              <i class="zmdi zmdi-filter-list"></i> Filtrele
+            </button>
+            <button class="button button-secondary" id="btnFiltreTemizle" style="height:36px;padding:0 14px;font-size:13px">
+              <i class="zmdi zmdi-close"></i> Temizle
+            </button>
+          </div>
+
+          <div id="filtreAktifBilgi" style="display:none;font-size:12px;color:#f59e0b;align-self:flex-end;padding-bottom:8px">
+            <i class="zmdi zmdi-info-outline"></i>
+            <span id="filtreAktifSayi"></span> kayıt gösteriliyor
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HAREKETLER TABLOSU -->
+<div class="row">
+  <div class="col-12">
+    <div class="box">
+      <div class="box-head d-flex align-items-center justify-content-between">
+        <h4 class="title mb-0">Banka Hareketleri</h4>
+        <span id="bankaIslemSayisi" style="font-size:12px;color:#64748b"></span>
+      </div>
+      <div class="box-body" style="padding:0">
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Tarih</th>
+                <th>Açıklama</th>
+                <th>Kod</th>
+                <th class="text-end">Tutar</th>
+                <th class="text-center">Yön</th>
+              </tr>
+            </thead>
+            <tbody id="bankaIslemlerBody">
+              <tr>
+                <td colspan="5" class="text-center text-muted" style="padding:30px">Yükleniyor...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="box-body" style="padding:12px 20px;border-top:1px solid rgba(255,255,255,.06);text-align:center">
+        <button class="button button-secondary" id="btnDahaFazla" style="display:none">
+          <i class="zmdi zmdi-refresh"></i> Daha Fazla Yükle
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

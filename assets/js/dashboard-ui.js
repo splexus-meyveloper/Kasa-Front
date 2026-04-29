@@ -317,6 +317,44 @@ async function loadPortfolio(summaryData) {
   }
 }
 
+// ── KULLANICI KARTLARI ───────────────────────────────────
+function _applyUserDashboardCards(d) {
+  const isAdmin = sessionStorage.getItem("role") === "ADMIN";
+
+  const adminCek   = document.getElementById("adminCekKarti");
+  const adminSenet = document.getElementById("adminSenetKarti");
+  const userCek    = document.getElementById("userCekKarti");
+  const userSenet  = document.getElementById("userSenetKarti");
+  const userNet    = document.getElementById("userNetKarti");
+
+  if (isAdmin) {
+    if (userCek)   userCek.style.display   = "none";
+    if (userSenet) userSenet.style.display = "none";
+    if (userNet)   userNet.style.display   = "none";
+  } else {
+    if (adminCek)   adminCek.style.display   = "none";
+    if (adminSenet) adminSenet.style.display = "none";
+    if (userCek)    userCek.style.display    = "";
+    if (userSenet)  userSenet.style.display  = "";
+    if (userNet)    userNet.style.display    = "";
+
+    const cekEl   = document.getElementById("bugunCekToplam");
+    const senetEl = document.getElementById("bugunSenetToplam");
+    const netEl   = document.getElementById("gunlukNetBakiye");
+
+    if (cekEl)   animateValue(cekEl,   Number(d.todayCheckTotal  || 0));
+    if (senetEl) animateValue(senetEl, Number(d.todayNoteTotal   || 0));
+    if (netEl) {
+      animateValue(netEl, Number(d.dailyNetBalance || 0));
+      netEl.className = Number(d.dailyNetBalance || 0) >= 0 ? "text-success" : "text-danger";
+    }
+
+    setAutoBar("barBugunCek",   d.todayCheckTotal  || 0, 500000);
+    setAutoBar("barBugunSenet", d.todayNoteTotal   || 0, 500000);
+    setAutoBar("barGunlukNet",  Math.abs(d.dailyNetBalance || 0), 500000);
+  }
+}
+
 // ── DASHBOARD SUMMARY ────────────────────────────────────
 async function loadDashboard(selectedUserId = null) {
   const gi       = document.getElementById("gunlukGiris");
@@ -341,6 +379,7 @@ async function loadDashboard(selectedUserId = null) {
       animateValue(an, Number(d.monthlyNet   || 0));
       animateValue(kb, Number(d.balance      || 0));
       if (krediBorc) animateValue(krediBorc, Number(d.totalLoanDebt || 0));
+      _applyUserDashboardCards(d);
     };
 
     if (window._appVisible) runAnims();

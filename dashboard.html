@@ -65,8 +65,8 @@
         </div>
     </div>
 
-    <!-- Eldeki Çekler -->
-    <div class="col-xl-3 col-md-6 col-12 mb-30" data-perm="CEK">
+    <!-- Eldeki Çekler (Admin) -->
+    <div id="adminCekKarti" class="col-xl-3 col-md-6 col-12 mb-30" data-perm="CEK">
         <div class="top-report dashboard-card">
             <div class="head"><h4>Eldeki Çekler</h4></div>
             <div class="content">
@@ -84,8 +84,8 @@
         </div>
     </div>
 
-    <!-- Eldeki Senetler -->
-    <div class="col-xl-3 col-md-6 col-12 mb-30" data-perm="SENET">
+    <!-- Eldeki Senetler (Admin) -->
+    <div id="adminSenetKarti" class="col-xl-3 col-md-6 col-12 mb-30" data-perm="SENET">
         <div class="top-report dashboard-card">
             <div class="head"><h4>Eldeki Senetler</h4></div>
             <div class="content">
@@ -100,6 +100,42 @@
                     <div id="barSenetler" class="progess-bar"></div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Bugün Girilen Çekler (Normal Kullanıcı) -->
+    <div id="userCekKarti" class="col-xl-3 col-md-6 col-12 mb-30" style="display:none">
+        <div class="top-report dashboard-card">
+            <div class="head"><h4>Bugün Girilen Çekler</h4></div>
+            <div class="content">
+                <h5>Bugün</h5>
+                <h2 id="bugunCekToplam" class="text-warning">0 TL</h2>
+            </div>
+            <div class="footer"><div class="progess"><div id="barBugunCek" class="progess-bar"></div></div></div>
+        </div>
+    </div>
+
+    <!-- Bugün Girilen Senetler (Normal Kullanıcı) -->
+    <div id="userSenetKarti" class="col-xl-3 col-md-6 col-12 mb-30" style="display:none">
+        <div class="top-report dashboard-card">
+            <div class="head"><h4>Bugün Girilen Senetler</h4></div>
+            <div class="content">
+                <h5>Bugün</h5>
+                <h2 id="bugunSenetToplam" class="text-info">0 TL</h2>
+            </div>
+            <div class="footer"><div class="progess"><div id="barBugunSenet" class="progess-bar"></div></div></div>
+        </div>
+    </div>
+
+    <!-- Günlük Net Bakiye (Normal Kullanıcı) -->
+    <div id="userNetKarti" class="col-xl-3 col-md-6 col-12 mb-30" style="display:none">
+        <div class="top-report dashboard-card">
+            <div class="head"><h4>Günlük Net Bakiye</h4></div>
+            <div class="content">
+                <h5>Bugün</h5>
+                <h2 id="gunlukNetBakiye" class="text-success">0 TL</h2>
+            </div>
+            <div class="footer"><div class="progess"><div id="barGunlukNet" class="progess-bar"></div></div></div>
         </div>
     </div>
 

@@ -150,9 +150,77 @@ function updateMyTotals(income, expense) {
     bar.style.display = "flex";
 }
 
+function _getMyActParams() {
+    return {
+        action:    document.getElementById("myActFilterType")?.value  || "",
+        startDate: document.getElementById("myActFilterStart")?.value || "",
+        endDate:   document.getElementById("myActFilterEnd")?.value   || "",
+    };
+}
+
 async function initMyActivitiesPage() {
     const data = await myActivityStore.load();
     renderMyActivities(data);
+
+    // Filtrele butonu
+    const btnFiltrele = document.getElementById("btnMyActFiltrele");
+    if (btnFiltrele) {
+        btnFiltrele.addEventListener("click", async () => {
+            const params = _getMyActParams();
+            const hasFilter = params.action || params.startDate || params.endDate;
+            try {
+                const data = hasFilter
+                    ? await myActivityApi.getFiltered(params)
+                    : await myActivityStore.load();
+                const list = Array.isArray(data) ? data : (data.content || data || []);
+                renderMyActivities(list);
+            } catch(e) {
+                showToast("Filtre uygulanamadı: " + e.message, "error");
+            }
+        });
+    }
+
+    // Temizle butonu
+    const btnTemizle = document.getElementById("btnMyActTemizle");
+    if (btnTemizle) {
+        btnTemizle.addEventListener("click", async () => {
+            const type  = document.getElementById("myActFilterType");
+            const start = document.getElementById("myActFilterStart");
+            const end   = document.getElementById("myActFilterEnd");
+            if (type)  type.value  = "";
+            if (start) start.value = "";
+            if (end)   end.value   = "";
+            const data = await myActivityStore.load();
+            renderMyActivities(data);
+        });
+    }
+
+    // PDF butonu
+    const btnPdf = document.getElementById("btnMyActPdf");
+    if (btnPdf) {
+        btnPdf.addEventListener("click", async () => {
+            btnPdf.disabled = true;
+            btnPdf.innerHTML = '<i class="zmdi zmdi-refresh zmdi-hc-spin"></i> Hazırlanıyor...';
+            try {
+                const params = _getMyActParams();
+                const res = await myActivityApi.getPdf(params);
+                if (!res.ok) throw new Error("PDF alınamadı");
+                const blob = await res.blob();
+                const url  = URL.createObjectURL(blob);
+                const a    = document.createElement("a");
+                a.href     = url;
+                a.download = "islemlerim.pdf";
+                a.click();
+                URL.revokeObjectURL(url);
+                showToast("PDF indirildi", "success");
+            } catch(e) {
+                showToast(e.message || "PDF indirilemedi", "error");
+            } finally {
+                btnPdf.disabled = false;
+                btnPdf.innerHTML = '<i class="zmdi zmdi-download"></i> PDF';
+            }
+        });
+    }
 }
 
 let currentEditId   = null;

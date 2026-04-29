@@ -1,0 +1,50 @@
+<div class="row mb-20" style="align-items:center;justify-content:space-between;display:flex;flex-wrap:wrap;gap:10px;padding:0 15px">
+  <h3 class="title mb-0">Banka Hesapları</h3>
+  <button class="button button-primary" id="btnYeniHesapAc">
+    <i class="zmdi zmdi-plus"></i> Yeni Hesap Ekle
+  </button>
+</div>
+
+<!-- YENİ HESAP FORMU -->
+<div class="row mb-30" id="yeniHesapForm" style="display:none">
+  <div class="col-12">
+    <div class="box">
+      <div class="box-head">
+        <h4 class="title mb-0">Yeni Banka Hesabı</h4>
+      </div>
+      <div class="box-body">
+        <div class="row">
+          <div class="col-md-3 mb-20">
+            <label>Hesap Kodu</label>
+            <input type="text" id="bankaHesapKodu" class="form-control" placeholder="örn. GARANTI-1">
+          </div>
+          <div class="col-md-3 mb-20">
+            <label>Banka Adı</label>
+            <input type="text" id="bankaBankaAdi" class="form-control" placeholder="örn. Garanti BBVA">
+          </div>
+          <div class="col-md-3 mb-20">
+            <label>Hesap Numarası</label>
+            <input type="text" id="bankaHesapNo" class="form-control" placeholder="IBAN veya hesap no">
+          </div>
+          <div class="col-md-3 mb-20">
+            <label>Başlangıç Bakiyesi (TL)</label>
+            <input type="text" id="bankaBakiye" class="form-control money-input" placeholder="0,00">
+          </div>
+          <div class="col-12" style="display:flex;gap:10px">
+            <button class="button button-primary" id="btnHesapKaydet">
+              <i class="zmdi zmdi-save"></i> Kaydet
+            </button>
+            <button class="button button-secondary" id="btnHesapIptal">
+              Vazgeç
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HESAP KARTLARI -->
+<div class="row" id="bankaHesaplarContainer">
+  <div class="col-12" style="padding:40px;text-align:center;color:#64748b">Yükleniyor...</div>
+</div>

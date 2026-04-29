@@ -236,6 +236,7 @@ if (targetRow) {
       ${checkbox("SENET", perms)}
       ${checkbox("MASRAF", perms)}
       ${checkbox("KREDILER", perms)}
+      ${checkbox("BANKA", perms)}
       ${checkbox("KULLANICI_YONETIMI", perms)}
     </div>
     <button class="savePermBtn">Kaydet</button>
@@ -273,6 +274,7 @@ function checkbox(code, perms) {
     SENET: "Senet",
     MASRAF: "Masraf",
     KREDILER: "Krediler",
+    BANKA: "Banka",
     KULLANICI_YONETIMI: "Kullanıcı Yönetimi",
   };
 

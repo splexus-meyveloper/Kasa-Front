@@ -207,6 +207,7 @@ ${checkbox("CEK",perms)}
 ${checkbox("SENET",perms)}
 ${checkbox("MASRAF",perms)}
 ${checkbox("KREDILER",perms)}
+${checkbox("BANKA",perms)}
 ${checkbox("KULLANICI_YONETIMI",perms)}
 
 </div>
@@ -249,6 +250,7 @@ function checkbox(code, perms){
         "SENET":"Senet",
         "MASRAF":"Masraf",
         "KREDILER":"Krediler",
+        "BANKA":"Banka",
         "KULLANICI_YONETIMI":"Kullanıcı Yönetimi"
     };
 

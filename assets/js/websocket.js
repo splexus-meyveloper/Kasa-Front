@@ -1,12 +1,13 @@
 // ==============================
 // WEBSOCKET CLIENT
 // ==============================
-// Bağlantı kesilirse uygulama normal çalışmaya devam eder.
-// Mesaj gelince ilgili modül otomatik refresh olur.
+
+const MAX_RECONNECT = 5;
 
 const wsClient = {
-  _stomp: null,
-  _companyId: null,
+  _stomp:             null,
+  _companyId:         null,
+  _reconnectAttempts: 0,
 
   _getCompanyId() {
     try {
@@ -17,6 +18,10 @@ const wsClient = {
     } catch {
       return null;
     }
+  },
+
+  getCurrentPage() {
+    return window.currentPage || "";
   },
 
   connect() {
@@ -31,48 +36,68 @@ const wsClient = {
     const baseUrl = API_BASE.replace(/\/api$/, "");
 
     this._stomp = new StompJs.Client({
-      webSocketFactory: () => new SockJS(baseUrl + "/ws"),
-      connectHeaders: { Authorization: "Bearer " + token },
-      reconnectDelay: 5000,
-      debug: () => {},
-      onConnect: () => this._subscribe(),
-      onStompError: () => {},
-      onWebSocketError: () => {},
+      webSocketFactory:  () => new SockJS(baseUrl + "/ws"),
+      connectHeaders:    { Authorization: "Bearer " + token },
+      heartbeatIncoming: 10000,
+      heartbeatOutgoing: 10000,
+      reconnectDelay:    0,
+      debug:             null,
+
+      onConnect: () => {
+        this._reconnectAttempts = 0;
+        this._subscribe();
+      },
+
+      onStompError: () => this._scheduleReconnect(),
+      onWebSocketError: () => this._scheduleReconnect(),
       onDisconnect: () => {}
     });
 
     this._stomp.activate();
   },
 
+  _scheduleReconnect() {
+    if (this._reconnectAttempts >= MAX_RECONNECT) return;
+    this._reconnectAttempts++;
+    setTimeout(() => {
+      this._stomp = null;
+      this.connect();
+    }, 3000 * this._reconnectAttempts);
+  },
+
   _subscribe() {
     this._stomp.subscribe(
       "/topic/company-" + this._companyId,
       (msg) => {
-        try {
-          this._handleEvent(JSON.parse(msg.body));
-        } catch {}
+        try { this._handleEvent(JSON.parse(msg.body)); } catch {}
       }
     );
   },
 
   _handleEvent(event) {
-    const m = event.module;
+    const m    = event.module;
+    const page = this.getCurrentPage();
 
     if (m === "KASA") {
-      window.loadCashTransactions?.();
+      if (page.includes("kasa")) window.loadCashTransactions?.();
       window.initDashboard?.();
     } else if (m === "CEK") {
-      window.loadChecks?.({ silent: true });
+      if (page.includes("cek")) window.loadChecks?.({ silent: true });
       window.loadCheckSummary?.();
     } else if (m === "SENET") {
-      window.loadNotes?.({ silent: true });
+      if (page.includes("senet")) window.loadNotes?.({ silent: true });
       window.loadNotesDashboard?.();
     } else if (m === "KREDI") {
       window.loadLoans?.();
       window.initDashboard?.();
     } else if (m === "MASRAF") {
-      window.loadExpenses?.();
+      if (page.includes("masraf")) window.addExpense && loadPage("masraflar.html");
       window.initDashboard?.();
+    } else if (m === "BANKA") {
+      if (page.includes("banka-detay"))    window.initBankaDetay?.();
+      if (page.includes("banka-hesaplar")) window.initBankaHesaplari?.();
+    } else if (m === "SYSTEM" && event.action === "WS_PING") {
+      // heartbeat — no-op
     }
 
     window.loadHeaderNotifications?.();

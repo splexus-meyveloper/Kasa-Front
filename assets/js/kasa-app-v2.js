@@ -8,6 +8,7 @@ function getPageKey(page) {
   if (normalized.includes("kullanicilar")) return "users";
   if (normalized.includes("dashboard")) return "dashboard";
   if (normalized.includes("cek")) return "checks";
+  if (normalized.includes("admin-kasa")) return "adminLogs";
   if (normalized.includes("kasa")) return "cash";
   if (normalized.includes("not") || normalized.includes("senet")) return "notes";
   if (normalized.includes("takvim")) return "calendar";
@@ -17,6 +18,8 @@ function getPageKey(page) {
   if (normalized.includes("benim")) return "myActivities";
   if (normalized.includes("onay")) return "approvals";
   if (normalized.includes("rapor")) return "reports";
+  if (normalized.includes("banka-hesaplari")) return "bankaHesaplar";
+  if (normalized.includes("banka-detay")) return "bankaDetay";
 
   return "default";
 }
@@ -124,6 +127,18 @@ reports: () => {
   if (window.initReportPage) {
     window.initReportPage();
   }
+},
+
+bankaHesaplar: () => {
+  if (window.initBankaHesaplari) window.initBankaHesaplari();
+},
+
+bankaDetay: () => {
+  if (window.initBankaDetay) window.initBankaDetay();
+},
+
+adminLogs: () => {
+  if (window.initAdminLogs) window.initAdminLogs();
 },
 
   default: () => {
@@ -262,6 +277,7 @@ function getPermissions() {
 }
 
 function applyPermissionsFromToken() {
+  if (sessionStorage.getItem("role") === "ADMIN") return;
   const perms = getPermissions();
   document.querySelectorAll("[data-perm]").forEach((el) => {
     const p = el.getAttribute("data-perm");

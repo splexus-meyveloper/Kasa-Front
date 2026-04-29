@@ -1,7 +1,4 @@
-
-
 <div class="row">
-
     <div class="col-12">
         <div class="box">
             <div class="box-head">
@@ -9,47 +6,69 @@
             </div>
             <div class="box-body">
                 <form>
-
                     <div class="row">
 
                         <div class="col-md-6 mb-20">
-    <label>Masraf Türü</label>
-    <select id="expenseType" class="form-control">
-        <option value="">Seçiniz...</option>
-        <option value="YEMEK">Yemek</option>
-        <option value="MARKET">Market</option>
-        <option value="CEZA">Ceza</option>
-        <option value="ILETISIM">İletişim</option>
-        <option value="KARGO">Kargo</option>
-        <option value="YAKIT">Yakıt</option>
-        <option value="DIGER">Diğer</option>
-    </select>
-</div>
+                            <label>Masraf Türü</label>
+                            <select id="expenseType" class="form-control" onchange="toggleAracPlaka()">
+                                <option value="">Seçiniz...</option>
+                                <option value="ELEKTRIK">ELEKTRİK</option>
+                                <option value="SU">SU</option>
+                                <option value="ILETISIM">İLETİŞİM</option>
+                                <option value="KARGO_NAKLIYE">KARGO-NAKLİYE</option>
+                                <option value="ARAC_GIDERLERI">ARAÇ GİDERLERİ</option>
+                                <option value="IS_YERI">İŞ YERİ</option>
+                                <option value="ATOLYE">ATÖLYE</option>
+                                <option value="YEMEK">YEMEK</option>
+                                <option value="MARKET">MARKET</option>
+                                <option value="KIRTASIYE">KIRTASİYE</option>
+                                <option value="SEYAHAT">SEYAHAT</option>
+                                <option value="NILUFERKÖY">NİLÜFERKÖY</option>
+                                <option value="ORTAK_GIDER">ORTAK GİDER</option>
+                                <option value="ALI_ALTIKARDESLER">ALİ ALTIKARDEŞLER</option>
+                                <option value="ATINC_ALTIKARDESLER">ATINÇ ALTIKARDEŞLER</option>
+                                <option value="KIVANC_ALTIKARDESLER">KIVANÇ ALTIKARDEŞLER</option>
+                                <option value="PERVIN_ALTIKARDESLER">PERVİN ALTIKARDEŞLER</option>
+                                <option value="CEZA">CEZA</option>
+                                <option value="YAKIT">YAKIT</option>
+                                <option value="DIGER">DİĞER</option>
+                            </select>
+                        </div>
 
-<div class="col-md-6 mb-20">
-    <label>Tutar</label>
-    <input type="text" id="tutar" class="form-control" placeholder="Tutar giriniz">
-</div>
+                        <!-- ARAÇ GİDERLERİ: Plaka seçimi -->
+                        <div id="aracPlakaWrapper" class="col-md-6 mb-20" style="display:none">
+                            <label>Araç Plakası</label>
+                            <select id="aracPlaka" class="form-control">
+                                <option value="P_16_AHD_464">16 AHD 464</option>
+                                <option value="P_16_BVL_436">16 BVL 436</option>
+                                <option value="P_16_AEA_555">16 AEA 555</option>
+                                <option value="P_16_ANS_605">16 ANS 605</option>
+                                <option value="P_16_GD_606">16 GD 606</option>
+                                <option value="P_16_E_0207">16 E 0207</option>
+                                <option value="P_16_JUT_88">16 JUT 88</option>
+                                <option value="P_16_BBR_666">16 BBR 666</option>
+                            </select>
+                        </div>
 
-<div class="col-md-12 mb-20">
-    <label>Açıklama</label>
-    <textarea id="description" class="form-control" placeholder="Açıklama"></textarea>
-</div>
+                        <div class="col-md-6 mb-20">
+                            <label>Tutar</label>
+                            <input type="text" id="tutar" class="form-control money-input" placeholder="0,00">
+                        </div>
 
-<div class="col-12">
-    <button type="button" id="expenseSaveBtn" class="button button-primary">
-    Kaydet
-</button>
+                        <div class="col-md-12 mb-20">
+                            <label>Açıklama</label>
+                            <textarea id="description" class="form-control" placeholder="Açıklama"></textarea>
+                        </div>
 
-</div>
-
+                        <div class="col-12">
+                            <button type="button" id="expenseSaveBtn" class="button button-primary">
+                                Kaydet
+                            </button>
                         </div>
 
                     </div>
-
                 </form>
             </div>
         </div>
     </div>
-
 </div>

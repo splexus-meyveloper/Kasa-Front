@@ -6,21 +6,38 @@
             </div>
             <div class="box-body">
                 <form>
-
                     <div class="row">
 
                         <div class="col-md-6 mb-20">
-                        <label>Tutar (₺)</label>
-                        <input 
-                           type="text"
-                           id="tutar"
-                           class="form-control money-input"
-                           placeholder="0,00"
-                           inputmode="numeric"
-                           autocomplete="off"
-                         >
-                         </div>
+                            <label>Ödeme Şekli</label>
+                            <select id="odemeSekli" class="form-control" onchange="togglePosFields()">
+                                <option value="NAKIT">NAKİT</option>
+                                <option value="KREDI_KARTI">KREDİ KARTI</option>
+                            </select>
+                        </div>
 
+                        <div class="col-md-6 mb-20">
+                            <label>Tutar (₺)</label>
+                            <input type="text" id="tutar" class="form-control money-input"
+                                placeholder="0,00" inputmode="numeric" autocomplete="off">
+                        </div>
+
+                        <!-- POS ALANLARI -->
+                        <div id="posAlanlari" class="col-12" style="display:none">
+                            <div class="row">
+                                <div class="col-md-6 mb-20">
+                                    <label>POS Tipi</label>
+                                    <select id="posTipi" class="form-control" onchange="toggleTerminal()">
+                                        <option value="ALTIKARDESLER">ALTIKARDEŞLER POS</option>
+                                        <option value="TEDARIKCI">TEDARİKÇİ POS</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-20">
+                                    <label>Terminal</label>
+                                    <select id="posTerminal" class="form-control"></select>
+                                </div>
+                            </div>
+                        </div>
 
                         <div class="col-md-12 mb-20">
                             <label>Açıklama</label>
@@ -29,16 +46,13 @@
 
                         <div class="col-12">
                             <button type="button" id="btnKasaGiris" class="button button-primary">
-                            Kaydet
+                                Kaydet
                             </button>
-
                         </div>
 
                     </div>
-
                 </form>
             </div>
         </div>
     </div>
 </div>
-

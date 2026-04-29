@@ -58,6 +58,8 @@
 
         if (elements.length === 0) return false;
 
+        if (jwt.role === "ADMIN") return true;
+
         elements.forEach(el => {
             const perm = el.getAttribute("data-perm");
             if (!has(perm)) {
@@ -68,21 +70,45 @@
         return true;
     }
 
+    function applyMenuRestrictions() {
+        if (jwt.role === "ADMIN") return true;
+
+        const cekMenu   = document.querySelector('[data-perm="CEK"] .side-header-sub-menu');
+        const senetMenu = document.querySelector('[data-perm="SENET"] .side-header-sub-menu');
+        if (!cekMenu || !senetMenu) return false;
+
+        cekMenu.querySelectorAll("li").forEach(li => {
+            const a = li.querySelector("a[data-page]");
+            if (a && a.getAttribute("data-page") !== "cek-giris.html") li.remove();
+        });
+
+        senetMenu.querySelectorAll("li").forEach(li => {
+            const a = li.querySelector("a[data-page]");
+            if (a && a.getAttribute("data-page") !== "senet-giris.html") li.remove();
+        });
+
+        return true;
+    }
+
     // DOM hazır olunca çalıştır
     document.addEventListener("DOMContentLoaded", () => {
 
-        // İlk deneme
+        // İzin UI
         if (!applyPermissionUI()) {
-
-            // Menü sonradan geliyorsa bekle
             const interval = setInterval(() => {
-                if (applyPermissionUI()) {
-                    clearInterval(interval);
-                }
+                if (applyPermissionUI()) clearInterval(interval);
             }, 100);
-
-            // Sonsuza kadar dönmesin (fail-safe)
             setTimeout(() => clearInterval(interval), 5000);
+        }
+
+        // Menü kısıtlamaları (non-admin)
+        if (jwt.role !== "ADMIN") {
+            if (!applyMenuRestrictions()) {
+                const menuInterval = setInterval(() => {
+                    if (applyMenuRestrictions()) clearInterval(menuInterval);
+                }, 100);
+                setTimeout(() => clearInterval(menuInterval), 5000);
+            }
         }
 
     });

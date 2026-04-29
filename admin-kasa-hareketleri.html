@@ -2,9 +2,15 @@
 
     <div class="col-12 mb-30">
 <div class="box dashboard-card">
-                <div class="box-head">
-                <h4 class="title">Kasa Hareketleri</h4>
-            </div>
+    <div class="box-head d-flex align-items-center justify-content-between">
+        <h4 class="title">Kasa Hareketleri</h4>
+        <div style="display:flex;gap:8px">
+            <button id="tabKasaBtn" class="btn-modern" style="font-size:12px;padding:6px 14px;background:rgba(59,130,246,.15);color:#3b82f6;border:1px solid rgba(59,130,246,.3)"
+                onclick="switchAdminTab('hareketler')">Kasa Hareketleri</button>
+            <button id="tabPosBtn" class="btn-modern" style="font-size:12px;padding:6px 14px"
+                onclick="switchAdminTab('pos')">POS Logları</button>
+        </div>
+    </div>
 
             <div class="box-body">
 
@@ -95,6 +101,27 @@
         <span class="summary-label">Net</span>
         <span class="summary-value" id="adminTotalNet">0,00 TL</span>
     </div>
+</div>
+
+<!-- POS LOGLARI PANELİ -->
+<div id="posLoglarPanel" style="display:none">
+  <div class="table-responsive">
+    <table class="table users-table">
+      <thead>
+        <tr>
+          <th>Tarih</th>
+          <th>Kullanıcı</th>
+          <th>POS Tipi</th>
+          <th>Terminal</th>
+          <th class="text-end">Tutar</th>
+          <th>Açıklama</th>
+        </tr>
+      </thead>
+      <tbody id="posLogsBody">
+        <tr><td colspan="6" class="text-center text-muted" style="padding:24px">Yükleniyor...</td></tr>
+      </tbody>
+    </table>
+  </div>
 </div>
 
 </div>

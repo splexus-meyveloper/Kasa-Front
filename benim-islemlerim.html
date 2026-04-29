@@ -8,6 +8,53 @@
 
             <div class="box-body">
 
+                <!-- FİLTRE + PDF -->
+                <div style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:18px">
+
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <label style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.4px">İşlem Türü</label>
+                    <select id="myActFilterType" style="height:36px;min-width:160px;font-size:13px;padding:0 10px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:#0f172a;color:#e2e8f0;outline:none">
+                      <option value="">Tümü</option>
+                      <option value="CASH_INCOME">Kasa Giriş</option>
+                      <option value="CASH_EXPENSE">Kasa Çıkış</option>
+                      <option value="CHECK_IN">Çek Giriş</option>
+                      <option value="CHECK_COLLECT">Çek Tahsil</option>
+                      <option value="CHECK_OUT">Çek Ödeme</option>
+                      <option value="NOTE_IN">Senet Giriş</option>
+                      <option value="NOTE_COLLECT">Senet Tahsil</option>
+                      <option value="LOAN_CREATE">Kredi Oluşturma</option>
+                      <option value="EXPENSE_ADD">Masraf</option>
+                      <option value="POS_LOG">POS İşlemi</option>
+                      <option value="BANKA_CIKIS">Bankaya Para Yatırma</option>
+                    </select>
+                  </div>
+
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <label style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.4px">Başlangıç</label>
+                    <input type="date" id="myActFilterStart"
+                      style="height:36px;font-size:13px;padding:0 10px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:#0f172a;color:#e2e8f0;outline:none;min-width:150px">
+                  </div>
+
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <label style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.4px">Bitiş</label>
+                    <input type="date" id="myActFilterEnd"
+                      style="height:36px;font-size:13px;padding:0 10px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:#0f172a;color:#e2e8f0;outline:none;min-width:150px">
+                  </div>
+
+                  <div style="display:flex;gap:8px">
+                    <button class="button button-primary" id="btnMyActFiltrele" style="height:36px;padding:0 16px;font-size:13px">
+                      <i class="zmdi zmdi-filter-list"></i> Filtrele
+                    </button>
+                    <button class="button button-secondary" id="btnMyActTemizle" style="height:36px;padding:0 14px;font-size:13px">
+                      <i class="zmdi zmdi-close"></i> Temizle
+                    </button>
+                    <button class="button button-secondary" id="btnMyActPdf" style="height:36px;padding:0 14px;font-size:13px;color:#f59e0b;border-color:rgba(245,158,11,.3)">
+                      <i class="zmdi zmdi-download"></i> PDF
+                    </button>
+                  </div>
+
+                </div>
+
                 <div class="table-responsive">
                 <table id="myActivitiesTable" class="table users-table table-fixed">
                     <colgroup>
