@@ -162,8 +162,36 @@ function runPageInit(page) {
   }
 }
 
+function _hasPagePermission(page) {
+  const role = sessionStorage.getItem("role");
+  if (role === "ADMIN") return true;
+
+  let perms = [];
+  try { perms = JSON.parse(sessionStorage.getItem("permissions") || "[]"); } catch {}
+
+  const p = String(page).toLowerCase();
+  const needs = (perm) => perms.includes(perm);
+
+  if (p === "kasa-giris.html" || p === "kasa-cikis.html")      return needs("KASA");
+  if (p === "masraflar.html")                                   return needs("MASRAF");
+  if (p === "cekler.html"    || p === "cek-giris.html")        return needs("CEK");
+  if (p === "senetler.html"  || p === "senet-giris.html")      return needs("SENET");
+  if (p === "krediler.html")                                    return needs("KREDILER");
+  if (p === "banka-hesaplari.html" || p === "banka-detay.html") return needs("BANKA");
+  if (["kullanicilar.html", "admin-kasa-hareketleri.html",
+       "kredi-olustur.html", "onay-bekleyenler.html",
+       "raporlar.html"].includes(p))                           return needs("KULLANICI_YONETIMI");
+
+  return true;
+}
+
 async function loadPage(page) {
   window.currentPage = page;
+
+  if (!_hasPagePermission(page)) {
+    if (window.showToast) showToast("Bu sayfaya erişim yetkiniz yok", "error");
+    return;
+  }
 
   const container = document.getElementById("pageContent");
   if (!container) return;
@@ -202,22 +230,8 @@ window.loadPage = loadPage;
 window.runPageInit = runPageInit;
 window.getPageKey = getPageKey;
 
-const bankMap = {
-  ZIRAAT: "Ziraat Bankası",
-  IS_BANKASI: "İş Bankası",
-  GARANTI_BBVA: "Garanti BBVA",
-  AKBANK: "Akbank",
-  YAPI_KREDI: "Yapı Kredi",
-  HALKBANK: "Halkbank",
-  VAKIFBANK: "VakıfBank",
-  QNB_FINANSBANK: "QNB Finansbank",
-  DENIZBANK: "DenizBank",
-  TEB: "TEB",
-  DIGER: "Diğer"
-};
-
 function formatBank(bank) {
-  return bankMap[bank] || bank;
+  return (window.BANK_LABELS && window.BANK_LABELS[bank]) || bank;
 }
 
 function getAuthHeaders(json = false) {

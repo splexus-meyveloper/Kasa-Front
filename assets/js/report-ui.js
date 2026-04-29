@@ -372,14 +372,14 @@ async function loadReport(start, end) {
 
     // Vadesi yaklaşan çekler (30 gün içinde, portföyde olanlar)
     const upcomingChecks = (Array.isArray(allChecks) ? allChecks : [])
-      .filter(c => c.status === "IN_PORTFOLIO" || !c.status)
+      .filter(c => c.status === "PORTFOYDE" || !c.status)
       .map(c => ({ ...c, daysLeft: _calcDaysLeft(c.dueDate) }))
       .filter(c => c.daysLeft <= 30)
       .sort((a, b) => a.daysLeft - b.daysLeft);
 
     // Vadesi yaklaşan senetler (30 gün içinde, portföyde olanlar)
     const upcomingNotes = (Array.isArray(allNotes) ? allNotes : [])
-      .filter(n => n.status === "IN_PORTFOLIO" || !n.status)
+      .filter(n => n.status === "PORTFOYDE" || !n.status)
       .map(n => ({ ...n, daysLeft: _calcDaysLeft(n.dueDate) }))
       .filter(n => n.daysLeft <= 30)
       .sort((a, b) => a.daysLeft - b.daysLeft);

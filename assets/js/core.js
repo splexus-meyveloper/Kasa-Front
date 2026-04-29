@@ -242,15 +242,15 @@ if (_dmConfirmBtn) {
 // BANK LABELS (tek kaynak — tüm modüller buradan okur)
 // ==============================
 var BANK_LABELS = {
-  ZIRAAT:         "Ziraat",
+  ZIRAAT:         "Ziraat Bankası",
   IS_BANKASI:     "İş Bankası",
   GARANTI_BBVA:   "Garanti BBVA",
   AKBANK:         "Akbank",
   YAPI_KREDI:     "Yapı Kredi",
   HALKBANK:       "Halkbank",
-  VAKIFBANK:      "Vakıfbank",
+  VAKIFBANK:      "VakıfBank",
   QNB_FINANSBANK: "QNB Finansbank",
-  DENIZBANK:      "Denizbank",
+  DENIZBANK:      "DenizBank",
   TEB:            "TEB",
   DIGER:          "Diğer",
 };

@@ -287,7 +287,7 @@ async function loadPortfolio(summaryData) {
       try {
         const checks = await checkStore.fetchChecks();
         checkTotal = checks
-          .filter(c => c.status === "PORTFOLIO")
+          .filter(c => c.status === "PORTFOYDE")
           .reduce((s, c) => s + (Number(c.amount) || 0), 0);
       } catch (_) {}
     }
@@ -296,7 +296,7 @@ async function loadPortfolio(summaryData) {
       try {
         const notes = await noteStore.fetchNotes();
         noteTotal = notes
-          .filter(n => n.status === "PORTFOLIO")
+          .filter(n => n.status === "PORTFOYDE")
           .reduce((s, n) => s + (Number(n.amount) || 0), 0);
       } catch (_) {}
     }
@@ -443,9 +443,9 @@ async function loadVadesiKart() {
     ]);
 
     const checks = (Array.isArray(allChecks) ? allChecks : [])
-      .filter(c => (c.status === "IN_PORTFOLIO" || !c.status) && calcDaysLeft(c.dueDate) <= 30);
+      .filter(c => (c.status === "PORTFOYDE" || !c.status) && calcDaysLeft(c.dueDate) <= 30);
     const notes  = (Array.isArray(allNotes)  ? allNotes  : [])
-      .filter(n => (n.status === "IN_PORTFOLIO" || !n.status) && calcDaysLeft(n.dueDate) <= 30);
+      .filter(n => (n.status === "PORTFOYDE" || !n.status) && calcDaysLeft(n.dueDate) <= 30);
 
     const total = [...checks, ...notes].reduce((s, i) => s + (Number(i.amount) || 0), 0);
     const count = checks.length + notes.length;
