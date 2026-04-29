@@ -74,7 +74,7 @@ function translateAction(action){
 
 
 
-async function loadMovements(page = 0, start = "", end = "", action = "", username = "", q = "", masrafTuru = ""){
+async function loadMovements(page = 0, start = "", end = "", action = "", username = "", q = "", masrafTuru = "", masrafOdemeSekli = ""){
 
     const token   = sessionStorage.getItem("token");
     const isAdmin = sessionStorage.getItem("role") === "ADMIN";
@@ -114,14 +114,14 @@ async function loadMovements(page = 0, start = "", end = "", action = "", userna
         const data = await res.json();
         const rows = Array.isArray(data) ? data : (data.content || data.data || []);
 
-        // Masraf türü alt filtresi — sadece admin + client-side
+        // Masraf alt filtreleri — sadece admin + client-side
         let filtered = rows;
-        if (isAdmin && masrafTuru && action === "EXPENSE_ADD") {
+        if (isAdmin && action === "EXPENSE_ADD" && (masrafTuru || masrafOdemeSekli)) {
             filtered = rows.filter(item => {
-                const raw = item.detailsJson || item.details || {};
-                const dj  = typeof raw === "string" ? (() => { try { return JSON.parse(raw); } catch { return {}; } })() : raw;
-                const pl  = dj.payload || {};
-                return pl.expenseType === masrafTuru;
+                const meta = extractExpenseMeta(item);
+                if (masrafTuru && meta.expenseType !== masrafTuru) return false;
+                if (masrafOdemeSekli && meta.paymentMethod !== masrafOdemeSekli) return false;
+                return true;
             });
         }
 
@@ -203,6 +203,69 @@ function prettifyDesc(desc) {
     return desc.replace(/P_\d+_[A-Z0-9_]+/g, m => PLAKA_LABELS[m] || m);
 }
 
+function parseMaybeJson(raw) {
+    if (!raw) return {};
+    if (typeof raw !== "string") return raw;
+    try {
+        const parsed = JSON.parse(raw);
+        return typeof parsed === "string" ? parseMaybeJson(parsed) : parsed;
+    } catch {
+        return {};
+    }
+}
+
+function normalizePaymentMethod(value) {
+    const v = String(value || "").trim().toUpperCase();
+    if (!v) return "";
+    if (v === "CREDIT_CARD" || v.includes("KREDI") || v.includes("KREDİ") || v.includes("CARD")) return "CREDIT_CARD";
+    if (v === "CASH" || v.includes("NAKIT") || v.includes("NAKİT")) return "CASH";
+    return v;
+}
+
+function extractExpenseMeta(item) {
+    const dj = parseMaybeJson(item.detailsJson || item.details || {});
+    const payload = parseMaybeJson(dj?.payload);
+    const request = parseMaybeJson(dj?.request);
+    const expense = parseMaybeJson(dj?.expense);
+    const data = parseMaybeJson(dj?.data);
+    const newData = parseMaybeJson(dj?.newData);
+    const candidates = [payload, request, expense, data, newData, dj, item].filter(Boolean);
+
+    const deepFind = (source, key, seen = new Set()) => {
+        if (!source || typeof source !== "object" || seen.has(source)) return "";
+        seen.add(source);
+        if (source[key] !== undefined && source[key] !== null && source[key] !== "") return source[key];
+        for (const value of Object.values(source)) {
+            const parsed = parseMaybeJson(value);
+            const found = deepFind(parsed, key, seen);
+            if (found !== "") return found;
+        }
+        return "";
+    };
+
+    const first = (key) => {
+        for (const source of candidates) {
+            const found = deepFind(source, key);
+            if (found !== "") return found;
+        }
+        return "";
+    };
+
+    return {
+        expenseType: item.expenseType || payload.expenseType || first("expenseType"),
+        paymentMethod: normalizePaymentMethod(item.paymentMethod || payload.paymentMethod || first("paymentMethod")),
+    };
+}
+
+function paymentMethodBadge(item) {
+    if ((item.action || "") !== "EXPENSE_ADD") return "";
+    const method = extractExpenseMeta(item).paymentMethod;
+    if (!method) return "";
+    const label = method === "CREDIT_CARD" ? "Kredi Kartı" : method === "CASH" ? "Nakit" : method;
+    const color = method === "CREDIT_CARD" ? "#f59e0b" : "#22c55e";
+    return ` <span class="badge" style="background:${color};color:#fff;font-size:10px;margin-left:6px">${escapeHtml(label)}</span>`;
+}
+
 const STATUS_BADGE = {
     PENDING:  '<span class="badge badge-warning">Beklemede</span>',
     APPROVED: '<span class="badge badge-success">Onaylandı</span>',
@@ -271,7 +334,7 @@ list.forEach(item => {
     if (isChangeReq && hasDetail) {
         descCell = `<button class="cr-detail-btn"><i class="zmdi zmdi-info-outline"></i> Detay</button>`;
     } else {
-        descCell = `<span class="td-desc">${escapeHtml(prettifyDesc(item.description))}</span>`;
+        descCell = `<span class="td-desc">${escapeHtml(prettifyDesc(item.description))}${paymentMethodBadge(item)}</span>`;
     }
 
     const showUser = sessionStorage.getItem("role") === "ADMIN";
@@ -491,6 +554,7 @@ function applyFilter(){
     const type       = document.getElementById("filterType").value;
     const user       = document.getElementById("filterUser").value;
     const masrafTuru = document.getElementById("filterMasrafTuru")?.value || "";
+    const masrafOdemeSekli = document.getElementById("filterMasrafOdemeSekli")?.value || "";
     const posTipi    = document.getElementById("filterPosTipi")?.value   || "";
 
     if (!type) {
@@ -501,7 +565,7 @@ function applyFilter(){
         loadAndRenderPosLogs({ startDate, endDate, user, posTipi });
         return;
     }
-    loadMovements(0, startDate, endDate, type, user, "", masrafTuru);
+    loadMovements(0, startDate, endDate, type, user, "", masrafTuru, masrafOdemeSekli);
 }
 
 function clearFilter(){
@@ -514,11 +578,15 @@ function clearFilter(){
 
     const masrafEl = document.getElementById("filterMasrafTuru");
     if (masrafEl) masrafEl.value = "";
+    const masrafOdemeEl = document.getElementById("filterMasrafOdemeSekli");
+    if (masrafOdemeEl) masrafOdemeEl.value = "";
     const posTipiEl = document.getElementById("filterPosTipi");
     if (posTipiEl) posTipiEl.value = "";
 
     const masrafWrapper = document.getElementById("masrafTuruWrapper");
     if (masrafWrapper) masrafWrapper.style.display = "none";
+    const masrafOdemeWrapper = document.getElementById("masrafOdemeWrapper");
+    if (masrafOdemeWrapper) masrafOdemeWrapper.style.display = "none";
     const posTipiWrapper = document.getElementById("posTipiWrapper");
     if (posTipiWrapper) posTipiWrapper.style.display = "none";
 
@@ -528,8 +596,10 @@ function clearFilter(){
 function onAdminFilterTypeChange() {
     const type          = document.getElementById("filterType")?.value || "";
     const masrafWrapper = document.getElementById("masrafTuruWrapper");
+    const masrafOdemeWrapper = document.getElementById("masrafOdemeWrapper");
     const posTipiWrapper = document.getElementById("posTipiWrapper");
     if (masrafWrapper)  masrafWrapper.style.display  = type === "EXPENSE_ADD" ? "" : "none";
+    if (masrafOdemeWrapper) masrafOdemeWrapper.style.display = type === "EXPENSE_ADD" ? "" : "none";
     if (posTipiWrapper) posTipiWrapper.style.display = type === "POS_LOG"     ? "" : "none";
 }
 

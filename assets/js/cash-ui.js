@@ -55,10 +55,21 @@ function initCashPage() {
 }
 
 async function submitCash(endpoint, successMessage) {
-  const odemeSekli = document.getElementById("odemeSekli")?.value || "NAKIT";
-  const islemTuru  = document.getElementById("islemTuru")?.value  || "NORMAL";
+  const odemeSekli = document.getElementById("odemeSekli")?.value || "";
+  const islemTuruEl = document.getElementById("islemTuru");
+  const islemTuru  = islemTuruEl?.value || "";
   const tutarRaw   = document.getElementById("tutar")?.value      || "";
   const aciklama   = document.getElementById("aciklama")?.value   || "";
+
+  if (!odemeSekli) {
+    showToast("Ödeme yöntemi seçiniz", "error");
+    return;
+  }
+
+  if (islemTuruEl && islemTuruEl.closest("#islemTuruWrapper")?.style.display !== "none" && !islemTuru) {
+    showToast("İşlem türü seçiniz", "error");
+    return;
+  }
 
   const amount = parseMoney(tutarRaw);
   if (!amount) {

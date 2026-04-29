@@ -14,6 +14,11 @@ const EXPENSE_LABELS = {
   DIGER:    "Diğer",
 };
 
+const PAYMENT_METHOD_LABELS = {
+  CASH: "Nakit",
+  CREDIT_CARD: "Kredi Kartı",
+};
+
 const MONTH_NAMES = ["Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Eki","Kas","Ara"];
 
 let _reportStart = "";
@@ -125,6 +130,26 @@ function _renderExpenseCategories(map) {
     </tr>`).join("");
 }
 
+function _renderExpensePaymentMethods(map) {
+  const tbody = document.getElementById("rExpensePaymentBody");
+  if (!tbody) return;
+
+  const entries = Object.entries(map || {});
+  if (entries.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="2" class="text-center text-muted">Veri yok</td></tr>`;
+    return;
+  }
+
+  const order = { CASH: 1, CREDIT_CARD: 2 };
+  entries.sort((a, b) => (order[a[0]] || 99) - (order[b[0]] || 99));
+
+  tbody.innerHTML = entries.map(([key, val]) => `
+    <tr>
+      <td>${escapeHtml(PAYMENT_METHOD_LABELS[key] || key)}</td>
+      <td class="text-end">${formatMoney(val)} TL</td>
+    </tr>`).join("");
+}
+
 function _renderUpcomingChecks(list) {
   const tbody = document.getElementById("rUpcomingChecksBody");
   const badge = document.getElementById("rCheckPortfolio");
@@ -205,7 +230,7 @@ function _renderActiveLoans(list, totalDebt) {
 // ==============================
 
 function _setLoadingState() {
-  const cols = { rMonthlyBody: 4, rExpenseCatBody: 2, rUpcomingChecksBody: 5, rUpcomingNotesBody: 4, rActiveLoansBody: 5 };
+  const cols = { rMonthlyBody: 4, rExpenseCatBody: 2, rExpensePaymentBody: 2, rUpcomingChecksBody: 5, rUpcomingNotesBody: 4, rActiveLoansBody: 5 };
   Object.entries(cols).forEach(([id, span]) => {
     const el = document.getElementById(id);
     if (el) el.innerHTML = `<tr><td colspan="${span}" class="text-center text-muted">Yükleniyor...</td></tr>`;
@@ -221,7 +246,7 @@ function _setLoadingState() {
 }
 
 function _setErrorState() {
-  const cols = { rMonthlyBody: 4, rExpenseCatBody: 2, rUpcomingChecksBody: 5, rUpcomingNotesBody: 4, rActiveLoansBody: 5 };
+  const cols = { rMonthlyBody: 4, rExpenseCatBody: 2, rExpensePaymentBody: 2, rUpcomingChecksBody: 5, rUpcomingNotesBody: 4, rActiveLoansBody: 5 };
   Object.entries(cols).forEach(([id, span]) => {
     const el = document.getElementById(id);
     if (el) el.innerHTML = `<tr><td colspan="${span}" class="text-center" style="color:#ef4444">Yüklenemedi</td></tr>`;
@@ -241,6 +266,7 @@ async function loadReport(start, end) {
     _renderSummary(data);
     _renderMonthly(data.monthlyBreakdown);
     _renderExpenseCategories(data.expenseByCategory);
+    _renderExpensePaymentMethods(data.expenseByPaymentMethod);
     _renderUpcomingChecks(data.upcomingChecks);
     _renderUpcomingNotes(data.upcomingNotes);
     _renderActiveLoans(data.activeLoans, data.totalLoanDebt);

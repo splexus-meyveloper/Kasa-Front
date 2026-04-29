@@ -56,6 +56,16 @@
                     </select>
                   </div>
 
+                  <!-- Masraf Ödeme Şekli alt filtre -->
+                  <div id="myActMasrafOdemeWrapper" style="display:none;flex-direction:column;gap:4px">
+                    <label style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.4px">Ödeme Şekli</label>
+                    <select id="myActMasrafOdemeSekli" style="height:36px;min-width:150px;font-size:13px;padding:0 10px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:#0f172a;color:#e2e8f0;outline:none">
+                      <option value="">Tümü</option>
+                      <option value="CASH">Nakit</option>
+                      <option value="CREDIT_CARD">Kredi Kartı</option>
+                    </select>
+                  </div>
+
                   <!-- POS Tipi alt filtre -->
                   <div id="myActPosTipiWrapper" style="display:none;flex-direction:column;gap:4px">
                     <label style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.4px">POS Tipi</label>
@@ -145,7 +155,7 @@
 
     <div class="kasa-form-group">
       <label for="editAmount">Tutar</label>
-      <input id="editAmount" class="kasa-modal-input" type="number" placeholder="0.00">
+      <input id="editAmount" class="kasa-modal-input money-input" type="text" placeholder="0,00" inputmode="decimal" autocomplete="off">
     </div>
 
     <!-- Çek alanları -->

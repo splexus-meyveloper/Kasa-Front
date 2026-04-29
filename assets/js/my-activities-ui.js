@@ -20,8 +20,22 @@ const _MY_ACTION_LABELS = {
     EXPENSE_ADD: "Masraf",       POS_LOG: "Kredi Kartı",
 };
 
+const _MY_PDF_GROUP_ORDER = [
+    { key: "Kasa Girişi", actions: ["CASH_INCOME"] },
+    { key: "Çek Girişi", actions: ["CHECK_IN", "CHECK_COLLECT", "CHECK_ENDORSE"] },
+    { key: "Senet Girişi", actions: ["NOTE_IN", "NOTE_COLLECT", "NOTE_ENDORSE"] },
+    { key: "Kredi Kartı POS İşlemi", actions: ["POS_LOG"] },
+    { key: "Kasa Çıkışı", actions: ["CASH_EXPENSE"] },
+    { key: "Masraflar", actions: ["EXPENSE_ADD"] },
+];
+
 function _myTranslateAction(action) {
     return _MY_ACTION_LABELS[action] || action || "—";
+}
+
+function _myPdfGroupLabel(action) {
+    const group = _MY_PDF_GROUP_ORDER.find(g => g.actions.includes(action));
+    return group?.key || _myTranslateAction(action);
 }
 
 function _myPrettifyDesc(desc) {
@@ -171,7 +185,7 @@ function renderMyActivities(list) {
         tr.innerHTML = `
   <td style="font-weight:700;vertical-align:middle">${date}</td>
   <td class="text-center" style="vertical-align:middle">${actionCell}</td>
-  <td class="td-desc" style="vertical-align:middle">${_myPrettifyDesc(item.description || item.newDescription || "") || "-"}</td>
+  <td class="td-desc" style="vertical-align:middle">${_myPrettifyDesc(item.description || item.newDescription || "") || "-"}${_paymentMethodBadge(item)}</td>
   <td class="text-end" style="vertical-align:middle">${amountCell}</td>
   <td class="text-center" style="vertical-align:middle">${statusCell}</td>
 `;
@@ -210,6 +224,7 @@ function _getMyActParams() {
         startDate:  document.getElementById("myActFilterStart")?.value   || "",
         endDate:    document.getElementById("myActFilterEnd")?.value     || "",
         masrafTuru: document.getElementById("myActMasrafTuru")?.value    || "",
+        masrafOdemeSekli: document.getElementById("myActMasrafOdemeSekli")?.value || "",
         posTipi:    document.getElementById("myActPosTipi")?.value       || "",
     };
 }
@@ -217,11 +232,90 @@ function _getMyActParams() {
 function onMyActFilterTypeChange() {
     const type = document.getElementById("myActFilterType")?.value || "";
     const mw   = document.getElementById("myActMasrafWrapper");
+    const mpw  = document.getElementById("myActMasrafOdemeWrapper");
     const pw   = document.getElementById("myActPosTipiWrapper");
     if (mw) mw.style.display = type === "EXPENSE_ADD" ? "flex" : "none";
+    if (mpw) mpw.style.display = type === "EXPENSE_ADD" ? "flex" : "none";
     if (pw) pw.style.display = type === "POS_LOG"     ? "flex" : "none";
 }
 window.onMyActFilterTypeChange = onMyActFilterTypeChange;
+
+function _parseDetailsJson(item) {
+    const raw = item.detailsJson || item.details || {};
+    return _myParseMaybeJson(raw);
+}
+
+function _myParseMaybeJson(raw) {
+    if (!raw) return {};
+    if (typeof raw !== "string") return raw;
+    try {
+        const parsed = JSON.parse(raw);
+        return typeof parsed === "string" ? _myParseMaybeJson(parsed) : parsed;
+    } catch {
+        return {};
+    }
+}
+
+function _normalizePaymentMethod(value) {
+    const v = String(value || "").trim().toUpperCase();
+    if (!v) return "";
+    if (v === "CREDIT_CARD" || v.includes("KREDI") || v.includes("KREDİ") || v.includes("CARD")) return "CREDIT_CARD";
+    if (v === "CASH" || v.includes("NAKIT") || v.includes("NAKİT")) return "CASH";
+    return v;
+}
+
+function _extractExpenseMeta(item) {
+    const dj = _parseDetailsJson(item);
+    const payload = _myParseMaybeJson(dj?.payload);
+    const request = _myParseMaybeJson(dj?.request);
+    const expense = _myParseMaybeJson(dj?.expense);
+    const data = _myParseMaybeJson(dj?.data);
+    const newData = _myParseMaybeJson(dj?.newData);
+    const candidates = [payload, request, expense, data, newData, dj, item].filter(Boolean);
+
+    const deepFind = (source, key, seen = new Set()) => {
+        if (!source || typeof source !== "object" || seen.has(source)) return "";
+        seen.add(source);
+        if (source[key] !== undefined && source[key] !== null && source[key] !== "") return source[key];
+        for (const value of Object.values(source)) {
+            const parsed = _myParseMaybeJson(value);
+            const found = deepFind(parsed, key, seen);
+            if (found !== "") return found;
+        }
+        return "";
+    };
+
+    const first = (key) => {
+        for (const source of candidates) {
+            const found = deepFind(source, key);
+            if (found !== "") return found;
+        }
+        return "";
+    };
+
+    return {
+        expenseType: item.expenseType || payload.expenseType || first("expenseType"),
+        paymentMethod: _normalizePaymentMethod(item.paymentMethod || payload.paymentMethod || first("paymentMethod")),
+    };
+}
+
+function _expenseFilterMatches(item, filters) {
+    if ((item.action || "") !== "EXPENSE_ADD") return false;
+    const meta = _extractExpenseMeta(item);
+
+    if (filters.masrafTuru && meta.expenseType !== filters.masrafTuru) return false;
+    if (filters.masrafOdemeSekli && meta.paymentMethod !== filters.masrafOdemeSekli) return false;
+    return true;
+}
+
+function _paymentMethodBadge(item) {
+    if ((item.action || "") !== "EXPENSE_ADD") return "";
+    const method = _extractExpenseMeta(item).paymentMethod;
+    if (!method) return "";
+    const label = method === "CREDIT_CARD" ? "Kredi Kartı" : method === "CASH" ? "Nakit" : method;
+    const color = method === "CREDIT_CARD" ? "#f59e0b" : "#22c55e";
+    return ` <span class="badge" style="background:${color};color:#fff;font-size:10px;margin-left:6px">${escapeHtml(label)}</span>`;
+}
 
 function _parsePosDate(l) {
     // logDate öncelikli — backend bu alanı kullanıyor
@@ -288,7 +382,7 @@ async function loadMyActivitiesAndPos(filters = {}) {
     try {
         const isAdmin = sessionStorage.getItem("role") === "ADMIN";
 
-        if (filters.action === "EXPENSE_ADD" && filters.masrafTuru) {
+        if (filters.action === "EXPENSE_ADD" && (filters.masrafTuru || filters.masrafOdemeSekli)) {
             if (isAdmin) {
                 // Admin: /audit-logs detailsJson içeriyor — kesin filtreleme
                 const token    = sessionStorage.getItem("token");
@@ -302,9 +396,7 @@ async function loadMyActivitiesAndPos(filters = {}) {
                 const rows = Array.isArray(data) ? data : (data.content || data.data || []);
                 auditData  = rows.filter(item => {
                     if (username && (item.username || "").toLowerCase() !== username) return false;
-                    const raw = item.detailsJson || item.details || {};
-                    const dj  = typeof raw === "string" ? (() => { try { return JSON.parse(raw); } catch { return {}; } })() : raw;
-                    return (dj?.payload?.expenseType || dj?.expenseType || item.expenseType || "") === filters.masrafTuru;
+                    return _expenseFilterMatches(item, filters);
                 });
             } else {
                 // Normal kullanıcı: /audit-logs/my-actions detailsJson içeriyor
@@ -315,11 +407,7 @@ async function loadMyActivitiesAndPos(filters = {}) {
                 const data = await res.json();
                 const rows = Array.isArray(data) ? data : (data.content || data.data || []);
                 auditData  = rows.filter(item => {
-                    if ((item.action || "") !== "EXPENSE_ADD") return false;
-                    const raw     = item.detailsJson || item.details || {};
-                    const dj      = typeof raw === "string" ? (() => { try { return JSON.parse(raw); } catch { return {}; } })() : raw;
-                    const expType = dj?.payload?.expenseType || dj?.expenseType || item.expenseType || "";
-                    return expType === filters.masrafTuru;
+                    return _expenseFilterMatches(item, filters);
                 });
                 // Tarih filtresi uygula (my-actions query param desteklemiyorsa client-side)
                 if (filters.startDate || filters.endDate) {
@@ -371,17 +459,10 @@ function _generateMyActivitiesPdf() {
     // Güncelleme isteklerini PDF'den çıkar
     const pdfData = data.filter(item => !isChangeRequestItem(item));
 
-    // Kategoriye göre sırala
-    const sorted = [...pdfData].sort((a, b) => {
-        const ta = _myTranslateAction(a.action);
-        const tb = _myTranslateAction(b.action);
-        return ta.localeCompare(tb, "tr");
-    });
-
-    // Grupla
+    // İstenen PDF sırasına göre grupla
     const groups = {};
-    sorted.forEach(item => {
-        const key = _myTranslateAction(item.action);
+    pdfData.forEach(item => {
+        const key = _myPdfGroupLabel(item.action);
         if (!groups[key]) groups[key] = [];
         groups[key].push(item);
     });
@@ -389,7 +470,18 @@ function _generateMyActivitiesPdf() {
     let totalIncome = 0, totalExpense = 0;
     let rowsHtml = "";
 
-    Object.entries(groups).forEach(([catLabel, items]) => {
+    const orderedGroups = [
+        ..._MY_PDF_GROUP_ORDER.map(g => g.key),
+        ...Object.keys(groups).filter(key => !_MY_PDF_GROUP_ORDER.some(g => g.key === key)).sort((a, b) => a.localeCompare(b, "tr")),
+    ];
+
+    orderedGroups.forEach(catLabel => {
+        const items = groups[catLabel] || [];
+        if (!items.length) return;
+        items.sort((a, b) => new Date(a.createdAt || a.date || a.requestedAt || 0) - new Date(b.createdAt || b.date || b.requestedAt || 0));
+
+        let groupIncome = 0;
+        let groupExpense = 0;
         rowsHtml += `<tr style="background:#dbe4f3"><td colspan="4" style="padding:6px 8px;font-weight:700;color:#1e3a5f;font-size:12px">${catLabel}</td></tr>`;
         items.forEach(item => {
             const isChReq = isChangeRequestItem(item);
@@ -397,7 +489,15 @@ function _generateMyActivitiesPdf() {
             const dateStr = _dv2 ? formatDateTime(_dv2) : "—";
             const amt = Number(item.amount || 0);
             const isInc = _isIncomeAction(item.action);
-            if (!isChReq) { if (isInc) totalIncome += amt; else totalExpense += amt; }
+            if (!isChReq) {
+                if (isInc) {
+                    totalIncome += amt;
+                    groupIncome += amt;
+                } else {
+                    totalExpense += amt;
+                    groupExpense += amt;
+                }
+            }
             const amtStr   = isChReq ? "—" : (isInc ? "+" : "-") + fmtMoney(amt) + " TL";
             const amtColor = isChReq ? "#666" : (isInc ? "#16a34a" : "#dc2626");
             const desc     = _myPrettifyDesc(item.description || item.newDescription || "");
@@ -408,6 +508,12 @@ function _generateMyActivitiesPdf() {
               <td style="text-align:right;color:${amtColor};font-weight:600">${amtStr}</td>
             </tr>`;
         });
+        const groupNet = groupIncome - groupExpense;
+        const groupTotalColor = groupNet >= 0 ? "#16a34a" : "#dc2626";
+        rowsHtml += `<tr style="background:#f8fafc">
+          <td colspan="3" style="text-align:right;font-weight:700;color:#1e3a5f">${catLabel} Toplamı</td>
+          <td style="text-align:right;font-weight:700;color:${groupTotalColor}">${groupNet >= 0 ? "+" : "-"}${fmtMoney(Math.abs(groupNet))} TL</td>
+        </tr>`;
     });
 
     const net = totalIncome - totalExpense;
@@ -434,6 +540,7 @@ function _generateMyActivitiesPdf() {
   <tbody>${rowsHtml}</tbody>
 </table>
 <table class="sum">
+  <tr><th colspan="2" style="text-align:center">Toplam Detay</th></tr>
   <tr><th>Toplam Giriş</th><td style="color:#16a34a">+${fmtMoney(totalIncome)} TL</td></tr>
   <tr><th>Toplam Çıkış</th><td style="color:#dc2626">-${fmtMoney(totalExpense)} TL</td></tr>
   <tr><th>Net</th><td style="color:${net>=0?"#16a34a":"#dc2626"}">${net>=0?"+":"-"}${fmtMoney(Math.abs(net))} TL</td></tr>
@@ -459,8 +566,10 @@ async function initMyActivitiesPage() {
         document.getElementById("myActFilterStart").value = "";
         document.getElementById("myActFilterEnd").value   = "";
         const mt = document.getElementById("myActMasrafTuru");  if (mt) mt.value = "";
+        const mo = document.getElementById("myActMasrafOdemeSekli");  if (mo) mo.value = "";
         const pt = document.getElementById("myActPosTipi");     if (pt) pt.value = "";
         const mw = document.getElementById("myActMasrafWrapper");   if (mw) mw.style.display = "none";
+        const mpw = document.getElementById("myActMasrafOdemeWrapper"); if (mpw) mpw.style.display = "none";
         const pw = document.getElementById("myActPosTipiWrapper");  if (pw) pw.style.display = "none";
         loadMyActivitiesAndPos();
     });
@@ -492,7 +601,7 @@ function openEditModal(item) {
     document.getElementById("editNoteFields").style.display  = isNote  ? "" : "none";
 
     // Ortak alanlar
-    document.getElementById("editAmount").value = item.amount || "";
+    document.getElementById("editAmount").value = item.amount ? formatMoney(item.amount) : "";
     document.getElementById("editDesc").value   = item.description || "";
 
     // Çek alanları
@@ -517,7 +626,7 @@ function closeEditModal() {
 
 async function submitEditRequest() {
     const amountRaw = document.getElementById("editAmount").value;
-    const amount    = parseFloat(amountRaw);
+    const amount    = parseMoney(amountRaw);
     const desc      = document.getElementById("editDesc").value.trim();
 
     if (!amountRaw || isNaN(amount) || amount <= 0) {

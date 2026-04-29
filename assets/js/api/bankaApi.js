@@ -10,6 +10,8 @@ const bankaApi = {
   },
   getIslemler: (hesapId, page = 0, size = 50) =>
     apiClient.request(`/banka/hesaplar/${hesapId}/islemler?page=${page}&size=${size}`),
+  deleteIslem: (hesapId, islemId) =>
+    apiClient.request(`/banka/hesaplar/${hesapId}/islemler/${islemId}`, { method: "DELETE" }),
   getIslemKodlari: () => apiClient.request("/banka/islem-kodlari"),
 };
 

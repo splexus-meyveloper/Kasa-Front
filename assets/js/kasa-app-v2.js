@@ -13,7 +13,7 @@ function getPageKey(page) {
   if (normalized.includes("not") || normalized.includes("senet")) return "notes";
   if (normalized.includes("takvim")) return "calendar";
   if (normalized.includes("kredi")) return "loans";
-  if (normalized.includes("gider")) return "expenses";
+  if (normalized.includes("gider") || normalized.includes("masraf")) return "expenses";
   if (normalized.includes("bildirim")) return "notifications";
   if (normalized.includes("benim")) return "myActivities";
   if (normalized.includes("onay")) return "approvals";
@@ -298,28 +298,31 @@ document.addEventListener("focusin", function (e) {
         if(input.dataset.masked === "true") return;
 
         input.addEventListener("input", function () {
-
-            let raw = this.value
-                .replace(/[^\d,]/g, "")   // sayı + virgül
-
-            // 🔥 virgül kontrol (sadece 1 tane)
-            const parts = raw.split(",");
-            if(parts.length > 2){
-                raw = parts[0] + "," + parts[1];
+            const allowNegative = this.id === "bankaBakiye";
+            const isNegative = allowNegative && this.value.trim().startsWith("-");
+            let cleanRaw = this.value.replace(/[^\d,]/g, "");
+            const cleanParts = cleanRaw.split(",");
+            if (cleanParts.length > 2) {
+                cleanRaw = cleanParts[0] + "," + cleanParts.slice(1).join("");
             }
 
-            // 🔥 format
-            let [int, dec] = raw.split(",");
+            let [cleanInt, cleanDec] = cleanRaw.split(",");
+            cleanInt = cleanInt.replace(/\D/g, "");
 
-            int = int.replace(/\D/g, "");
-            int = Number(int || 0).toLocaleString("tr-TR");
-
-            if(dec !== undefined){
-                dec = dec.slice(0,2); // max 2 basamak
-                this.value = int + "," + dec;
-            } else {
-                this.value = int;
+            if (!cleanInt && cleanDec === undefined) {
+                this.value = isNegative ? "-" : "";
+                return;
             }
+
+            const formattedInt = cleanInt ? Number(cleanInt).toLocaleString("tr-TR") : "0";
+            const prefix = isNegative ? "-" : "";
+
+            if (cleanDec !== undefined) {
+                this.value = prefix + formattedInt + "," + cleanDec.replace(/\D/g, "").slice(0, 2);
+                return;
+            }
+
+            this.value = prefix + formattedInt;
 
         });
 

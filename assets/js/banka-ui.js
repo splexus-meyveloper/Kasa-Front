@@ -168,6 +168,7 @@ let _bankaCurrentPage  = 0;
 let _bankaTotalPages   = 0;
 let _bankaHesapId      = null;
 let _bankaAllIslemler  = [];
+let _bankaSelectedIslemIds = new Set();
 
 async function initBankaDetay() {
   _bankaHesapId = sessionStorage.getItem("aktifBankaHesapId");
@@ -292,25 +293,34 @@ async function _loadIslemKodlari() {
     const kodlar = await bankaApi.getIslemKodlari() || [];
     if (!kodlar.length) { listEl.innerHTML = `<span style="font-size:11px;color:#64748b">—</span>`; return; }
 
-    listEl.innerHTML = kodlar.map(k => {
-      const isIn  = (k.direction || k.yon || "").toUpperCase() === "IN" ||
-                    (k.type      || k.tip  || "").toUpperCase() === "IN";
-      const renk  = isIn ? "#10b981" : "#ef4444";
-      const kod   = k.kod || k.code || String(k);
-      const acik  = k.aciklama || k.description || k.name || k.label || "";
-      const yon   = isIn ? "Giriş" : "Çıkış";
-      const tipet = acik ? `${escapeHtml(acik)} · ${yon}` : yon;
+    const gelir = kodlar.filter(k => (k.direction || k.yon || "").toUpperCase() === "IN");
+    const gider = kodlar.filter(k => (k.direction || k.yon || "").toUpperCase() !== "IN");
 
-      return `<span
-        data-tooltip="${tipet}"
-        style="
-          font-size:11px;font-weight:600;padding:3px 10px;border-radius:4px;
-          background:${isIn ? "rgba(16,185,129,.12)" : "rgba(239,68,68,.12)"};
-          color:${renk};border:1px solid ${isIn ? "rgba(16,185,129,.3)" : "rgba(239,68,68,.3)"};
-          display:inline-block;
-        "
-      >${escapeHtml(kod)}</span>`;
-    }).join("");
+    const _badge = (k, isIn) => {
+      const kod  = k.kod || k.code || String(k);
+      const acik = k.aciklama || k.description || k.name || k.label || "";
+      const yon  = isIn ? "Giriş" : "Çıkış";
+      const tip  = acik ? `${acik} · ${yon}` : yon;
+      return `<span data-tooltip="${escapeHtml(tip)}" style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:4px;display:inline-block;
+        background:${isIn ? "rgba(16,185,129,.12)" : "rgba(239,68,68,.12)"};
+        color:${isIn ? "#10b981" : "#ef4444"};
+        border:1px solid ${isIn ? "rgba(16,185,129,.3)" : "rgba(239,68,68,.3)"}">
+        ${escapeHtml(kod)}</span>`;
+    };
+
+    const _grup = (liste, isIn, etiket, renk) => {
+      if (!liste.length) return "";
+      return `
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:6px">
+          <span style="font-size:10px;font-weight:700;color:${renk};text-transform:uppercase;letter-spacing:.5px;min-width:44px">${etiket}</span>
+          ${liste.map(k => _badge(k, isIn)).join("")}
+        </div>`;
+    };
+
+    listEl.innerHTML =
+      _grup(gelir, true,  "Gelir", "#10b981") +
+      _grup(gider, false, "Gider", "#ef4444");
+
   } catch (e) {
     listEl.innerHTML = `<span style="font-size:11px;color:#64748b">Yüklenemedi</span>`;
   }
@@ -323,7 +333,9 @@ async function _loadIslemler(page = 0, append = false) {
 
   if (!append) {
     _bankaAllIslemler = [];
-    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted" style="padding:30px">Yükleniyor...</td></tr>`;
+    _bankaSelectedIslemIds.clear();
+    _updateSeciliIslemButton();
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted" style="padding:30px">Yükleniyor...</td></tr>`;
   }
 
   try {
@@ -345,8 +357,11 @@ async function _loadIslemler(page = 0, append = false) {
       btnDaha.style.display = (_bankaCurrentPage + 1 < _bankaTotalPages) ? "inline-flex" : "none";
     }
   } catch (e) {
-    tbody.innerHTML = `<tr><td colspan="5" class="text-center" style="color:#ef4444;padding:30px">Hareketler yüklenemedi</td></tr>`;
-    showToast("Hareketler alınamadı", "error");
+    const errMsg = e?.message || "Bilinmeyen hata";
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center" style="color:#ef4444;padding:30px">
+      Hareketler yüklenemedi<br><span style="font-size:11px;color:#64748b;margin-top:4px;display:block">${escapeHtml(errMsg)}</span>
+    </td></tr>`;
+    showToast("Hareketler alınamadı: " + errMsg, "error");
     if (btnDaha) btnDaha.style.display = "none";
   }
 }
@@ -397,11 +412,12 @@ function _renderIslemlerFiltreli() {
   tbody.innerHTML = "";
 
   if (!filtreli.length) {
-    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted" style="padding:30px">
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted" style="padding:30px">
       ${filtreAktif ? "Filtre kriterlerine uygun hareket bulunamadı" : "Hareket bulunamadı"}
     </td></tr>`;
   } else {
     filtreli.forEach(t => {
+      const rowId = _pickIslemId(t);
       const isIn      = (t.direction || t.yon || t.type || "").toUpperCase() === "IN";
       const tutar     = Number(t.tutar ?? t.amount ?? 0);
       const tutarStr  = (isIn ? "+" : "-") + formatMoney(Math.abs(tutar)) + " TL";
@@ -417,6 +433,9 @@ function _renderIslemlerFiltreli() {
 
       tbody.insertAdjacentHTML("beforeend", `
         <tr>
+          <td class="text-center" style="vertical-align:middle">
+            ${rowId ? `<input type="checkbox" class="banka-islem-sec" value="${escapeHtml(rowId)}" ${_bankaSelectedIslemIds.has(String(rowId)) ? "checked" : ""}>` : ""}
+          </td>
           <td style="white-space:nowrap;font-size:12px">${escapeHtml(tarih)}</td>
           <td style="font-size:12px">${escapeHtml(t.aciklama || t.description || "-")}</td>
           <td style="font-size:11px">
@@ -446,14 +465,47 @@ function _renderIslemlerFiltreli() {
       bilgi.style.display = "none";
     }
   }
+
+  _syncTumunuSecCheckbox(filtreli);
+  _updateSeciliIslemButton();
+}
+
+function _pickIslemId(t) {
+  const id = t.id ?? t.islemId ?? t.transactionId ?? t.bankaIslemId ?? t.uuid ?? null;
+  return id === null || id === undefined || id === "" ? "" : String(id);
+}
+
+function _visibleIslemIds() {
+  return Array.from(document.querySelectorAll(".banka-islem-sec")).map(el => String(el.value)).filter(Boolean);
+}
+
+function _syncTumunuSecCheckbox(filtreli = null) {
+  const allEl = document.getElementById("bankaIslemTumunuSec");
+  if (!allEl) return;
+  const ids = Array.isArray(filtreli) ? filtreli.map(_pickIslemId).filter(Boolean) : _visibleIslemIds();
+  const selectedCount = ids.filter(id => _bankaSelectedIslemIds.has(String(id))).length;
+  allEl.checked = ids.length > 0 && selectedCount === ids.length;
+  allEl.indeterminate = selectedCount > 0 && selectedCount < ids.length;
+}
+
+function _updateSeciliIslemButton() {
+  const btn = document.getElementById("btnIslemleriTemizle");
+  if (!btn) return;
+  const count = _bankaSelectedIslemIds.size;
+  btn.disabled = count === 0;
+  btn.innerHTML = count > 0
+    ? `<i class="zmdi zmdi-delete"></i> Seçilen İşlemleri Temizle (${count})`
+    : '<i class="zmdi zmdi-delete"></i> Seçilen İşlemleri Temizle';
 }
 
 function _bindDetayEvents() {
   const btnExcel        = document.getElementById("btnExcelYukle");
+  const btnTemizle      = document.getElementById("btnIslemleriTemizle");
   const fileInput       = document.getElementById("excelFileInput");
   const btnDaha         = document.getElementById("btnDahaFazla");
   const btnFiltrele     = document.getElementById("btnFiltrele");
   const btnFiltreTemizle = document.getElementById("btnFiltreTemizle");
+  const tumunuSec       = document.getElementById("bankaIslemTumunuSec");
 
   if (btnFiltrele) {
     btnFiltrele.addEventListener("click", _renderIslemlerFiltreli);
@@ -471,12 +523,74 @@ function _bindDetayEvents() {
     });
   }
 
+  if (btnTemizle) {
+    btnTemizle.addEventListener("click", () => {
+      const selectedIds = Array.from(_bankaSelectedIslemIds);
+      if (!selectedIds.length) {
+        showToast("Temizlemek için en az bir işlem seçiniz", "error");
+        return;
+      }
+
+      showConfirmToast(`${selectedIds.length} banka hareketi silinsin mi?`, async () => {
+        const originalHtml = btnTemizle.innerHTML;
+        btnTemizle.disabled = true;
+        btnTemizle.innerHTML = '<i class="zmdi zmdi-refresh zmdi-hc-spin"></i> Temizleniyor...';
+
+        try {
+          await Promise.all(selectedIds.map(id => bankaApi.deleteIslem(_bankaHesapId, id)));
+          showToast(`${selectedIds.length} işlem temizlendi`, "success");
+          _bankaSelectedIslemIds.clear();
+          await _loadDetayBilgi();
+          await _loadIslemler(0, false);
+        } catch (e) {
+          const msg = e?.message || "Seçilen işlemler temizlenemedi";
+          showToast(msg, "error");
+          console.error("[BankaIslemlerTemizle] Hata:", msg);
+        } finally {
+          btnTemizle.disabled = false;
+          btnTemizle.innerHTML = originalHtml;
+          _updateSeciliIslemButton();
+        }
+      });
+    });
+  }
+
+  if (tumunuSec) {
+    tumunuSec.addEventListener("change", function () {
+      _visibleIslemIds().forEach(id => {
+        if (this.checked) _bankaSelectedIslemIds.add(String(id));
+        else _bankaSelectedIslemIds.delete(String(id));
+      });
+      document.querySelectorAll(".banka-islem-sec").forEach(el => { el.checked = this.checked; });
+      this.indeterminate = false;
+      _updateSeciliIslemButton();
+    });
+  }
+
+  document.addEventListener("change", function (e) {
+    const checkbox = e.target.closest?.(".banka-islem-sec");
+    if (!checkbox) return;
+    const id = String(checkbox.value || "");
+    if (!id) return;
+    if (checkbox.checked) _bankaSelectedIslemIds.add(id);
+    else _bankaSelectedIslemIds.delete(id);
+    _syncTumunuSecCheckbox();
+    _updateSeciliIslemButton();
+  });
+
   if (btnExcel && fileInput) {
     btnExcel.addEventListener("click", () => fileInput.click());
 
     fileInput.addEventListener("change", async function () {
       const file = this.files[0];
       if (!file) return;
+
+      const lowerName = file.name.toLowerCase();
+      if (!lowerName.endsWith(".xlsx") && !lowerName.endsWith(".xls")) {
+        showToast("Excel dosyası .xlsx veya .xls formatında olmalıdır. Kolon sırası: A=Tarih, B=Açıklama, C=Tutar, D=İşlem Kodu.", "error");
+        this.value = "";
+        return;
+      }
 
       btnExcel.disabled = true;
       btnExcel.innerHTML = '<i class="zmdi zmdi-refresh zmdi-hc-spin"></i> Yükleniyor...';
@@ -488,7 +602,9 @@ function _bindDetayEvents() {
         await _loadDetayBilgi();
         await _loadIslemler(0, false);
       } catch (e) {
-        showToast(e.message || "Excel yüklenemedi", "error");
+        const msg = e?.message || "Excel yüklenemedi";
+        showToast(msg, "error");
+        console.error("[ExcelYukle] Hata:", msg);
       } finally {
         btnExcel.disabled = false;
         btnExcel.innerHTML = '<i class="zmdi zmdi-upload"></i> Excel Yükle';

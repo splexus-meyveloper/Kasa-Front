@@ -11,6 +11,7 @@
                         <div class="col-md-6 mb-20">
                             <label>Ödeme Şekli</label>
                             <select id="odemeSekli" class="form-control" onchange="togglePosFields()">
+                                <option value="">Ödeme yöntemi seçiniz...</option>
                                 <option value="NAKIT">NAKİT</option>
                                 <option value="KREDI_KARTI">KREDİ KARTI</option>
                             </select>
@@ -19,7 +20,7 @@
                         <div class="col-md-6 mb-20">
                             <label>Tutar (₺)</label>
                             <input type="text" id="tutar" class="form-control money-input"
-                                placeholder="0,00" inputmode="numeric" autocomplete="off">
+                                placeholder="0,00" inputmode="decimal" autocomplete="off">
                         </div>
 
                         <!-- POS ALANLARI -->
