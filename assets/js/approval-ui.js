@@ -33,7 +33,7 @@ function parseRaw(raw) {
 function formatVal(k, v) {
     if (v === null || v === undefined) return "-";
     if (k === "amount")          return Number(v).toLocaleString("tr-TR", { minimumFractionDigits: 2 }) + " TL";
-    if (k === "transactionDate") return new Date(v).toLocaleString("tr-TR");
+    if (k === "transactionDate") return formatDateTime(v);
     if (k === "dueDate")         return new Date(v).toLocaleDateString("tr-TR");
     if (k === "type")            return TYPE_LABELS[v] || v;
     if (k === "bank")            return BANK_LABELS[v] || v;
@@ -109,9 +109,7 @@ function renderApprovals(list) {
         const tr = document.createElement("tr");
         tr.classList.add("user-row");
 
-        const date = item.requestedAt
-            ? new Date(item.requestedAt).toLocaleString("tr-TR")
-            : "-";
+        const date = item.requestedAt ? formatDateTime(item.requestedAt) : "-";
 
         const typeLabel = entityTypeLabel[item.entityType] || escapeHtml(item.entityType || "-");
 

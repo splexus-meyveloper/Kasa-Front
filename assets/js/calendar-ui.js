@@ -120,6 +120,40 @@ function buildManualNoteEvents(calendarNotes = []) {
 }
 
 // ==============================
+// NOTE REMINDERS
+// ==============================
+
+function _checkNoteReminders(notes) {
+  if (!notes || !notes.length) return;
+  if (sessionStorage.getItem("calendarReminderShown")) return;
+  sessionStorage.setItem("calendarReminderShown", "1");
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const reminders = [];
+  notes.forEach(n => {
+    if (!n?.date) return;
+    const d = new Date(n.date);
+    d.setHours(0, 0, 0, 0);
+    const diff = Math.round((d - today) / 86400000);
+    if (diff >= 0 && diff <= 3) reminders.push({ note: n, diff });
+  });
+
+  reminders.sort((a, b) => a.diff - b.diff);
+
+  // Splash ekranı kapandıktan sonra göster
+  const BASE_DELAY = 2500;
+  reminders.forEach(({ note, diff }, i) => {
+    setTimeout(() => {
+      const label = diff === 0 ? "Bugün" : diff === 1 ? "Yarın" : `${diff} gün sonra`;
+      const type  = diff === 0 ? "error" : "warning";
+      showToast(`Takvim Hatırlatıcı • ${label}: ${note.text}`, type);
+    }, BASE_DELAY + i * 900);
+  });
+}
+
+// ==============================
 // LOAD CALENDAR
 // ==============================
 
@@ -174,6 +208,7 @@ async function loadCalendar() {
     console.error("Takvim notları yüklenemedi:", err);
   }
 
+  _checkNoteReminders(calendarNotes);
   events.push(...buildManualNoteEvents(calendarNotes));
 
   try {

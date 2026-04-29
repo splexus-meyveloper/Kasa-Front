@@ -41,7 +41,7 @@ const wsClient = {
       heartbeatIncoming: 10000,
       heartbeatOutgoing: 10000,
       reconnectDelay:    0,
-      debug:             null,
+      debug: () => {},
 
       onConnect: () => {
         this._reconnectAttempts = 0;
@@ -79,29 +79,42 @@ const wsClient = {
     const page = this.getCurrentPage();
 
     if (m === "KASA") {
-      if (page.includes("kasa")) window.loadCashTransactions?.();
-      window.initDashboard?.();
+        if (page.includes("kasa")) {
+            window.loadCashTransactions?.();
+        }
+        // Dashboard her zaman yenile
+        if (page.includes("dashboard")) {
+            loadPage("dashboard.html");
+        }
+
     } else if (m === "CEK") {
-      if (page.includes("cek")) window.loadChecks?.({ silent: true });
-      window.loadCheckSummary?.();
+        if (page.includes("cek")) window.loadChecks?.({ silent: true });
+        if (page.includes("dashboard")) loadPage("dashboard.html");
+        window.loadCheckSummary?.();
+
     } else if (m === "SENET") {
-      if (page.includes("senet")) window.loadNotes?.({ silent: true });
-      window.loadNotesDashboard?.();
+        if (page.includes("senet")) window.loadNotes?.({ silent: true });
+        if (page.includes("dashboard")) loadPage("dashboard.html");
+        window.loadNotesDashboard?.();
+
     } else if (m === "KREDI") {
-      window.loadLoans?.();
-      window.initDashboard?.();
+        window.loadLoans?.();
+        if (page.includes("dashboard")) loadPage("dashboard.html");
+
     } else if (m === "MASRAF") {
-      if (page.includes("masraf")) window.addExpense && loadPage("masraflar.html");
-      window.initDashboard?.();
+        if (page.includes("masraf")) loadPage("masraflar.html");
+        if (page.includes("dashboard")) loadPage("dashboard.html");
+
     } else if (m === "BANKA") {
-      if (page.includes("banka-detay"))    window.initBankaDetay?.();
-      if (page.includes("banka-hesaplar")) window.initBankaHesaplari?.();
+        if (page.includes("banka-detay"))    window.initBankaDetay?.();
+        if (page.includes("banka-hesaplar")) window.initBankaHesaplari?.();
+
     } else if (m === "SYSTEM" && event.action === "WS_PING") {
-      // heartbeat — no-op
+        console.log("WS OK");
     }
 
     window.loadHeaderNotifications?.();
-  },
+},
 
   disconnect() {
     this._stomp?.deactivate();

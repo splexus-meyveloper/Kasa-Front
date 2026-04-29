@@ -414,6 +414,11 @@ window.addEventListener("load", function () {
             loader.style.display = "none";
             window._appVisible = true;
             document.dispatchEvent(new CustomEvent("appVisible"));
+
+            // WebSocket bağlantısını başlat
+            if (window.wsClient) {
+                wsClient.connect();
+            }
         }, 800);
 
     }, 3000); // 🔥 BURASI ANA SÜRE

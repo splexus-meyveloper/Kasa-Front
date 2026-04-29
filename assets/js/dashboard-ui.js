@@ -318,7 +318,9 @@ async function loadPortfolio(summaryData) {
 }
 
 // ── KULLANICI KARTLARI ───────────────────────────────────
-function _applyUserDashboardCards(d) {
+
+// Görünürlük: API beklenmeden hemen rol bazlı uygula
+function _applyUserCardVisibility() {
   const isAdmin = sessionStorage.getItem("role") === "ADMIN";
 
   const adminCek   = document.getElementById("adminCekKarti");
@@ -326,33 +328,43 @@ function _applyUserDashboardCards(d) {
   const userCek    = document.getElementById("userCekKarti");
   const userSenet  = document.getElementById("userSenetKarti");
   const userNet    = document.getElementById("userNetKarti");
+  const portfoy    = document.getElementById("finansalPortfoyKarti");
 
   if (isAdmin) {
     if (userCek)   userCek.style.display   = "none";
     if (userSenet) userSenet.style.display = "none";
     if (userNet)   userNet.style.display   = "none";
   } else {
+    if (portfoy)    portfoy.style.display    = "none";
+    const grafik = document.getElementById("kasaGrafikKarti");
+    if (grafik) { grafik.classList.remove("col-lg-8"); grafik.classList.add("col-lg-12"); }
     if (adminCek)   adminCek.style.display   = "none";
     if (adminSenet) adminSenet.style.display = "none";
     if (userCek)    userCek.style.display    = "";
     if (userSenet)  userSenet.style.display  = "";
     if (userNet)    userNet.style.display    = "";
-
-    const cekEl   = document.getElementById("bugunCekToplam");
-    const senetEl = document.getElementById("bugunSenetToplam");
-    const netEl   = document.getElementById("gunlukNetBakiye");
-
-    if (cekEl)   animateValue(cekEl,   Number(d.todayCheckTotal  || 0));
-    if (senetEl) animateValue(senetEl, Number(d.todayNoteTotal   || 0));
-    if (netEl) {
-      animateValue(netEl, Number(d.dailyNetBalance || 0));
-      netEl.className = Number(d.dailyNetBalance || 0) >= 0 ? "text-success" : "text-danger";
-    }
-
-    setAutoBar("barBugunCek",   d.todayCheckTotal  || 0, 500000);
-    setAutoBar("barBugunSenet", d.todayNoteTotal   || 0, 500000);
-    setAutoBar("barGunlukNet",  Math.abs(d.dailyNetBalance || 0), 500000);
   }
+}
+
+// Değerler: API yanıtı gelince animasyonla doldur
+function _applyUserDashboardCards(d) {
+  const isAdmin = sessionStorage.getItem("role") === "ADMIN";
+  if (isAdmin) return;
+
+  const cekEl   = document.getElementById("bugunCekToplam");
+  const senetEl = document.getElementById("bugunSenetToplam");
+  const netEl   = document.getElementById("gunlukNetBakiye");
+
+  if (cekEl)   animateValue(cekEl,   Number(d.todayCheckTotal  || 0));
+  if (senetEl) animateValue(senetEl, Number(d.todayNoteTotal   || 0));
+  if (netEl) {
+    animateValue(netEl, Number(d.dailyNetBalance || 0));
+    netEl.className = Number(d.dailyNetBalance || 0) >= 0 ? "text-success" : "text-danger";
+  }
+
+  setAutoBar("barBugunCek",   d.todayCheckTotal  || 0, 500000);
+  setAutoBar("barBugunSenet", d.todayNoteTotal   || 0, 500000);
+  setAutoBar("barGunlukNet",  Math.abs(d.dailyNetBalance || 0), 500000);
 }
 
 // ── DASHBOARD SUMMARY ────────────────────────────────────
@@ -460,6 +472,9 @@ function initDashboard(selectedUserId = null) {
     window.location.href = "login.html";
     return;
   }
+
+  // Kart görünürlüğünü API beklenmeden hemen uygula — doğru kartlar ilk çerçevede gözüksün
+  _applyUserCardVisibility();
 
   loadDashboard(selectedUserId);
 

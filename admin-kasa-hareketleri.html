@@ -2,14 +2,8 @@
 
     <div class="col-12 mb-30">
 <div class="box dashboard-card">
-    <div class="box-head d-flex align-items-center justify-content-between">
+    <div class="box-head">
         <h4 class="title">Kasa Hareketleri</h4>
-        <div style="display:flex;gap:8px">
-            <button id="tabKasaBtn" class="btn-modern" style="font-size:12px;padding:6px 14px;background:rgba(59,130,246,.15);color:#3b82f6;border:1px solid rgba(59,130,246,.3)"
-                onclick="switchAdminTab('hareketler')">Kasa Hareketleri</button>
-            <button id="tabPosBtn" class="btn-modern" style="font-size:12px;padding:6px 14px"
-                onclick="switchAdminTab('pos')">POS Logları</button>
-        </div>
     </div>
 
             <div class="box-body">
@@ -29,11 +23,12 @@
 
     <div class="col-md-3">
         <label>İşlem Türü</label>
-        <select id="filterType" class="form-control">
+        <select id="filterType" class="form-control" onchange="onAdminFilterTypeChange()">
             <option value="">Tümü</option>
 
-            <option value="CASH_INCOME">Kasa Giriş</option>
-            <option value="CASH_EXPENSE">Kasa Çıkış</option>
+            <option value="CASH_INCOME">Kasa Nakit Giriş</option>
+            <option value="CASH_EXPENSE">Kasa Nakit Çıkış</option>
+            <option value="POS_LOG">Kredi Kartı İşlemleri</option>
 
             <option value="CHECK_IN">Çek Giriş</option>
             <option value="CHECK_COLLECT">Çek Tahsil Edildi</option>
@@ -54,6 +49,44 @@
         <label>Kullanıcı</label>
         <select id="filterUser" class="form-control">
             <option value="">Tümü</option>
+        </select>
+    </div>
+
+    <!-- Masraf Türü alt filtresi (EXPENSE_ADD seçilince görünür) -->
+    <div id="masrafTuruWrapper" class="col-md-3 mt-15" style="display:none">
+        <label>Masraf Türü</label>
+        <select id="filterMasrafTuru" class="form-control">
+            <option value="">Tümü</option>
+            <option value="ELEKTRIK">ELEKTRİK</option>
+            <option value="SU">SU</option>
+            <option value="ILETISIM">İLETİŞİM</option>
+            <option value="KARGO_NAKLIYE">KARGO-NAKLİYE</option>
+            <option value="ARAC_GIDERLERI">ARAÇ GİDERLERİ</option>
+            <option value="IS_YERI">İŞ YERİ</option>
+            <option value="ATOLYE">ATÖLYE</option>
+            <option value="YEMEK">YEMEK</option>
+            <option value="MARKET">MARKET</option>
+            <option value="KIRTASIYE">KIRTASİYE</option>
+            <option value="SEYAHAT">SEYAHAT</option>
+            <option value="NILUFERKOY">NİLÜFERKÖY</option>
+            <option value="ORTAK_GIDER">ORTAK GİDER</option>
+            <option value="ALI_ALTIKARDESLER">ALİ ALTIKARDEŞLER</option>
+            <option value="ATINC_ALTIKARDESLER">ATINÇ ALTIKARDEŞLER</option>
+            <option value="KIVANC_ALTIKARDESLER">KIVANÇ ALTIKARDEŞLER</option>
+            <option value="PERVIN_ALTIKARDESLER">PERVİN ALTIKARDEŞLER</option>
+            <option value="CEZA">CEZA</option>
+            <option value="YAKIT">YAKIT</option>
+            <option value="DIGER">DİĞER</option>
+        </select>
+    </div>
+
+    <!-- POS Tipi alt filtresi (POS_LOG seçilince görünür) -->
+    <div id="posTipiWrapper" class="col-md-3 mt-15" style="display:none">
+        <label>POS Tipi</label>
+        <select id="filterPosTipi" class="form-control">
+            <option value="">Tümü</option>
+            <option value="ALTIKARDESLER_POS">ALTIKARDEŞLER POS</option>
+            <option value="TEDARIKCI_POS">TEDARİKÇİ POS</option>
         </select>
     </div>
 
@@ -103,26 +136,6 @@
     </div>
 </div>
 
-<!-- POS LOGLARI PANELİ -->
-<div id="posLoglarPanel" style="display:none">
-  <div class="table-responsive">
-    <table class="table users-table">
-      <thead>
-        <tr>
-          <th>Tarih</th>
-          <th>Kullanıcı</th>
-          <th>POS Tipi</th>
-          <th>Terminal</th>
-          <th class="text-end">Tutar</th>
-          <th>Açıklama</th>
-        </tr>
-      </thead>
-      <tbody id="posLogsBody">
-        <tr><td colspan="6" class="text-center text-muted" style="padding:24px">Yükleniyor...</td></tr>
-      </tbody>
-    </table>
-  </div>
-</div>
 
 </div>
 </div>

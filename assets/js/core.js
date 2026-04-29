@@ -84,6 +84,27 @@ function formatMoney(value) {
   });
 }
 
+function formatDateTime(val) {
+  if (!val) return "-";
+  // Java LocalDateTime dizi: [year, month(1-based), day, hour, min, sec, nano?]
+  if (Array.isArray(val)) {
+    const [y, mo, d, h = 0, mi = 0] = val;
+    return `${String(d).padStart(2,"0")}.${String(mo).padStart(2,"0")}.${y} ${String(h).padStart(2,"0")}:${String(mi).padStart(2,"0")}`;
+  }
+  // "dd-MM-yyyy HH:mm:ss" formatı — direkt string olarak göster
+  if (typeof val === "string" && /^\d{2}-\d{2}-\d{4}/.test(val)) {
+    return val.substring(0, 16);
+  }
+  // ISO veya diğer string/number
+  try {
+    const d = new Date(typeof val === "string" ? val.replace(" ", "T") : val);
+    if (isNaN(d)) return String(val);
+    return d.toLocaleDateString("tr-TR") + " " + d.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
+  } catch {
+    return String(val);
+  }
+}
+
 
 // ==============================
 // ANIMATION

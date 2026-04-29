@@ -3,7 +3,7 @@
 // ==============================
 
 const _POS_TERMINALS = {
-  ALTIKARDESLER: [
+  ALTIKARDESLER_POS: [
     { v: "VAKIFBANK",   l: "VAKIFBANK" },
     { v: "GARANTIBBVA", l: "GARANTİBBVA" },
     { v: "IS_BANKASI",  l: "İŞ BANKASI" },
@@ -11,14 +11,14 @@ const _POS_TERMINALS = {
     { v: "HALKBANK",    l: "HALKBANK" },
     { v: "TEB",         l: "TEB" },
   ],
-  TEDARIKCI: [
-    { v: "SAMPA",        l: "SAMPA" },
-    { v: "HD_KAUCUK",    l: "HD KAUÇUK" },
-    { v: "INCITAS",      l: "İNCİTAŞ" },
-    { v: "MAYSAN",       l: "MAYSAN" },
-    { v: "MAKPARSAN",    l: "MAKPARSAN" },
-    { v: "ROTA",         l: "ROTA" },
-    { v: "OTO_KARAMAN",  l: "OTO KARAMAN" },
+  TEDARIKCI_POS: [
+    { v: "SAMPA",       l: "SAMPA" },
+    { v: "HD_KAUCUK",   l: "HD KAUÇUK" },
+    { v: "INCITAS",     l: "İNCİTAŞ" },
+    { v: "MAYSAN",      l: "MAYSAN" },
+    { v: "MAKPARSAN",   l: "MAKPARSAN" },
+    { v: "ROTA",        l: "ROTA" },
+    { v: "OTO_KARAMAN", l: "OTO KARAMAN" },
   ],
 };
 
@@ -33,9 +33,15 @@ function togglePosFields() {
 function toggleTerminal() {
   const tipi = document.getElementById("posTipi")?.value;
   const sel  = document.getElementById("posTerminal");
-  if (!sel || !tipi) return;
-  const list = _POS_TERMINALS[tipi] || [];
-  sel.innerHTML = list.map(t => `<option value="${t.v}">${t.l}</option>`).join("");
+  if (!sel) return;
+  if (!tipi) {
+    sel.innerHTML = `<option value="">Önce POS Tipi Seçiniz...</option>`;
+    return;
+  }
+  const list        = _POS_TERMINALS[tipi] || [];
+  const placeholder = tipi === "ALTIKARDESLER_POS" ? "Banka Seçiniz..." : "Tedarikçi Seçiniz...";
+  sel.innerHTML = `<option value="">${placeholder}</option>` +
+    list.map(t => `<option value="${t.v}">${t.l}</option>`).join("");
 }
 
 function initCashPage() {
@@ -122,9 +128,7 @@ async function loadCashTransactions(page = 0) {
     const typeClass = t.type === "INCOME" ? "text-success" : "text-danger";
     const sign      = t.type === "INCOME" ? "+" : "-";
 
-    const tarih = t.transactionDate
-      ? new Date(t.transactionDate).toLocaleString("tr-TR")
-      : "-";
+    const tarih = t.transactionDate ? formatDateTime(t.transactionDate) : "-";
 
     tbody.insertAdjacentHTML("beforeend", `
       <tr>

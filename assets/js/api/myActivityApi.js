@@ -8,7 +8,7 @@ const myActivityApi = {
     if (params.startDate) q.set("startDate", params.startDate);
     if (params.endDate)   q.set("endDate",   params.endDate);
     if (params.page  != null) q.set("page",  params.page);
-    if (params.size  != null) q.set("size",  params.size);
+    q.set("size", params.size != null ? params.size : 500);
     const qs = q.toString();
     return apiClient.request("/my-activities" + (qs ? "?" + qs : ""));
   },

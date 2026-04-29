@@ -17,6 +17,7 @@ NOTE_ENDORSE: '<span class="badge badge-warning">Senet Ciro</span>',
 LOAN_CREATE: '<span class="badge badge-primary">Kredi Ekleme</span>',
 
 EXPENSE_ADD: '<span class="badge badge-danger">Masraf</span>',
+POS_LOG: '<span class="badge badge-primary">Kredi Kartı</span>',
 
 CASH_UPDATE_REQUEST:           '<span class="badge badge-warning">Kasa Düzenleme</span>',
 CASH_UPDATE_REQUEST_CREATED:   '<span class="badge badge-warning">Düzenleme Talebi</span>',
@@ -63,6 +64,7 @@ function translateAction(action){
         LOAN_CREATE: "Kredi Ekleme",
         LOAN_INSTALLMENT: "Kredi Ödeme",
         EXPENSE_ADD: "Masraf",
+        POS_LOG: "Kredi Kartı",
 
     };
 
@@ -72,13 +74,20 @@ function translateAction(action){
 
 
 
-async function loadMovements(page = 0, start = "", end = "", action = "", username = "", q = ""){
+async function loadMovements(page = 0, start = "", end = "", action = "", username = "", q = "", masrafTuru = ""){
 
-    const token = sessionStorage.getItem("token");
+    const token   = sessionStorage.getItem("token");
+    const isAdmin = sessionStorage.getItem("role") === "ADMIN";
 
     // "Düzenlemeler" filtresi → ayrı endpoint
     if(action === "CASH_UPDATE_REQUEST"){
         return loadChangeRequests(token);
+    }
+
+    // POS filtresi → ayrı render
+    if(action === "POS_LOG"){
+        const posTipi = document.getElementById("filterPosTipi")?.value || "";
+        return loadAndRenderPosLogs({ startDate: start, endDate: end, user: username, posTipi });
     }
 
     if(action === "LOAN_INSTALLMENT"){
@@ -86,22 +95,37 @@ async function loadMovements(page = 0, start = "", end = "", action = "", userna
         q = "kredi taksiti";
     }
 
-    let url = `${API_BASE}/audit-logs?page=${page}&size=100`;
-
-    if(start) url += `&start=${start}T00:00:00`;
-    if(end) url += `&end=${end}T23:59:59`;
-    if(action) url += `&action=${action}`;
-    if(username) url += `&username=${username}`;
-    if(q) url += `&q=${q}`;
+    let url;
+    if (isAdmin) {
+        url = `${API_BASE}/audit-logs?page=${page}&size=100`;
+        if (start)    url += `&start=${start}T00:00:00`;
+        if (end)      url += `&end=${end}T23:59:59`;
+        if (action)   url += `&action=${action}`;
+        if (username) url += `&username=${username}`;
+        if (q)        url += `&q=${q}`;
+    } else {
+        url = `${API_BASE}/audit-logs/my-actions?page=${page}&size=100`;
+    }
 
     try {
         const res = await fetch(url,{
             headers:{ "Authorization":"Bearer " + token }
         });
         const data = await res.json();
-        // Backend bazen array, bazen {content:[]} döndürebilir
         const rows = Array.isArray(data) ? data : (data.content || data.data || []);
-        renderTable(rows);
+
+        // Masraf türü alt filtresi — sadece admin + client-side
+        let filtered = rows;
+        if (isAdmin && masrafTuru && action === "EXPENSE_ADD") {
+            filtered = rows.filter(item => {
+                const raw = item.detailsJson || item.details || {};
+                const dj  = typeof raw === "string" ? (() => { try { return JSON.parse(raw); } catch { return {}; } })() : raw;
+                const pl  = dj.payload || {};
+                return pl.expenseType === masrafTuru;
+            });
+        }
+
+        renderTable(filtered);
     } catch(err) {
         console.error("[loadMovements] Hata:", err);
         renderTable([]);
@@ -157,6 +181,28 @@ async function loadChangeRequests(token){
     renderTable(mapped);
 }
 
+const POS_TYPE_LABELS = {
+    ALTIKARDESLER_POS: "ALTIKARDEŞLER POS",
+    TEDARIKCI_POS:     "TEDARİKÇİ POS",
+};
+
+const PLAKA_LABELS = {
+    P_16_AHD_464: "16 AHD 464",
+    P_16_BVL_436: "16 BVL 436",
+    P_16_AEA_555: "16 AEA 555",
+    P_16_ANS_605: "16 ANS 605",
+    P_16_GD_606:  "16 GD 606",
+    P_16_E_0207:  "16 E 0207",
+    P_16_JUT_88:  "16 JUT 88",
+    P_16_BBR_666: "16 BBR 666",
+};
+
+function prettifyDesc(desc) {
+    if (!desc) return "-";
+    // "P_16_GD_606 — açıklama" → "16 GD 606 — açıklama"
+    return desc.replace(/P_\d+_[A-Z0-9_]+/g, m => PLAKA_LABELS[m] || m);
+}
+
 const STATUS_BADGE = {
     PENDING:  '<span class="badge badge-warning">Beklemede</span>',
     APPROVED: '<span class="badge badge-success">Onaylandı</span>',
@@ -202,7 +248,8 @@ list.forEach(item => {
               || item.action === "CHECK_COLLECT"
               || item.action === "NOTE_IN"
               || item.action === "NOTE_COLLECT"
-              || item.action === "LOAN_CREATE");
+              || item.action === "LOAN_CREATE"
+              || item.action === "POS_LOG");
 
     if (!isChangeReq) {
         const amount = Number(item.amount || 0);
@@ -217,19 +264,20 @@ list.forEach(item => {
         ? (STATUS_BADGE[changeReqStatus] || '<span style="color:#94a3b8;font-size:12px">—</span>')
         : `${isIncome ? "+" : "-"}${Number(item.amount || 0).toLocaleString("tr-TR", { minimumFractionDigits:2 })} TL`;
 
-    const date = new Date(item.createdAt).toLocaleString("tr-TR");
+    const date = item.createdAt ? formatDateTime(item.createdAt) : "—";
 
     // Sadece oldData/newData varsa Detay butonu göster
     let descCell;
     if (isChangeReq && hasDetail) {
         descCell = `<button class="cr-detail-btn"><i class="zmdi zmdi-info-outline"></i> Detay</button>`;
     } else {
-        descCell = `<span class="td-desc">${escapeHtml(item.description) || "-"}</span>`;
+        descCell = `<span class="td-desc">${escapeHtml(prettifyDesc(item.description))}</span>`;
     }
 
+    const showUser = sessionStorage.getItem("role") === "ADMIN";
     tr.innerHTML = `
         <td style="vertical-align:middle">${date}</td>
-        <td style="vertical-align:middle">${escapeHtml(item.username)}</td>
+        ${showUser ? `<td style="vertical-align:middle">${escapeHtml(item.username)}</td>` : ""}
         <td class="text-center" style="vertical-align:middle">${actionBadge(item.action)}</td>
         <td style="vertical-align:middle">${descCell}</td>
         <td class="text-end" style="vertical-align:middle">
@@ -320,7 +368,7 @@ function formatFieldValue(key, val) {
         return escapeHtml(BANK_LABELS[String(val)] || String(val));
     }
     if (DATE_FIELDS.has(key)) {
-        try { return new Date(val).toLocaleString("tr-TR"); } catch { return escapeHtml(String(val)); }
+        return formatDateTime(val);
     }
     const strVal = String(val);
     return escapeHtml(VALUE_LABELS[strVal] ?? strVal);
@@ -383,7 +431,7 @@ function showChangeDetail(oldData, newData, entityType, item) {
 
         const entityTypeLabel = { CASH: "Kasa", CHECK: "Çek", NOTE: "Senet", LOAN: "Kredi" };
         const subtitle = entityTypeLabel[entityType] || entityType || "";
-        const dateStr  = item?.createdAt ? new Date(item.createdAt).toLocaleString("tr-TR") : "";
+        const dateStr  = item?.createdAt ? formatDateTime(item.createdAt) : "";
 
         const username = item?.username;
         if (username) {
@@ -434,82 +482,165 @@ function updateAdminTotals(income, expense) {
     bar.style.display = "flex";
 }
 
-function switchAdminTab(tab) {
-  const kasaPanel  = document.getElementById("kasaTable")?.closest(".table-responsive");
-  const posPanel   = document.getElementById("posLoglarPanel");
-  const filterArea = document.querySelector(".row.mb-20");
-  const totalsBar  = document.getElementById("adminTotals");
-  const tabKasa    = document.getElementById("tabKasaBtn");
-  const tabPos     = document.getElementById("tabPosBtn");
-
-  if (tab === "pos") {
-    if (kasaPanel)  kasaPanel.style.display  = "none";
-    if (filterArea) filterArea.style.display = "none";
-    if (totalsBar)  totalsBar.style.display  = "none";
-    if (posPanel)   posPanel.style.display   = "";
-    if (tabKasa) { tabKasa.style.background = ""; tabKasa.style.color = ""; tabKasa.style.border = ""; }
-    if (tabPos)  { tabPos.style.background  = "rgba(59,130,246,.15)"; tabPos.style.color = "#3b82f6"; tabPos.style.border = "1px solid rgba(59,130,246,.3)"; }
-    loadPosLogs();
-  } else {
-    if (kasaPanel)  kasaPanel.style.display  = "";
-    if (filterArea) filterArea.style.display = "";
-    if (posPanel)   posPanel.style.display   = "none";
-    if (tabKasa) { tabKasa.style.background = "rgba(59,130,246,.15)"; tabKasa.style.color = "#3b82f6"; tabKasa.style.border = "1px solid rgba(59,130,246,.3)"; }
-    if (tabPos)  { tabPos.style.background  = ""; tabPos.style.color = ""; tabPos.style.border = ""; }
-  }
-}
-
-async function loadPosLogs() {
-  const tbody = document.getElementById("posLogsBody");
-  if (!tbody) return;
-  tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted" style="padding:24px">Yükleniyor...</td></tr>`;
-  try {
-    const data = await posApi.getLogs();
-    const logs = Array.isArray(data) ? data : (data.content || data.data || []);
-    if (!logs.length) {
-      tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted" style="padding:24px">Kayıt bulunamadı</td></tr>`;
-      return;
-    }
-    tbody.innerHTML = "";
-    logs.forEach(l => {
-      const tarih = l.createdAt || l.date ? new Date(l.createdAt || l.date).toLocaleString("tr-TR") : "-";
-      tbody.insertAdjacentHTML("beforeend", `
-        <tr>
-          <td style="font-size:12px;white-space:nowrap">${escapeHtml(tarih)}</td>
-          <td style="font-size:12px">${escapeHtml(l.username || l.user || "-")}</td>
-          <td style="font-size:12px">${escapeHtml(l.posType  || "-")}</td>
-          <td style="font-size:12px">${escapeHtml(l.terminal || "-")}</td>
-          <td class="text-end" style="font-size:12px;font-weight:600;color:#10b981">
-            +${Number(l.amount||0).toLocaleString("tr-TR",{minimumFractionDigits:2})} TL
-          </td>
-          <td style="font-size:12px">${escapeHtml(l.description || "-")}</td>
-        </tr>`);
-    });
-  } catch(e) {
-    tbody.innerHTML = `<tr><td colspan="6" class="text-center" style="color:#ef4444;padding:24px">Yüklenemedi</td></tr>`;
-  }
-}
-
-window.switchAdminTab = switchAdminTab;
 
 function applyFilter(){
+    if (sessionStorage.getItem("role") !== "ADMIN") return;
 
-    const startDate = document.getElementById("filterStartDate").value;
-    const endDate = document.getElementById("filterEndDate").value;
-    const type = document.getElementById("filterType").value;
-    const user = document.getElementById("filterUser").value;
+    const startDate  = document.getElementById("filterStartDate").value;
+    const endDate    = document.getElementById("filterEndDate").value;
+    const type       = document.getElementById("filterType").value;
+    const user       = document.getElementById("filterUser").value;
+    const masrafTuru = document.getElementById("filterMasrafTuru")?.value || "";
+    const posTipi    = document.getElementById("filterPosTipi")?.value   || "";
 
-    loadMovements(0, startDate, endDate, type, user);
+    if (!type) {
+        loadMovementsAndPos(startDate, endDate, user);
+        return;
+    }
+    if (type === "POS_LOG") {
+        loadAndRenderPosLogs({ startDate, endDate, user, posTipi });
+        return;
+    }
+    loadMovements(0, startDate, endDate, type, user, "", masrafTuru);
 }
 
 function clearFilter(){
+    if (sessionStorage.getItem("role") !== "ADMIN") return;
 
     document.getElementById("filterStartDate").value = "";
-    document.getElementById("filterEndDate").value = "";
-    document.getElementById("filterType").value = "";
-    document.getElementById("filterUser").value = "";
+    document.getElementById("filterEndDate").value   = "";
+    document.getElementById("filterType").value      = "";
+    document.getElementById("filterUser").value      = "";
 
-    loadMovements();
+    const masrafEl = document.getElementById("filterMasrafTuru");
+    if (masrafEl) masrafEl.value = "";
+    const posTipiEl = document.getElementById("filterPosTipi");
+    if (posTipiEl) posTipiEl.value = "";
+
+    const masrafWrapper = document.getElementById("masrafTuruWrapper");
+    if (masrafWrapper) masrafWrapper.style.display = "none";
+    const posTipiWrapper = document.getElementById("posTipiWrapper");
+    if (posTipiWrapper) posTipiWrapper.style.display = "none";
+
+    loadMovementsAndPos();
+}
+
+function onAdminFilterTypeChange() {
+    const type          = document.getElementById("filterType")?.value || "";
+    const masrafWrapper = document.getElementById("masrafTuruWrapper");
+    const posTipiWrapper = document.getElementById("posTipiWrapper");
+    if (masrafWrapper)  masrafWrapper.style.display  = type === "EXPENSE_ADD" ? "" : "none";
+    if (posTipiWrapper) posTipiWrapper.style.display = type === "POS_LOG"     ? "" : "none";
+}
+
+window.onAdminFilterTypeChange = onAdminFilterTypeChange;
+
+function _parsePosDateAdmin(l) {
+    // logDate öncelikli — backend bu alanı kullanıyor
+    const raw = l.logDate ?? l.createdAt ?? l.date ?? l.timestamp ?? l.createdDate ?? l.transactionDate ?? null;
+    if (raw == null) return null;
+    if (Array.isArray(raw)) {
+        const [y, mo, d, h = 0, mi = 0, s = 0] = raw;
+        const dt = new Date(y, mo - 1, d, h, mi, s);
+        return isNaN(dt.getTime()) ? null : dt.toISOString();
+    }
+    if (typeof raw === "number") {
+        const dt = new Date(raw);
+        return isNaN(dt.getTime()) ? null : dt.toISOString();
+    }
+    // "dd-MM-yyyy HH:mm:ss" formatı → ISO'ya çevir (sort için)
+    if (typeof raw === "string" && /^\d{2}-\d{2}-\d{4}/.test(raw)) {
+        const [datePart, timePart = "00:00:00"] = raw.split(" ");
+        const [dd, mm, yyyy] = datePart.split("-");
+        const dt = new Date(`${yyyy}-${mm}-${dd}T${timePart}`);
+        return isNaN(dt.getTime()) ? null : dt.toISOString();
+    }
+    const dt = new Date(raw);
+    return isNaN(dt.getTime()) ? null : dt.toISOString();
+}
+
+function _posToRow(l) {
+    const isoDate = _parsePosDateAdmin(l);
+    const posLabel = POS_TYPE_LABELS[l.posType] || l.posType || "";
+    return {
+        createdAt:   isoDate || null,
+        username:    l.username || l.user || "-",
+        action:      "POS_LOG",
+        description: [posLabel, l.terminal].filter(Boolean).join(" — ") + (l.description ? " | " + prettifyDesc(l.description) : ""),
+        amount:      l.amount || 0,
+    };
+}
+
+async function _fetchPosRows(filters = {}) {
+    const token = sessionStorage.getItem("token");
+    let url = `${API_BASE}/pos/logs`;
+    const params = [];
+    if (filters.startDate) params.push(`start=${filters.startDate}T00:00:00`);
+    if (filters.endDate)   params.push(`end=${filters.endDate}T23:59:59`);
+    if (params.length) url += "?" + params.join("&");
+
+    const res = await fetch(url, { headers: { "Authorization": "Bearer " + token } });
+    if (!res.ok) { console.warn("[_fetchPosRows] API yanıt:", res.status); return []; }
+    const data = await res.json();
+    let logs = Array.isArray(data) ? data : (data.content || data.data || []);
+
+    if (filters.posTipi) logs = logs.filter(l => l.posType === filters.posTipi);
+    if (filters.user)    logs = logs.filter(l => (l.username || l.user || "") === filters.user);
+
+    return logs.map(_posToRow);
+}
+
+async function loadAndRenderPosLogs(filters = {}) {
+    const tbody = document.getElementById("kasaTableBody");
+    if (!tbody) return;
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted" style="padding:20px">Yükleniyor...</td></tr>`;
+    try {
+        renderTable(await _fetchPosRows(filters));
+    } catch(e) {
+        console.error("[loadAndRenderPosLogs] Hata:", e);
+        renderTable([]);
+    }
+}
+
+async function loadMovementsAndPos(start = "", end = "", username = "") {
+    const tbody = document.getElementById("kasaTableBody");
+    if (!tbody) return;
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted" style="padding:20px">Yükleniyor...</td></tr>`;
+
+    const token   = sessionStorage.getItem("token");
+    const isAdmin = sessionStorage.getItem("role") === "ADMIN";
+
+    let auditUrl;
+    if (isAdmin) {
+        auditUrl = `${API_BASE}/audit-logs?page=0&size=100`;
+        if (start)    auditUrl += `&start=${start}T00:00:00`;
+        if (end)      auditUrl += `&end=${end}T23:59:59`;
+        if (username) auditUrl += `&username=${username}`;
+    } else {
+        auditUrl = `${API_BASE}/audit-logs/my-actions?page=0&size=100`;
+    }
+
+    let auditRows = [];
+    try {
+        const res = await fetch(auditUrl, { headers: { "Authorization": "Bearer " + token } });
+        const d   = await res.json();
+        auditRows = Array.isArray(d) ? d : (d.content || d.data || []);
+    } catch(e) {
+        console.error("[loadMovementsAndPos] audit hata:", e);
+    }
+
+    let posRows = [];
+    try {
+        posRows = await _fetchPosRows({ startDate: start, endDate: end, user: username });
+    } catch(e) {
+        console.error("[loadMovementsAndPos] POS hata:", e);
+    }
+
+    const all = [...auditRows, ...posRows].sort((a, b) =>
+        new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+    );
+
+    renderTable(all);
 }
 
 function initAdminLogs(){
@@ -517,8 +648,26 @@ function initAdminLogs(){
     const table = document.getElementById("kasaTableBody");
     if(!table) return;
 
-    loadMovements();
-    loadUsersForFilter();
+    const isAdmin = sessionStorage.getItem("role") === "ADMIN";
+
+    if (!isAdmin) {
+        // Normal kullanıcı: filtreler çalışmaz, gizle
+        const adminOnlyFilters = ["filterUser", "filterType", "filterStartDate", "filterEndDate"];
+        adminOnlyFilters.forEach(id => {
+            const el = document.getElementById(id);
+            if (el?.closest(".col-md-3")) el.closest(".col-md-3").style.display = "none";
+        });
+        // Filtre butonlarını gizle
+        const filterBtns = document.querySelector(".col-12.mt-15.d-flex.gap-2");
+        if (filterBtns) filterBtns.style.display = "none";
+        // Kullanıcı sütununu gizle
+        const userTh = document.querySelector("#kasaTable thead th:nth-child(2)");
+        if (userTh) userTh.style.display = "none";
+    } else {
+        loadUsersForFilter();
+    }
+
+    loadMovementsAndPos();
 }
 
 window.initAdminLogs = initAdminLogs;

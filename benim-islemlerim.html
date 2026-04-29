@@ -13,10 +13,11 @@
 
                   <div style="display:flex;flex-direction:column;gap:4px">
                     <label style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.4px">İşlem Türü</label>
-                    <select id="myActFilterType" style="height:36px;min-width:160px;font-size:13px;padding:0 10px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:#0f172a;color:#e2e8f0;outline:none">
+                    <select id="myActFilterType" onchange="onMyActFilterTypeChange()" style="height:36px;min-width:160px;font-size:13px;padding:0 10px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:#0f172a;color:#e2e8f0;outline:none">
                       <option value="">Tümü</option>
-                      <option value="CASH_INCOME">Kasa Giriş</option>
-                      <option value="CASH_EXPENSE">Kasa Çıkış</option>
+                      <option value="CASH_INCOME">Kasa Nakit Giriş</option>
+                      <option value="CASH_EXPENSE">Kasa Nakit Çıkış</option>
+                      <option value="POS_LOG">Kredi Kartı İşlemleri</option>
                       <option value="CHECK_IN">Çek Giriş</option>
                       <option value="CHECK_COLLECT">Çek Tahsil</option>
                       <option value="CHECK_OUT">Çek Ödeme</option>
@@ -24,8 +25,44 @@
                       <option value="NOTE_COLLECT">Senet Tahsil</option>
                       <option value="LOAN_CREATE">Kredi Oluşturma</option>
                       <option value="EXPENSE_ADD">Masraf</option>
-                      <option value="POS_LOG">POS İşlemi</option>
-                      <option value="BANKA_CIKIS">Bankaya Para Yatırma</option>
+                    </select>
+                  </div>
+
+                  <!-- Masraf Türü alt filtre -->
+                  <div id="myActMasrafWrapper" style="display:none;flex-direction:column;gap:4px">
+                    <label style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.4px">Masraf Türü</label>
+                    <select id="myActMasrafTuru" style="height:36px;min-width:160px;font-size:13px;padding:0 10px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:#0f172a;color:#e2e8f0;outline:none">
+                      <option value="">Tümü</option>
+                      <option value="ELEKTRIK">ELEKTRİK</option>
+                      <option value="SU">SU</option>
+                      <option value="ILETISIM">İLETİŞİM</option>
+                      <option value="KARGO_NAKLIYE">KARGO-NAKLİYE</option>
+                      <option value="ARAC_GIDERLERI">ARAÇ GİDERLERİ</option>
+                      <option value="IS_YERI">İŞ YERİ</option>
+                      <option value="ATOLYE">ATÖLYE</option>
+                      <option value="YEMEK">YEMEK</option>
+                      <option value="MARKET">MARKET</option>
+                      <option value="KIRTASIYE">KIRTASİYE</option>
+                      <option value="SEYAHAT">SEYAHAT</option>
+                      <option value="NILUFERKOY">NİLÜFERKÖY</option>
+                      <option value="ORTAK_GIDER">ORTAK GİDER</option>
+                      <option value="ALI_ALTIKARDESLER">ALİ ALTIKARDEŞLER</option>
+                      <option value="ATINC_ALTIKARDESLER">ATINÇ ALTIKARDEŞLER</option>
+                      <option value="KIVANC_ALTIKARDESLER">KIVANÇ ALTIKARDEŞLER</option>
+                      <option value="PERVIN_ALTIKARDESLER">PERVİN ALTIKARDEŞLER</option>
+                      <option value="CEZA">CEZA</option>
+                      <option value="YAKIT">YAKIT</option>
+                      <option value="DIGER">DİĞER</option>
+                    </select>
+                  </div>
+
+                  <!-- POS Tipi alt filtre -->
+                  <div id="myActPosTipiWrapper" style="display:none;flex-direction:column;gap:4px">
+                    <label style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.4px">POS Tipi</label>
+                    <select id="myActPosTipi" style="height:36px;min-width:160px;font-size:13px;padding:0 10px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:#0f172a;color:#e2e8f0;outline:none">
+                      <option value="">Tümü</option>
+                      <option value="ALTIKARDESLER_POS">ALTIKARDEŞLER POS</option>
+                      <option value="TEDARIKCI_POS">TEDARİKÇİ POS</option>
                     </select>
                   </div>
 
