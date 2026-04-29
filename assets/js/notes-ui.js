@@ -33,7 +33,7 @@ function createFinancialCard(data, type) {
       <h5 class="title mb-0">${escapeHtml(title)}</h5>
       <div class="check-actions">
         ${dueBadge}
-        <span class="check-status status-portfolio">Portföyde</span>
+        <span class="check-status status-portfolio">Kasanda</span>
         <div class="check-menu">
           <button class="check-menu-btn"><i class="zmdi zmdi-more-vert"></i></button>
           <div class="check-menu-dropdown">

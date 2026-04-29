@@ -430,26 +430,25 @@ async function loadVadesiKart() {
   adetEl.textContent  = "...";
 
   try {
-    const today = new Date();
-    const end   = new Date();
-    end.setDate(end.getDate() + 30);
+    const calcDaysLeft = (str) => {
+      if (!str) return 9999;
+      const due = new Date(str); const today = new Date();
+      today.setHours(0,0,0,0); due.setHours(0,0,0,0);
+      return Math.round((due - today) / 86400000);
+    };
 
-    const fmt = (d) => [
-      d.getFullYear(),
-      String(d.getMonth() + 1).padStart(2, "0"),
-      String(d.getDate()).padStart(2, "0")
-    ].join("-");
+    const [allChecks, allNotes] = await Promise.all([
+      checkApi.getAll().catch(() => []),
+      noteApi.getAll().catch(() => []),
+    ]);
 
-    const data = await apiClient.request(
-      `/reports?startDate=${fmt(today)}&endDate=${fmt(end)}`
-    );
+    const checks = (Array.isArray(allChecks) ? allChecks : [])
+      .filter(c => (c.status === "IN_PORTFOLIO" || !c.status) && calcDaysLeft(c.dueDate) <= 30);
+    const notes  = (Array.isArray(allNotes)  ? allNotes  : [])
+      .filter(n => (n.status === "IN_PORTFOLIO" || !n.status) && calcDaysLeft(n.dueDate) <= 30);
 
-    if (!data) { tutarEl.textContent = "0 TL"; adetEl.textContent = "0 adet"; return; }
-
-    const checks = data.upcomingChecks || [];
-    const notes  = data.upcomingNotes  || [];
-    const total  = [...checks, ...notes].reduce((s, i) => s + (Number(i.amount) || 0), 0);
-    const count  = checks.length + notes.length;
+    const total = [...checks, ...notes].reduce((s, i) => s + (Number(i.amount) || 0), 0);
+    const count = checks.length + notes.length;
 
     animateValue(tutarEl, total);
     setTimeout(() => {

@@ -59,7 +59,7 @@ function translateAction(action){
 
         NOTE_IN: "Senet Giriş",
         NOTE_COLLECT: "Senet Tahsil Edildi",
-        NOTE_ENDORSE: "Çek Ciro Edildi",
+        NOTE_ENDORSE: "Senet Ciro Edildi",
 
         LOAN_CREATE: "Kredi Ekleme",
         LOAN_INSTALLMENT: "Kredi Ödeme",
@@ -203,6 +203,27 @@ function prettifyDesc(desc) {
     return desc.replace(/P_\d+_[A-Z0-9_]+/g, m => PLAKA_LABELS[m] || m);
 }
 
+function buildDisplayDesc(item) {
+    const action = item.action || "";
+    if (action === "NOTE_IN") {
+        let desc = "Senet alındı";
+        if (item.noteNo) desc += " • " + item.noteNo;
+        return desc;
+    }
+    if (action === "NOTE_COLLECT") {
+        let desc = "Senet tahsil edildi";
+        if (item.noteNo) desc += " • " + item.noteNo;
+        return desc;
+    }
+    if (action === "NOTE_ENDORSE") {
+        let desc = "Senet ciro edildi";
+        if (item.noteNo) desc += " • " + item.noteNo;
+        if (item.description) desc += " • " + item.description;
+        return desc;
+    }
+    return prettifyDesc(item.description);
+}
+
 function parseMaybeJson(raw) {
     if (!raw) return {};
     if (typeof raw !== "string") return raw;
@@ -334,7 +355,7 @@ list.forEach(item => {
     if (isChangeReq && hasDetail) {
         descCell = `<button class="cr-detail-btn"><i class="zmdi zmdi-info-outline"></i> Detay</button>`;
     } else {
-        descCell = `<span class="td-desc">${escapeHtml(prettifyDesc(item.description))}${paymentMethodBadge(item)}</span>`;
+        descCell = `<span class="td-desc">${escapeHtml(buildDisplayDesc(item))}${paymentMethodBadge(item)}</span>`;
     }
 
     const showUser = sessionStorage.getItem("role") === "ADMIN";

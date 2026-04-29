@@ -44,6 +44,27 @@ function _myPrettifyDesc(desc) {
     return escapeHtml(replaced);
 }
 
+function _myBuildDisplayDesc(item) {
+    const action = item.action || "";
+    if (action === "NOTE_IN") {
+        let desc = "Senet alındı";
+        if (item.noteNo) desc += " • " + item.noteNo;
+        return escapeHtml(desc);
+    }
+    if (action === "NOTE_COLLECT") {
+        let desc = "Senet tahsil edildi";
+        if (item.noteNo) desc += " • " + item.noteNo;
+        return escapeHtml(desc);
+    }
+    if (action === "NOTE_ENDORSE") {
+        let desc = "Senet ciro edildi";
+        if (item.noteNo) desc += " • " + item.noteNo;
+        if (item.description) desc += " • " + item.description;
+        return escapeHtml(desc);
+    }
+    return _myPrettifyDesc(item.description || item.newDescription || "");
+}
+
 function _isIncomeAction(action) {
     return action === "CASH_INCOME"
         || action === "CHECK_IN"
@@ -185,7 +206,7 @@ function renderMyActivities(list) {
         tr.innerHTML = `
   <td style="font-weight:700;vertical-align:middle">${date}</td>
   <td class="text-center" style="vertical-align:middle">${actionCell}</td>
-  <td class="td-desc" style="vertical-align:middle">${_myPrettifyDesc(item.description || item.newDescription || "") || "-"}${_paymentMethodBadge(item)}</td>
+  <td class="td-desc" style="vertical-align:middle">${_myBuildDisplayDesc(item) || "-"}${_paymentMethodBadge(item)}</td>
   <td class="text-end" style="vertical-align:middle">${amountCell}</td>
   <td class="text-center" style="vertical-align:middle">${statusCell}</td>
 `;
@@ -500,7 +521,7 @@ function _generateMyActivitiesPdf() {
             }
             const amtStr   = isChReq ? "—" : (isInc ? "+" : "-") + fmtMoney(amt) + " TL";
             const amtColor = isChReq ? "#666" : (isInc ? "#16a34a" : "#dc2626");
-            const desc     = _myPrettifyDesc(item.description || item.newDescription || "");
+            const desc     = _myBuildDisplayDesc(item);
             rowsHtml += `<tr>
               <td>${dateStr}</td>
               <td>${catLabel}</td>

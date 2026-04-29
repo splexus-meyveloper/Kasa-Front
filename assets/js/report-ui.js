@@ -14,8 +14,8 @@ const EXPENSE_LABELS = {
   DIGER:    "Diğer",
 };
 
-const PAYMENT_METHOD_LABELS = {
-  CASH: "Nakit",
+const _R_PAYMENT_METHOD_LABELS = {
+  CASH:        "Nakit",
   CREDIT_CARD: "Kredi Kartı",
 };
 
@@ -41,24 +41,33 @@ function _getRange(period) {
   const y = now.getFullYear();
   const m = now.getMonth();
 
-  if (period === "thisMonth") {
-    return { start: _fmt(new Date(y, m, 1)), end: _fmt(now) };
-  }
-  if (period === "lastMonth") {
-    const first = new Date(y, m - 1, 1);
-    const last  = new Date(y, m, 0);
-    return { start: _fmt(first), end: _fmt(last) };
-  }
-  if (period === "thisYear") {
-    return { start: _fmt(new Date(y, 0, 1)), end: _fmt(now) };
-  }
+  if (period === "thisMonth") return { start: _fmt(new Date(y, m, 1)),    end: _fmt(now) };
+  if (period === "lastMonth") return { start: _fmt(new Date(y, m - 1, 1)), end: _fmt(new Date(y, m, 0)) };
+  if (period === "thisYear")  return { start: _fmt(new Date(y, 0, 1)),    end: _fmt(now) };
   return null;
 }
 
 function _formatMonth(str) {
-  // "2024-01" → "Oca 2024"
   const [y, mo] = str.split("-");
   return (MONTH_NAMES[parseInt(mo, 10) - 1] || mo) + " " + y;
+}
+
+function _calcDaysLeft(dueDateStr) {
+  if (!dueDateStr) return 9999;
+  const due   = new Date(dueDateStr);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  due.setHours(0, 0, 0, 0);
+  return Math.round((due - today) / (1000 * 60 * 60 * 24));
+}
+
+function _rParseMaybeJson(raw) {
+  if (!raw) return {};
+  if (typeof raw !== "string") return raw;
+  try {
+    const p = JSON.parse(raw);
+    return typeof p === "string" ? _rParseMaybeJson(p) : p;
+  } catch { return {}; }
 }
 
 // ==============================
@@ -77,7 +86,7 @@ function _dueBadge(daysLeft) {
 // ==============================
 
 function _renderSummary(d) {
-  const net = d.netBalance ?? 0;
+  const net      = d.netBalance ?? 0;
   const netColor = net >= 0 ? "#22c55e" : "#ef4444";
 
   document.getElementById("rTotalIncome").textContent  = formatMoney(d.totalIncome  ?? 0) + " TL";
@@ -99,7 +108,7 @@ function _renderMonthly(rows) {
   }
 
   tbody.innerHTML = rows.map(r => {
-    const net = (r.income ?? 0) - (r.expense ?? 0);
+    const net      = (r.income ?? 0) - (r.expense ?? 0);
     const netColor = net >= 0 ? "#22c55e" : "#ef4444";
     return `
       <tr>
@@ -122,7 +131,6 @@ function _renderExpenseCategories(map) {
   }
 
   entries.sort((a, b) => b[1] - a[1]);
-
   tbody.innerHTML = entries.map(([key, val]) => `
     <tr>
       <td>${escapeHtml(EXPENSE_LABELS[key] || key)}</td>
@@ -142,10 +150,9 @@ function _renderExpensePaymentMethods(map) {
 
   const order = { CASH: 1, CREDIT_CARD: 2 };
   entries.sort((a, b) => (order[a[0]] || 99) - (order[b[0]] || 99));
-
   tbody.innerHTML = entries.map(([key, val]) => `
     <tr>
-      <td>${escapeHtml(PAYMENT_METHOD_LABELS[key] || key)}</td>
+      <td>${escapeHtml(_R_PAYMENT_METHOD_LABELS[key] || key)}</td>
       <td class="text-end">${formatMoney(val)} TL</td>
     </tr>`).join("");
 }
@@ -155,24 +162,23 @@ function _renderUpcomingChecks(list) {
   const badge = document.getElementById("rCheckPortfolio");
   if (!tbody) return;
 
+  const total = (list || []).reduce((s, c) => s + (c.amount ?? 0), 0);
   if (badge) {
-    badge.textContent = `${list?.length ?? 0} çek · Toplam: ${formatMoney(
-      (list || []).reduce((s, c) => s + (c.amount ?? 0), 0)
-    )} TL`;
+    badge.textContent = `${list?.length ?? 0} çek · Toplam: ${formatMoney(total)} TL`;
   }
 
   if (!list || list.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">Veri yok</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">Vadesi yaklaşan çek yok</td></tr>`;
     return;
   }
 
   tbody.innerHTML = list.map(c => `
     <tr>
-      <td>${escapeHtml(c.no || "-")}</td>
+      <td>${escapeHtml(c.checkNo || c.no || "-")}</td>
       <td>${escapeHtml(BANK_LABELS[c.bank] || c.bank || "-")}</td>
       <td class="text-end">${formatMoney(c.amount)} TL</td>
       <td>${escapeHtml(c.dueDate || "-")}</td>
-      <td class="text-center">${_dueBadge(c.daysLeft)}</td>
+      <td class="text-center">${_dueBadge(c.daysLeft ?? _calcDaysLeft(c.dueDate))}</td>
     </tr>`).join("");
 }
 
@@ -181,23 +187,22 @@ function _renderUpcomingNotes(list) {
   const badge = document.getElementById("rNotePortfolio");
   if (!tbody) return;
 
+  const total = (list || []).reduce((s, n) => s + (n.amount ?? 0), 0);
   if (badge) {
-    badge.textContent = `${list?.length ?? 0} senet · Toplam: ${formatMoney(
-      (list || []).reduce((s, n) => s + (n.amount ?? 0), 0)
-    )} TL`;
+    badge.textContent = `${list?.length ?? 0} senet · Toplam: ${formatMoney(total)} TL`;
   }
 
   if (!list || list.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">Veri yok</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">Vadesi yaklaşan senet yok</td></tr>`;
     return;
   }
 
   tbody.innerHTML = list.map(n => `
     <tr>
-      <td>${escapeHtml(n.no || "-")}</td>
+      <td>${escapeHtml(n.noteNo || n.no || "-")}</td>
       <td class="text-end">${formatMoney(n.amount)} TL</td>
       <td>${escapeHtml(n.dueDate || "-")}</td>
-      <td class="text-center">${_dueBadge(n.daysLeft)}</td>
+      <td class="text-center">${_dueBadge(n.daysLeft ?? _calcDaysLeft(n.dueDate))}</td>
     </tr>`).join("");
 }
 
@@ -226,11 +231,101 @@ function _renderActiveLoans(list, totalDebt) {
 }
 
 // ==============================
+// DATA BUILDING FROM AUDIT LOGS
+// ==============================
+
+// Gelir sayılan işlemler
+const _R_INCOME_ACTIONS = new Set([
+  "CASH_INCOME", "CHECK_IN", "CHECK_COLLECT",
+  "NOTE_IN", "NOTE_COLLECT",
+  "LOAN_CREATE", "POS_LOG",
+]);
+
+// Gider sayılan işlemler
+const _R_EXPENSE_ACTIONS = new Set([
+  "CASH_EXPENSE", "EXPENSE_ADD",
+  "CHECK_OUT", "CHECK_ENDORSE",
+  "NOTE_ENDORSE",
+]);
+
+function _buildReportData(logs) {
+  let totalIncome = 0, totalExpense = 0;
+  const monthly               = {};
+  const expenseByCategory     = {};
+  const expenseByPaymentMethod = {};
+
+  logs.forEach(log => {
+    const action = log.action || "";
+    const amount = Number(log.amount || 0);
+    if (!amount) return;
+
+    // Aylık key: "2024-01"
+    const monthKey = (log.createdAt || "").slice(0, 7);
+    if (monthKey) {
+      if (!monthly[monthKey]) monthly[monthKey] = { income: 0, expense: 0 };
+    }
+
+    if (_R_INCOME_ACTIONS.has(action)) {
+      totalIncome += amount;
+      if (monthKey) monthly[monthKey].income += amount;
+
+    } else if (_R_EXPENSE_ACTIONS.has(action)) {
+      totalExpense += amount;
+      if (monthKey) monthly[monthKey].expense += amount;
+
+      if (action === "EXPENSE_ADD") {
+        // Masraf kategorisi
+        const dj      = _rParseMaybeJson(log.detailsJson || log.details || {});
+        const payload  = _rParseMaybeJson(dj?.payload);
+        const expType  = log.expenseType || payload.expenseType || dj.expenseType || "DIGER";
+        expenseByCategory[expType] = (expenseByCategory[expType] || 0) + amount;
+
+        // Ödeme şekli
+        const rawPm = String(log.paymentMethod || payload.paymentMethod || dj.paymentMethod || "").toUpperCase();
+        let pm = "CASH";
+        if (rawPm.includes("CARD") || rawPm.includes("KREDI") || rawPm.includes("KREDİ")) pm = "CREDIT_CARD";
+        else if (rawPm === "CASH" || rawPm.includes("NAKIT") || rawPm.includes("NAKİT")) pm = "CASH";
+        expenseByPaymentMethod[pm] = (expenseByPaymentMethod[pm] || 0) + amount;
+      }
+    }
+  });
+
+  const monthlyBreakdown = Object.entries(monthly)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([month, v]) => ({ month, ...v }));
+
+  return {
+    totalIncome,
+    totalExpense,
+    netBalance: totalIncome - totalExpense,
+    monthlyBreakdown,
+    expenseByCategory,
+    expenseByPaymentMethod,
+  };
+}
+
+// ==============================
+// FETCH HELPERS
+// ==============================
+
+async function _fetchAuditRange(start, end) {
+  const token = sessionStorage.getItem("token");
+  const url   = `${API_BASE}/audit-logs?page=0&size=1000&start=${start}T00:00:00&end=${end}T23:59:59`;
+  const res   = await fetch(url, { headers: { Authorization: "Bearer " + token } });
+  if (!res.ok) return [];
+  const data = await res.json();
+  return Array.isArray(data) ? data : (data.content || data.data || []);
+}
+
+// ==============================
 // LOAD REPORT
 // ==============================
 
 function _setLoadingState() {
-  const cols = { rMonthlyBody: 4, rExpenseCatBody: 2, rExpensePaymentBody: 2, rUpcomingChecksBody: 5, rUpcomingNotesBody: 4, rActiveLoansBody: 5 };
+  const cols = {
+    rMonthlyBody: 4, rExpenseCatBody: 2, rExpensePaymentBody: 2,
+    rUpcomingChecksBody: 5, rUpcomingNotesBody: 4, rActiveLoansBody: 5,
+  };
   Object.entries(cols).forEach(([id, span]) => {
     const el = document.getElementById(id);
     if (el) el.innerHTML = `<tr><td colspan="${span}" class="text-center text-muted">Yükleniyor...</td></tr>`;
@@ -246,7 +341,10 @@ function _setLoadingState() {
 }
 
 function _setErrorState() {
-  const cols = { rMonthlyBody: 4, rExpenseCatBody: 2, rExpensePaymentBody: 2, rUpcomingChecksBody: 5, rUpcomingNotesBody: 4, rActiveLoansBody: 5 };
+  const cols = {
+    rMonthlyBody: 4, rExpenseCatBody: 2, rExpensePaymentBody: 2,
+    rUpcomingChecksBody: 5, rUpcomingNotesBody: 4, rActiveLoansBody: 5,
+  };
   Object.entries(cols).forEach(([id, span]) => {
     const el = document.getElementById(id);
     if (el) el.innerHTML = `<tr><td colspan="${span}" class="text-center" style="color:#ef4444">Yüklenemedi</td></tr>`;
@@ -256,20 +354,49 @@ function _setErrorState() {
 async function loadReport(start, end) {
   _reportStart = start;
   _reportEnd   = end;
-
   _setLoadingState();
 
   try {
-    const data = await apiClient.request(`/reports?startDate=${start}&endDate=${end}`);
-    if (!data) { _setErrorState(); return; }
+    // Mevcut API'leri paralel çek
+    const [logs, allChecks, allNotes, allLoans, dashData] = await Promise.all([
+      _fetchAuditRange(start, end).catch(() => []),
+      checkApi.getAll().catch(() => []),
+      noteApi.getAll().catch(() => []),
+      loanApi.getAll().catch(() => []),
+      dashboardApi.getSummary().catch(() => null),
+    ]);
 
-    _renderSummary(data);
-    _renderMonthly(data.monthlyBreakdown);
-    _renderExpenseCategories(data.expenseByCategory);
-    _renderExpensePaymentMethods(data.expenseByPaymentMethod);
-    _renderUpcomingChecks(data.upcomingChecks);
-    _renderUpcomingNotes(data.upcomingNotes);
-    _renderActiveLoans(data.activeLoans, data.totalLoanDebt);
+    // Audit log'lardan rapor verisi oluştur
+    const report = _buildReportData(logs);
+    report.currentCashBalance = Number(dashData?.balance ?? 0);
+
+    // Vadesi yaklaşan çekler (30 gün içinde, portföyde olanlar)
+    const upcomingChecks = (Array.isArray(allChecks) ? allChecks : [])
+      .filter(c => c.status === "IN_PORTFOLIO" || !c.status)
+      .map(c => ({ ...c, daysLeft: _calcDaysLeft(c.dueDate) }))
+      .filter(c => c.daysLeft <= 30)
+      .sort((a, b) => a.daysLeft - b.daysLeft);
+
+    // Vadesi yaklaşan senetler (30 gün içinde, portföyde olanlar)
+    const upcomingNotes = (Array.isArray(allNotes) ? allNotes : [])
+      .filter(n => n.status === "IN_PORTFOLIO" || !n.status)
+      .map(n => ({ ...n, daysLeft: _calcDaysLeft(n.dueDate) }))
+      .filter(n => n.daysLeft <= 30)
+      .sort((a, b) => a.daysLeft - b.daysLeft);
+
+    // Aktif krediler
+    const activeLoans = (Array.isArray(allLoans) ? allLoans : [])
+      .filter(l => l.active !== false && Number(l.remainingDebt ?? 0) > 0);
+    const totalLoanDebt = activeLoans.reduce((s, l) => s + Number(l.remainingDebt || 0), 0);
+
+    _renderSummary(report);
+    _renderMonthly(report.monthlyBreakdown);
+    _renderExpenseCategories(report.expenseByCategory);
+    _renderExpensePaymentMethods(report.expenseByPaymentMethod);
+    _renderUpcomingChecks(upcomingChecks);
+    _renderUpcomingNotes(upcomingNotes);
+    _renderActiveLoans(activeLoans, totalLoanDebt);
+
   } catch (err) {
     console.error("[loadReport] Hata:", err);
     _setErrorState();
@@ -317,13 +444,12 @@ async function downloadReportExcel() {
 // ==============================
 
 document.addEventListener("click", function (e) {
-  // Dönem butonları
   const periodBtn = e.target.closest(".report-period-btn");
   if (periodBtn) {
     document.querySelectorAll(".report-period-btn").forEach(b => b.classList.remove("active"));
     periodBtn.classList.add("active");
 
-    const period = periodBtn.dataset.period;
+    const period     = periodBtn.dataset.period;
     const customWrap = document.getElementById("customDateRange");
 
     if (period === "custom") {
@@ -336,17 +462,15 @@ document.addEventListener("click", function (e) {
     return;
   }
 
-  // Özel aralık uygula
   if (e.target.closest("#reportApplyBtn")) {
-    const s = document.getElementById("reportStartDate")?.value;
+    const s  = document.getElementById("reportStartDate")?.value;
     const e2 = document.getElementById("reportEndDate")?.value;
     if (!s || !e2) { showToast("Başlangıç ve bitiş tarihini seçin", "error"); return; }
-    if (s > e2)   { showToast("Başlangıç tarihi bitiş tarihinden büyük olamaz", "error"); return; }
+    if (s > e2)    { showToast("Başlangıç tarihi bitiş tarihinden büyük olamaz", "error"); return; }
     loadReport(s, e2);
     return;
   }
 
-  // Excel indir
   if (e.target.closest("#excelDownloadBtn")) {
     downloadReportExcel();
   }
