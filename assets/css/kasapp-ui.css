@@ -1593,7 +1593,7 @@ body.login-page.skin-dark {
 /* içerik içine sonradan basılan sayfa alanı */
 #pageContent {
   margin-top: 0 !important;
-  padding-top: 0 !important;
+  padding-top: 20px !important;
 }
 
 /* dashboard ilk satır */

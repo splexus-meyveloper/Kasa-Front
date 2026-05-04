@@ -112,6 +112,8 @@ if (isPortfoyde) {
 let selectedCheckId  = null;
 let _endorseId       = null;
 let _endorseType     = null; // 'check' | 'note'
+let _collectId       = null;
+let _collectType     = null; // 'check' | 'note'
 
 function openEndorseModal(id, type) {
   _endorseId   = id;
@@ -175,19 +177,103 @@ async function submitEndorse() {
 window.openEndorseModal = openEndorseModal;
 window.submitEndorse    = submitEndorse;
 
+// ==============================
+// TAHSİL MODALI
+// ==============================
+
+function openCollectModal(id, type) {
+  _collectId   = id;
+  _collectType = type;
+
+  const label = type === "check" ? "Çek" : "Senet";
+
+  document.getElementById("dynamicModalTitle").innerText    = `${label} Tahsil Et`;
+  document.getElementById("dynamicModalSubtitle").innerText = "Tahsilat yöntemini seçin";
+  document.getElementById("dynamicModalIcon").innerHTML     = `<i class="zmdi zmdi-money"></i>`;
+
+  document.getElementById("dynamicModalBody").innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <button onclick="executeCollect('CASH')" style="
+        width:100%;padding:18px 20px;border-radius:12px;border:1.5px solid rgba(16,185,129,.35);
+        background:rgba(16,185,129,.08);cursor:pointer;display:flex;align-items:center;
+        gap:14px;text-align:left;transition:background .2s,border-color .2s;
+      " onmouseover="this.style.background='rgba(16,185,129,.18)'"
+         onmouseout="this.style.background='rgba(16,185,129,.08)'">
+        <i class="zmdi zmdi-balance-wallet" style="font-size:26px;color:#10b981;flex-shrink:0"></i>
+        <div>
+          <div style="font-weight:700;font-size:15px;color:#f1f5f9">Kasaya Tahsil</div>
+          <div style="font-size:12px;color:#64748b;margin-top:3px">Tahsilat kasa bakiyesine eklenir</div>
+        </div>
+      </button>
+      <button onclick="executeCollect('BANK')" style="
+        width:100%;padding:18px 20px;border-radius:12px;border:1.5px solid rgba(59,130,246,.35);
+        background:rgba(59,130,246,.08);cursor:pointer;display:flex;align-items:center;
+        gap:14px;text-align:left;transition:background .2s,border-color .2s;
+      " onmouseover="this.style.background='rgba(59,130,246,.18)'"
+         onmouseout="this.style.background='rgba(59,130,246,.08)'">
+        <i class="zmdi zmdi-card" style="font-size:26px;color:#3b82f6;flex-shrink:0"></i>
+        <div>
+          <div style="font-weight:700;font-size:15px;color:#f1f5f9">Bankaya Tahsil</div>
+          <div style="font-size:12px;color:#64748b;margin-top:3px">Tahsilat banka hesabına aktarılır</div>
+        </div>
+      </button>
+    </div>
+  `;
+
+  const submitBtn = document.getElementById("dynamicModalSubmitBtn");
+  if (submitBtn) submitBtn.style.display = "none";
+
+  document.getElementById("dynamicModal").classList.add("active");
+}
+
+async function executeCollect(collectType) {
+  const id   = _collectId;
+  const type = _collectType;
+
+  document.getElementById("dynamicModal").classList.remove("active");
+  _collectId   = null;
+  _collectType = null;
+  const submitBtn = document.getElementById("dynamicModalSubmitBtn");
+  if (submitBtn) submitBtn.style.display = "";
+
+  try {
+    const payload = { id, collectType };
+
+    const label   = type === "check" ? "Çek" : "Senet";
+    const msgTail = collectType === "BANK" ? "bankaya tahsil edildi" : "kasaya tahsil edildi";
+
+    if (type === "check") {
+      await checkApi.collect(payload);
+      showToast(`${label} ${msgTail}`, "success");
+      _removeCheckCard(id);
+    } else {
+      await noteApi.collect(payload);
+      showToast(`${label} ${msgTail}`, "success");
+      _removeNoteCard(id);
+    }
+  } catch (e) {
+    showToast("Tahsil başarısız: " + (e.message || ""), "error");
+  }
+}
+
 // Dynamic modal'ın tek submit noktası — hangi modal açıksa onu çalıştırır
 function submitDynamicModal() {
   if (_endorseId !== null) {
     submitEndorse();
-  } else {
+  } else if (_collectId === null) {
     submitPaid();
   }
+  // collect modal kendi inline butonlarını kullanır, buraya düşmez
 }
 // Modal kapandığında state'i temizle
 document.addEventListener("click", function (e) {
   if (e.target.closest("[data-close='dynamicModal']")) {
     _endorseId   = null;
     _endorseType = null;
+    _collectId   = null;
+    _collectType = null;
+    const btn = document.getElementById("dynamicModalSubmitBtn");
+    if (btn) btn.style.display = "";
   }
 });
 window.submitDynamicModal = submitDynamicModal;
@@ -317,11 +403,7 @@ async function loadCheckSummary() {
     const total = checks.reduce((sum, c) => sum + Number(c.amount || 0), 0);
 
     animateValue(tutarEl, total);
-    animateValue(adetEl, checks.length);
-
-    setTimeout(() => {
-      adetEl.innerText = `${checks.length} adet çek`;
-    }, 800);
+    adetEl.innerText = `${checks.length} adet`;
 
     setAutoBar("barCekler", Math.min(checks.length * 10, 100), 100);
 
@@ -357,14 +439,8 @@ function _refreshCheckSummaryFromCache() {
   if (adetEl)  adetEl.innerText = `${checks.length} adet çek`;
 }
 
-async function collectCheck(id) {
-  try {
-    await checkApi.collect({ id });
-    showToast("Çek tahsil edildi", "success");
-    _removeCheckCard(id);
-  } catch (e) {
-    showToast("Tahsil işlemi başarısız: " + e.message, "error");
-  }
+function collectCheck(id) {
+  openCollectModal(id, "check");
 }
 
 async function endorseCheck(id) {
@@ -438,3 +514,5 @@ window.loadChecks       = loadChecks;
 window.loadCheckSummary = loadCheckSummary;
 window.collectCheck     = collectCheck;
 window.endorseCheck     = endorseCheck;
+window.openCollectModal = openCollectModal;
+window.executeCollect   = executeCollect;

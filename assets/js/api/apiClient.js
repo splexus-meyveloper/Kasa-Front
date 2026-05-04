@@ -18,6 +18,7 @@ async function request(url, options = {}) {
   const response = await fetch(API_BASE + url, {
     ...options,
     headers: finalHeaders,
+    cache: "no-store",
   });
 
   const rawText = await response.text();

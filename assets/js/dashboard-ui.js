@@ -319,9 +319,14 @@ async function loadPortfolio(summaryData) {
 
 // ── KULLANICI KARTLARI ───────────────────────────────────
 
+function _getPerms() {
+  try { return JSON.parse(sessionStorage.getItem("permissions") || "[]"); } catch { return []; }
+}
+
 // Görünürlük: API beklenmeden hemen rol bazlı uygula
 function _applyUserCardVisibility() {
   const isAdmin = sessionStorage.getItem("role") === "ADMIN";
+  const perms   = _getPerms();
 
   const adminCek   = document.getElementById("adminCekKarti");
   const adminSenet = document.getElementById("adminSenetKarti");
@@ -340,8 +345,8 @@ function _applyUserCardVisibility() {
     if (grafik) { grafik.classList.remove("col-lg-8"); grafik.classList.add("col-lg-12"); }
     if (adminCek)   adminCek.style.display   = "none";
     if (adminSenet) adminSenet.style.display = "none";
-    if (userCek)    userCek.style.display    = "";
-    if (userSenet)  userSenet.style.display  = "";
+    if (userCek)    userCek.style.display    = perms.includes("CEK")   ? "" : "none";
+    if (userSenet)  userSenet.style.display  = perms.includes("SENET") ? "" : "none";
     if (userNet)    userNet.style.display    = "";
   }
 }
@@ -403,8 +408,10 @@ async function loadDashboard(selectedUserId = null) {
     setAutoBar("barAylikGiris",  d.monthlyNet     || 0, 500000);
     setAutoBar("barKredi",       d.totalLoanDebt  || 0, 1000000);
 
-    // Portföy grafiği summary ile beraber yükle
-    loadPortfolio(d);
+    // Portföy grafiği sadece admin için (normal kullanıcı portfolio endpoint'lerine erişemez)
+    if (sessionStorage.getItem("role") === "ADMIN") {
+      loadPortfolio(d);
+    }
 
   } catch (e) {
     console.error("Dashboard yüklenemedi:", e);
@@ -480,8 +487,11 @@ function initDashboard(selectedUserId = null) {
   const canvas = document.getElementById("chartjs-revenue-statistics-chart");
   if (canvas) loadChart(selectedUserId);
 
-  loadCheckSummary();
-  loadNotesDashboard();
+  const isAdmin = sessionStorage.getItem("role") === "ADMIN";
+  if (isAdmin) {
+    loadCheckSummary();
+    loadNotesDashboard();
+  }
   loadVadesiKart();
   loadHeaderNotifications();
 

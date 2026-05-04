@@ -47,11 +47,13 @@ const PAYMENT_METHOD_LABELS = {
   CREDIT_CARD: "Kredi Kartı",
 };
 
+const _PLATE_REGEX = /^\d{2}\s*[A-ZÇĞİÖŞÜa-zçğışöşü]{1,3}\s*\d{2,4}$/;
+
 async function addExpense() {
-  const typeEl  = document.getElementById("expenseType");
+  const typeEl    = document.getElementById("expenseType");
   const paymentEl = document.getElementById("paymentMethod");
-  const tutarEl = document.getElementById("tutar");
-  const descEl  = document.getElementById("description");
+  const tutarEl   = document.getElementById("tutar");
+  const descEl    = document.getElementById("description");
 
   if (!typeEl || !paymentEl || !tutarEl || !descEl) {
     showToast("Form alanları bulunamadı", "error");
@@ -68,27 +70,32 @@ async function addExpense() {
     return;
   }
 
-  const baseDesc = descEl.value?.trim() || "";
-  let description = baseDesc;
-  let aracPlaka   = null;
+  const description = descEl.value?.trim() || "";
+  let plaka = null;
 
   if (typeEl.value === "ARAC_GIDERLERI") {
-    const plakaEl = document.getElementById("aracPlaka");
-    aracPlaka = plakaEl?.value || null;
-    // Plakayı açıklamaya da ekle — backend DTO'da alan yoksa kayıt yine de anlamlı olsun
-    if (aracPlaka) {
-      description = aracPlaka + (baseDesc ? " — " + baseDesc : "");
+    if (!description) {
+      showToast("Araç gideri için açıklama zorunludur (örn: Yağ değişimi)", "error");
+      descEl.focus();
+      return;
     }
+    if (_PLATE_REGEX.test(description)) {
+      showToast("Açıklama alanına plaka yazmayın, işlem türünü yazın (örn: Yağ değişimi)", "error");
+      descEl.focus();
+      return;
+    }
+    const plakaEl = document.getElementById("aracPlaka");
+    plaka = plakaEl?.value?.trim() || null;
   }
 
   const payload = {
-    expenseType: typeEl.value,
+    expenseType:   typeEl.value,
     paymentMethod: paymentEl.value,
-    amount:      parseMoney(tutarEl.value),
+    amount:        parseMoney(tutarEl.value),
     description,
   };
 
-  if (aracPlaka) payload.aracPlaka = aracPlaka;
+  if (plaka) payload.plaka = plaka;
 
   try {
     await expenseStore.addExpense(payload);
@@ -97,25 +104,6 @@ async function addExpense() {
     setTimeout(() => loadPage("dashboard.html"), 1200);
   } catch (e) {
     console.error("EXPENSE ERROR:", e);
-    // Backend aracPlaka alanını tanımıyorsa field olmadan tekrar dene
-    if (aracPlaka && e.message && (e.message.includes("500") || e.message.toLowerCase().includes("hata"))) {
-      try {
-        const fallback = {
-          expenseType: payload.expenseType,
-          paymentMethod: payload.paymentMethod,
-          amount: payload.amount,
-          description: payload.description,
-        };
-        await expenseStore.addExpense(fallback);
-        showToast("Masraf eklendi", "success");
-        _resetExpenseForm();
-        setTimeout(() => loadPage("dashboard.html"), 1200);
-        return;
-      } catch (e2) {
-        showToast("Masraf eklenemedi: " + e2.message, "error");
-        return;
-      }
-    }
     showToast("Masraf eklenemedi: " + e.message, "error");
   }
 }

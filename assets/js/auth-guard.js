@@ -70,26 +70,6 @@
         return true;
     }
 
-    function applyMenuRestrictions() {
-        if (jwt.role === "ADMIN") return true;
-
-        const cekMenu   = document.querySelector('[data-perm="CEK"] .side-header-sub-menu');
-        const senetMenu = document.querySelector('[data-perm="SENET"] .side-header-sub-menu');
-        if (!cekMenu || !senetMenu) return false;
-
-        cekMenu.querySelectorAll("li").forEach(li => {
-            const a = li.querySelector("a[data-page]");
-            if (a && a.getAttribute("data-page") !== "cek-giris.html") li.remove();
-        });
-
-        senetMenu.querySelectorAll("li").forEach(li => {
-            const a = li.querySelector("a[data-page]");
-            if (a && a.getAttribute("data-page") !== "senet-giris.html") li.remove();
-        });
-
-        return true;
-    }
-
     // DOM hazır olunca çalıştır
     document.addEventListener("DOMContentLoaded", () => {
 
@@ -99,16 +79,6 @@
                 if (applyPermissionUI()) clearInterval(interval);
             }, 100);
             setTimeout(() => clearInterval(interval), 5000);
-        }
-
-        // Menü kısıtlamaları (non-admin)
-        if (jwt.role !== "ADMIN") {
-            if (!applyMenuRestrictions()) {
-                const menuInterval = setInterval(() => {
-                    if (applyMenuRestrictions()) clearInterval(menuInterval);
-                }, 100);
-                setTimeout(() => clearInterval(menuInterval), 5000);
-            }
         }
 
     });

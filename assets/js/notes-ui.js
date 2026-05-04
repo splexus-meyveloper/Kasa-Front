@@ -143,14 +143,9 @@ function _refreshNoteSummaryFromCache() {
   if (tutarEl) animateValue(tutarEl, total);
 }
 
-async function collectNote(id) {
-  try {
-    await noteApi.collect({ id });
-    showToast("Senet tahsil edildi", "success");
-    _removeNoteCard(id);
-  } catch (e) {
-    console.error(e);
-    showToast("Tahsil işlemi başarısız", "error");
+function collectNote(id) {
+  if (window.openCollectModal) {
+    openCollectModal(id, "note");
   }
 }
 

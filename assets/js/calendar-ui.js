@@ -219,7 +219,7 @@ async function loadCalendar() {
       height: 600,
 
       customButtons: {
-        calendarTitle: { text: "Finans Takvimi" }
+        calendarTitle: { text: "Ajanda" }
       },
 
       headerToolbar: {

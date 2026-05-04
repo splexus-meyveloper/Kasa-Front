@@ -2,12 +2,9 @@
 // WEBSOCKET CLIENT
 // ==============================
 
-const MAX_RECONNECT = 5;
-
 const wsClient = {
-  _stomp:             null,
-  _companyId:         null,
-  _reconnectAttempts: 0,
+  _stomp:     null,
+  _companyId: null,
 
   _getCompanyId() {
     try {
@@ -40,36 +37,32 @@ const wsClient = {
       connectHeaders:    { Authorization: "Bearer " + token },
       heartbeatIncoming: 10000,
       heartbeatOutgoing: 10000,
-      reconnectDelay:    0,
-      debug: () => {},
+      reconnectDelay:    5000,
 
       onConnect: () => {
-        this._reconnectAttempts = 0;
+        console.log("[WS] Bağlandı, topic dinleniyor:", "/topic/company-" + this._companyId);
         this._subscribe();
       },
 
-      onStompError: () => this._scheduleReconnect(),
-      onWebSocketError: () => this._scheduleReconnect(),
-      onDisconnect: () => {}
+      onStompError:     (frame) => console.warn("[WS] STOMP hatası:", frame),
+      onWebSocketError: (err)   => console.warn("[WS] WebSocket hatası:", err),
+      onDisconnect:     ()      => console.log("[WS] Bağlantı kesildi, yeniden bağlanılacak..."),
     });
 
     this._stomp.activate();
-  },
-
-  _scheduleReconnect() {
-    if (this._reconnectAttempts >= MAX_RECONNECT) return;
-    this._reconnectAttempts++;
-    setTimeout(() => {
-      this._stomp = null;
-      this.connect();
-    }, 3000 * this._reconnectAttempts);
   },
 
   _subscribe() {
     this._stomp.subscribe(
       "/topic/company-" + this._companyId,
       (msg) => {
-        try { this._handleEvent(JSON.parse(msg.body)); } catch {}
+        try {
+          const event = JSON.parse(msg.body);
+          console.log("[WS] Event alındı:", event, "| Sayfa:", this.getCurrentPage());
+          this._handleEvent(event);
+        } catch (err) {
+          console.error("[WS] Event işlenemedi:", err);
+        }
       }
     );
   },
@@ -82,28 +75,27 @@ const wsClient = {
         if (page.includes("kasa")) {
             window.loadCashTransactions?.();
         }
-        // Dashboard her zaman yenile
         if (page.includes("dashboard")) {
-            loadPage("dashboard.html");
+            window.loadDashboard?.();
         }
 
     } else if (m === "CEK") {
         if (page.includes("cek")) window.loadChecks?.({ silent: true });
-        if (page.includes("dashboard")) loadPage("dashboard.html");
-        window.loadCheckSummary?.();
+        if (page.includes("dashboard")) window.loadDashboard?.();
+        if (sessionStorage.getItem("role") === "ADMIN") window.loadCheckSummary?.();
 
     } else if (m === "SENET") {
         if (page.includes("senet")) window.loadNotes?.({ silent: true });
-        if (page.includes("dashboard")) loadPage("dashboard.html");
-        window.loadNotesDashboard?.();
+        if (page.includes("dashboard")) window.loadDashboard?.();
+        if (sessionStorage.getItem("role") === "ADMIN") window.loadNotesDashboard?.();
 
     } else if (m === "KREDI") {
         window.loadLoans?.();
-        if (page.includes("dashboard")) loadPage("dashboard.html");
+        if (page.includes("dashboard")) window.loadDashboard?.();
 
     } else if (m === "MASRAF") {
         if (page.includes("masraf")) loadPage("masraflar.html");
-        if (page.includes("dashboard")) loadPage("dashboard.html");
+        if (page.includes("dashboard")) window.loadDashboard?.();
 
     } else if (m === "BANKA") {
         if (page.includes("banka-detay"))    window.initBankaDetay?.();
