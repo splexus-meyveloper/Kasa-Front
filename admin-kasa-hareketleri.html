@@ -74,6 +74,8 @@
             <option value="ATINC_ALTIKARDESLER">ATINÇ ALTIKARDEŞLER</option>
             <option value="KIVANC_ALTIKARDESLER">KIVANÇ ALTIKARDEŞLER</option>
             <option value="PERVIN_ALTIKARDESLER">PERVİN ALTIKARDEŞLER</option>
+            <option value="VERGI_ODEMESI">VERGİ ÖDEMESİ</option>
+            <option value="KIRA">KİRA</option>
             <option value="CEZA">CEZA</option>
             <option value="YAKIT">YAKIT</option>
             <option value="DIGER">DİĞER</option>
@@ -90,13 +92,33 @@
         </select>
     </div>
 
+    <!-- Tahsilat Türü alt filtresi (CHECK_COLLECT / NOTE_COLLECT seçilince görünür) -->
+    <div id="tahsilatTuruWrapper" class="col-md-3 mt-15" style="display:none">
+        <label>Tahsilat Türü</label>
+        <select id="filterTahsilatTuru" class="form-control">
+            <option value="">Tümü</option>
+            <option value="CASH">Kasaya Tahsil</option>
+            <option value="BANK">Bankaya Tahsil</option>
+            <option value="COLLATERAL">Teminata Çıktı</option>
+        </select>
+    </div>
+
     <!-- POS Tipi alt filtresi (POS_LOG seçilince görünür) -->
     <div id="posTipiWrapper" class="col-md-3 mt-15" style="display:none">
         <label>POS Tipi</label>
-        <select id="filterPosTipi" class="form-control">
+        <select id="filterPosTipi" class="form-control" onchange="onAdminPosTypeChange()">
             <option value="">Tümü</option>
             <option value="ALTIKARDESLER_POS">ALTIKARDEŞLER POS</option>
             <option value="TEDARIKCI_POS">TEDARİKÇİ POS</option>
+            <option value="YAZARKASA_POS">Yazarkasa POS</option>
+        </select>
+    </div>
+
+    <!-- Terminal alt filtresi -->
+    <div id="posTerminalWrapper" class="col-md-3 mt-15" style="display:none">
+        <label>Terminal</label>
+        <select id="filterPosTerminal" class="form-control">
+            <option value="">Tümü</option>
         </select>
     </div>
 

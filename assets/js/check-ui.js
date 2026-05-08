@@ -42,6 +42,9 @@ function _buildCheckCard(c) {
   } else if (c.status === "CIRO_EDILDI") {
     statusClass = "status-endorsed";
     statusText = "Ciro Edildi";
+  } else if (c.status === "TEMINATA_CIKTI") {
+    statusClass = "status-collateral";
+    statusText = "Teminata Çıktı";
   }
 
   const amount = formatMoney(c.amount);
@@ -150,25 +153,24 @@ async function submitEndorse() {
   const endorsedTo = document.getElementById("endorsedTo")?.value?.trim();
   const desc       = document.getElementById("endorseDesc")?.value?.trim() || "";
 
-  if (!endorsedTo) {
-    showToast("Ciro edilen kişi/firma adını girin", "error");
-    return;
-  }
+  if (!endorsedTo) { showToast("Ciro edilen kişi/firma adını girin", "error"); return; }
 
+  const btn = document.getElementById("dynamicModalSubmitBtn");
   try {
-    const payload = { id: _endorseId, endorsedTo, description: desc };
-
-    if (_endorseType === "check") {
-      await checkApi.endorse(payload);
-      showToast("Çek ciro edildi", "success");
-      document.getElementById("dynamicModal")?.classList.remove("active");
-      _removeCheckCard(_endorseId);
-    } else {
-      await noteApi.endorse(payload);
-      showToast("Senet ciro edildi", "success");
-      document.getElementById("dynamicModal")?.classList.remove("active");
-      _removeNoteCard(_endorseId);
-    }
+    await withLoadingBtn(btn, async () => {
+      const payload = { id: _endorseId, endorsedTo, description: desc };
+      if (_endorseType === "check") {
+        await checkApi.endorse(payload);
+        showToast("Çek ciro edildi", "success");
+        document.getElementById("dynamicModal")?.classList.remove("active");
+        _removeCheckCard(_endorseId);
+      } else {
+        await noteApi.endorse(payload);
+        showToast("Senet ciro edildi", "success");
+        document.getElementById("dynamicModal")?.classList.remove("active");
+        _removeNoteCard(_endorseId);
+      }
+    });
   } catch (e) {
     showToast("Ciro işlemi başarısız: " + (e.message || ""), "error");
   }
@@ -217,6 +219,18 @@ function openCollectModal(id, type) {
           <div style="font-size:12px;color:#64748b;margin-top:3px">Tahsilat banka hesabına aktarılır</div>
         </div>
       </button>
+      <button onclick="executeCollect('COLLATERAL')" style="
+        width:100%;padding:18px 20px;border-radius:12px;border:1.5px solid rgba(245,158,11,.35);
+        background:rgba(245,158,11,.08);cursor:pointer;display:flex;align-items:center;
+        gap:14px;text-align:left;transition:background .2s,border-color .2s;
+      " onmouseover="this.style.background='rgba(245,158,11,.18)'"
+         onmouseout="this.style.background='rgba(245,158,11,.08)'">
+        <i class="zmdi zmdi-lock" style="font-size:26px;color:#f59e0b;flex-shrink:0"></i>
+        <div>
+          <div style="font-weight:700;font-size:15px;color:#f1f5f9">Teminata Çıktı</div>
+          <div style="font-size:12px;color:#64748b;margin-top:3px">Teminat olarak kullanıma çıkarılır</div>
+        </div>
+      </button>
     </div>
   `;
 
@@ -240,7 +254,9 @@ async function executeCollect(collectType) {
     const payload = { id, collectType };
 
     const label   = type === "check" ? "Çek" : "Senet";
-    const msgTail = collectType === "BANK" ? "bankaya tahsil edildi" : "kasaya tahsil edildi";
+    const msgTail = collectType === "BANK" ? "bankaya tahsil edildi"
+                  : collectType === "COLLATERAL" ? "teminata çıktı"
+                  : "kasaya tahsil edildi";
 
     if (type === "check") {
       await checkApi.collect(payload);
@@ -313,15 +329,14 @@ function openPaidModal(id) {
 async function submitPaid() {
   const desc = document.getElementById("paidDescription")?.value || "";
 
+  const btn = document.getElementById("dynamicModalSubmitBtn");
   try {
-    await checkApi.markAsPaid({
-      id: selectedCheckId,
-      description: desc
+    await withLoadingBtn(btn, async () => {
+      await checkApi.markAsPaid({ id: selectedCheckId, description: desc });
+      showToast("Çek ödendi olarak işaretlendi", "success");
+      document.getElementById("dynamicModal")?.classList.remove("active");
+      _removeCheckCard(selectedCheckId);
     });
-
-    showToast("Çek ödendi olarak işaretlendi", "success");
-    document.getElementById("dynamicModal")?.classList.remove("active");
-    _removeCheckCard(selectedCheckId);
   } catch (err) {
     showToast(err.message || "Hata oluştu", "error");
   }

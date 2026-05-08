@@ -26,14 +26,27 @@ function createFinancialCard(data, type) {
     numberValue = data.noteNo;
   }
 
+  let noteStatusClass = "status-portfolio";
+  let noteStatusText  = "Kasanda";
+  if (data.status === "TAHSIL_EDILDI") {
+    noteStatusClass = "status-collected";
+    noteStatusText  = "Tahsil Edildi";
+  } else if (data.status === "CIRO_EDILDI") {
+    noteStatusClass = "status-endorsed";
+    noteStatusText  = "Ciro Edildi";
+  } else if (data.status === "TEMINATA_CIKTI") {
+    noteStatusClass = "status-collateral";
+    noteStatusText  = "Teminata Çıktı";
+  }
+
   return `
 <div class="col-xl-4 col-md-6 mb-30" data-note-id="${data.id}">
-  <div class="box check-card ${dueClass}">
+  <div class="box check-card ${noteStatusClass} ${dueClass}">
     <div class="box-head d-flex justify-content-between align-items-center">
       <h5 class="title mb-0">${escapeHtml(title)}</h5>
       <div class="check-actions">
         ${dueBadge}
-        <span class="check-status status-portfolio">Kasanda</span>
+        <span class="check-status ${noteStatusClass}">${noteStatusText}</span>
         <div class="check-menu">
           <button class="check-menu-btn"><i class="zmdi zmdi-more-vert"></i></button>
           <div class="check-menu-dropdown">
@@ -180,16 +193,14 @@ document.addEventListener("click", async function (e) {
   }
 
   try {
-    await noteStore.createNote(payload);
-
-    showToast("Senet giriş yapıldı", "success");
-
-    refreshCalendar();
-
-    setTimeout(() => loadPage("senetler.html"), 1000);
-
+    await withLoadingBtn(btn, async () => {
+      await noteStore.createNote(payload);
+      showToast("Senet giriş yapıldı", "success");
+      refreshCalendar();
+      setTimeout(() => loadPage("senetler.html"), 1000);
+    });
   } catch (e) {
-    showToast("Senet kaydedilemedi", "error");
+    showToast("Senet kaydedilemedi: " + (e.message || ""), "error");
   }
 });
 

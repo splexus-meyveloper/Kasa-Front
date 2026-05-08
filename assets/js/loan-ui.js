@@ -126,6 +126,7 @@ async function payLoanInstallment(loanId) {
 }
 
 $(document).on("click", "#krediKaydetBtn", async function () {
+  const btn = this;
 
   const bankName         = $("#krediBanka").val();
   const loanAmount       = parseMoney($("#krediTutar").val());
@@ -164,14 +165,12 @@ $(document).on("click", "#krediKaydetBtn", async function () {
   };
 
   try {
-    await loanStore.createLoan(payload);
-
-    showToast("Kredi başarıyla oluşturuldu", "success");
-
-    refreshCalendar();
-
-    setTimeout(() => loadPage("krediler.html"), 1200);
-
+    await withLoadingBtn(btn, async () => {
+      await loanStore.createLoan(payload);
+      showToast("Kredi başarıyla oluşturuldu", "success");
+      refreshCalendar();
+      setTimeout(() => loadPage("krediler.html"), 1200);
+    });
   } catch (err) {
     console.error(err);
     showToast(err.message || "Kredi oluşturulamadı", "error");

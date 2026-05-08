@@ -2,6 +2,7 @@
 const _MY_POS_TYPE_LABELS = {
     ALTIKARDESLER_POS: "ALTIKARDEŞLER POS",
     TEDARIKCI_POS:     "TEDARİKÇİ POS",
+    YAZARKASA_POS:     "Yazarkasa POS",
 };
 
 const _MY_PLAKA_LABELS = {
@@ -46,13 +47,24 @@ function _myPrettifyDesc(desc) {
 
 function _myBuildDisplayDesc(item) {
     const action = item.action || "";
+    if (action === "CHECK_COLLECT") {
+        const ct = _extractCollectType(item);
+        let desc = ct === "COLLATERAL" ? "Çek teminata çıktı"
+                 : ct === "BANK"       ? "Çek bankaya tahsil edildi"
+                 : "Çek kasaya tahsil edildi";
+        if (item.checkNo) desc += " • " + item.checkNo;
+        return escapeHtml(desc);
+    }
     if (action === "NOTE_IN") {
         let desc = "Senet alındı";
         if (item.noteNo) desc += " • " + item.noteNo;
         return escapeHtml(desc);
     }
     if (action === "NOTE_COLLECT") {
-        let desc = "Senet tahsil edildi";
+        const ct = _extractCollectType(item);
+        let desc = ct === "COLLATERAL" ? "Senet teminata çıktı"
+                 : ct === "BANK"       ? "Senet bankaya tahsil edildi"
+                 : "Senet kasaya tahsil edildi";
         if (item.noteNo) desc += " • " + item.noteNo;
         return escapeHtml(desc);
     }
@@ -73,6 +85,12 @@ function _isIncomeAction(action) {
         || action === "NOTE_COLLECT"
         || action === "LOAN_CREATE"
         || action === "POS_LOG";
+}
+
+function _isIncome(item) {
+    if (item.direction === "IN")  return true;
+    if (item.direction === "OUT" || item.direction === "NONE") return false;
+    return _isIncomeAction(item.action);
 }
 
 function _getMyUsername() {
@@ -100,6 +118,11 @@ function actionBadge(action) {
         LOAN_CREATE:  '<span class="badge badge-primary">Kredi Ekleme</span>',
         EXPENSE_ADD:  '<span class="badge badge-danger">Masraf</span>',
         POS_LOG:      '<span class="badge badge-primary">Kredi Kartı</span>',
+
+        POS_UPDATE_REQUEST:          '<span class="badge badge-warning">POS Düzenleme</span>',
+        POS_UPDATE_REQUEST_CREATED:  '<span class="badge badge-warning">POS Düzenleme Talebi</span>',
+        POS_UPDATE_REQUEST_APPROVED: '<span class="badge badge-success">POS Düzenleme Onaylandı</span>',
+        POS_UPDATE_REQUEST_REJECTED: '<span class="badge badge-danger">POS Düzenleme Reddedildi</span>',
     };
     return map[action] || `<span class="badge">${action}</span>`;
 }
@@ -121,6 +144,10 @@ const CHANGE_REQUEST_ACTIONS = [
     "LOAN_UPDATE_REQUEST_CREATED",
     "LOAN_UPDATE_REQUEST_APPROVED",
     "LOAN_UPDATE_REQUEST_REJECTED",
+    "POS_UPDATE_REQUEST",
+    "POS_UPDATE_REQUEST_CREATED",
+    "POS_UPDATE_REQUEST_APPROVED",
+    "POS_UPDATE_REQUEST_REJECTED",
     "CHANGE_REQUEST",
     "PENDING",
 ];
@@ -136,7 +163,7 @@ const NORMAL_ACTIONS = new Set([
     "CASH_INCOME", "CASH_EXPENSE",
     "CHECK_IN", "CHECK_COLLECT", "CHECK_ENDORSE", "CHECK_OUT",
     "NOTE_IN", "NOTE_COLLECT", "NOTE_ENDORSE",
-    "LOAN_CREATE", "EXPENSE_ADD",
+    "LOAN_CREATE", "EXPENSE_ADD", "POS_LOG",
 ]);
 
 function renderMyActivities(list) {
@@ -166,7 +193,7 @@ function renderMyActivities(list) {
         const isApproved  = isChangeReq && (item.status === "APPROVED" || (item.action || "").includes("APPROVED"));
         const isRejected  = isChangeReq && (item.status === "REJECTED" || (item.action || "").includes("REJECTED"));
 
-        const isIncome = _isIncomeAction(item.action);
+        const isIncome = _isIncome(item);
 
         if (!isChangeReq) {
             const amount = Number(item.amount || 0);
@@ -188,14 +215,12 @@ function renderMyActivities(list) {
         if (isPending)       actionCell = '<span class="badge badge-warning">Onay Bekliyor</span>';
         else if (isApproved) actionCell = '<span class="badge badge-success">Onaylandı</span>';
         else if (isRejected) actionCell = '<span class="badge badge-danger">Reddedildi</span>';
-        else                 actionCell = actionBadge(item.action);
+        else                 actionCell = _myCollectActionBadge(item);
 
         let statusCell;
         if (isPending)       statusCell = '<span class="badge badge-warning" style="font-size:11px">Beklemede</span>';
         else if (isApproved) statusCell = '<span class="badge badge-success" style="font-size:11px">Onaylandı</span>';
         else if (isRejected) statusCell = '<span class="badge badge-danger"  style="font-size:11px">Reddedildi</span>';
-        else if (item.action === "POS_LOG")
-                         statusCell = '<span style="color:#64748b;font-size:12px">—</span>';
         else             statusCell = `<button class="btn-modern btn-sm"
                              data-entity-id="${item.entityId}"
                              data-action="${item.action}"
@@ -241,23 +266,72 @@ function updateMyTotals(income, expense) {
 
 function _getMyActParams() {
     return {
-        action:     document.getElementById("myActFilterType")?.value    || "",
-        startDate:  document.getElementById("myActFilterStart")?.value   || "",
-        endDate:    document.getElementById("myActFilterEnd")?.value     || "",
-        masrafTuru: document.getElementById("myActMasrafTuru")?.value    || "",
+        action:       document.getElementById("myActFilterType")?.value       || "",
+        startDate:    document.getElementById("myActFilterStart")?.value      || "",
+        endDate:      document.getElementById("myActFilterEnd")?.value        || "",
+        masrafTuru:   document.getElementById("myActMasrafTuru")?.value       || "",
         masrafOdemeSekli: document.getElementById("myActMasrafOdemeSekli")?.value || "",
-        posTipi:    document.getElementById("myActPosTipi")?.value       || "",
+        tahsilatTuru: document.getElementById("myActTahsilatTuru")?.value     || "",
+        posTipi:      document.getElementById("myActPosTipi")?.value          || "",
+        posTerminal:  document.getElementById("myActPosTerminal")?.value      || "",
     };
 }
 
+function _getMyTerminalList(posType) {
+    if (typeof _getPosTerminalList === "function") return _getPosTerminalList(posType);
+    const fallback = {
+        ALTIKARDESLER_POS: [
+            { v: "VAKIFBANK", l: "VAKIFBANK" }, { v: "GARANTIBBVA", l: "GARANTİBBVA" },
+            { v: "IS_BANKASI", l: "İŞ BANKASI" }, { v: "YAPI_KREDI", l: "YAPI KREDİ" },
+            { v: "HALKBANK", l: "HALKBANK" }, { v: "TEB", l: "TEB" },
+        ],
+        TEDARIKCI_POS: [
+            { v: "SAMPA", l: "SAMPA" }, { v: "HD_KAUCUK", l: "HD KAUÇUK" },
+            { v: "INCITAS", l: "İNCİTAŞ" }, { v: "MAYSAN", l: "MAYSAN" },
+            { v: "MAKPARSAN", l: "MAKPARSAN" }, { v: "ROTA", l: "ROTA" },
+            { v: "OTO_KARAMAN", l: "OTO KARAMAN" },
+        ],
+        YAZARKASA_POS: [
+            { v: "YAZARKASA_ZIRAAT", l: "Ziraat Bankası" }, { v: "YAZARKASA_TEB", l: "TEB" },
+        ],
+    };
+    return fallback[posType] || [];
+}
+
+function onMyActPosTypeChange() {
+    const posType = document.getElementById("myActPosTipi")?.value || "";
+    const tw      = document.getElementById("myActPosTerminalWrapper");
+    const sel     = document.getElementById("myActPosTerminal");
+    if (!tw || !sel) return;
+    if (!posType) {
+        tw.style.display = "none";
+        sel.innerHTML = '<option value="">Tümü</option>';
+        return;
+    }
+    const terminals = _getMyTerminalList(posType);
+    sel.innerHTML = '<option value="">Tümü</option>' +
+        terminals.map(t => `<option value="${t.v}">${t.l}</option>`).join("");
+    tw.style.display = "flex";
+}
+window.onMyActPosTypeChange = onMyActPosTypeChange;
+
 function onMyActFilterTypeChange() {
-    const type = document.getElementById("myActFilterType")?.value || "";
-    const mw   = document.getElementById("myActMasrafWrapper");
-    const mpw  = document.getElementById("myActMasrafOdemeWrapper");
-    const pw   = document.getElementById("myActPosTipiWrapper");
-    if (mw) mw.style.display = type === "EXPENSE_ADD" ? "flex" : "none";
+    const type      = document.getElementById("myActFilterType")?.value || "";
+    const mw        = document.getElementById("myActMasrafWrapper");
+    const mpw       = document.getElementById("myActMasrafOdemeWrapper");
+    const tw        = document.getElementById("myActTahsilatWrapper");
+    const pw        = document.getElementById("myActPosTipiWrapper");
+    const ptw       = document.getElementById("myActPosTerminalWrapper");
+    const isCollect = type === "CHECK_COLLECT" || type === "NOTE_COLLECT";
+    if (mw)  mw.style.display  = type === "EXPENSE_ADD" ? "flex" : "none";
     if (mpw) mpw.style.display = type === "EXPENSE_ADD" ? "flex" : "none";
-    if (pw) pw.style.display = type === "POS_LOG"     ? "flex" : "none";
+    if (tw)  tw.style.display  = isCollect              ? "flex" : "none";
+    if (pw)  pw.style.display  = type === "POS_LOG"     ? "flex" : "none";
+    if (ptw) ptw.style.display = "none";
+    const ptSel = document.getElementById("myActPosTipi");
+    if (ptSel) ptSel.value = "";
+    const termSel = document.getElementById("myActPosTerminal");
+    if (termSel) termSel.innerHTML = '<option value="">Tümü</option>';
 }
 window.onMyActFilterTypeChange = onMyActFilterTypeChange;
 
@@ -329,6 +403,48 @@ function _expenseFilterMatches(item, filters) {
     return true;
 }
 
+function _extractCollectType(item) {
+    const dj = _myParseMaybeJson(item.detailsJson || item.details || {});
+    const payload  = _myParseMaybeJson(dj?.payload);
+    const request  = _myParseMaybeJson(dj?.request);
+    const data     = _myParseMaybeJson(dj?.data);
+    const candidates = [payload, request, data, dj, item].filter(Boolean);
+
+    const deepFind = (source, key, seen = new Set()) => {
+        if (!source || typeof source !== "object" || seen.has(source)) return "";
+        seen.add(source);
+        if (source[key] !== undefined && source[key] !== null && source[key] !== "") return String(source[key]);
+        for (const value of Object.values(source)) {
+            const parsed = _myParseMaybeJson(value);
+            const found  = deepFind(parsed, key, seen);
+            if (found !== "") return found;
+        }
+        return "";
+    };
+
+    for (const source of candidates) {
+        const found = deepFind(source, "collectType");
+        if (found) return found;
+    }
+    const desc = (item.description || "").toLowerCase();
+    if (desc.includes("teminat") || desc.includes("collateral")) return "COLLATERAL";
+    if (desc.includes("banka")   || desc.includes("bank"))       return "BANK";
+    return "CASH";
+}
+
+function _myCollectActionBadge(item) {
+    const action  = item.action || "";
+    const isCheck = action === "CHECK_COLLECT";
+    const isNote  = action === "NOTE_COLLECT";
+    if (!isCheck && !isNote) return actionBadge(action);
+
+    const prefix = isCheck ? "Çek" : "Senet";
+    const ct = _extractCollectType(item);
+    if (ct === "BANK")       return `<span class="badge" style="background:#3b82f6;color:#fff">${prefix} Bankaya Tahsil</span>`;
+    if (ct === "COLLATERAL") return `<span class="badge" style="background:#f59e0b;color:#fff">${prefix} Teminata Çıktı</span>`;
+    return `<span class="badge badge-success">${prefix} Kasaya Tahsil</span>`;
+}
+
 function _paymentMethodBadge(item) {
     if ((item.action || "") !== "EXPENSE_ADD") return "";
     const method = _extractExpenseMeta(item).paymentMethod;
@@ -365,8 +481,7 @@ function _parsePosDate(l) {
 }
 
 async function _fetchMyPosRows(filters = {}) {
-    const token    = sessionStorage.getItem("token");
-    const username = _getMyUsername();
+    const token = sessionStorage.getItem("token");
     let url = `${API_BASE}/pos/logs`;
     const params = [];
     if (filters.startDate) params.push(`start=${filters.startDate}T00:00:00`);
@@ -378,9 +493,8 @@ async function _fetchMyPosRows(filters = {}) {
     const data = await res.json();
     let logs = Array.isArray(data) ? data : (data.content || data.data || []);
 
-    const uLower = username.toLowerCase();
-    if (uLower) logs = logs.filter(l => (l.username || l.user || "").toLowerCase() === uLower);
-    if (filters.posTipi) logs = logs.filter(l => l.posType === filters.posTipi);
+    if (filters.posTipi)     logs = logs.filter(l => l.posType  === filters.posTipi);
+    if (filters.posTerminal) logs = logs.filter(l => l.terminal === filters.posTerminal);
 
     return logs.map(l => {
         const iso = _parsePosDate(l);
@@ -388,9 +502,12 @@ async function _fetchMyPosRows(filters = {}) {
         return {
             createdAt:   iso,
             action:      "POS_LOG",
+            posType:     l.posType    || "",
+            terminal:    l.terminal   || "",
+            entityId:    l.id         || null,
+            _rawDesc:    l.description || "",
             description: [posLabel, l.terminal].filter(Boolean).join(" — ") + (l.description ? " | " + l.description : ""),
             amount:      l.amount || 0,
-            entityId:    l.id,
         };
     });
 }
@@ -444,7 +561,11 @@ async function loadMyActivitiesAndPos(filters = {}) {
             }
         } else if (filters.action && filters.action !== "POS_LOG") {
             const res = await myActivityApi.getFiltered({ ...filters, size: 500 });
-            auditData = Array.isArray(res) ? res : (res.content || res.data || []);
+            let rows  = Array.isArray(res) ? res : (res.content || res.data || []);
+            if (filters.tahsilatTuru && (filters.action === "CHECK_COLLECT" || filters.action === "NOTE_COLLECT")) {
+                rows = rows.filter(item => _extractCollectType(item) === filters.tahsilatTuru);
+            }
+            auditData = rows;
         } else if (filters.action !== "POS_LOG") {
             const res = await myActivityApi.getFiltered({ startDate: filters.startDate, endDate: filters.endDate, size: 500 });
             auditData = Array.isArray(res) ? res : (res.content || res.data || []);
@@ -462,7 +583,8 @@ async function loadMyActivitiesAndPos(filters = {}) {
         }
     }
 
-    const all = [...auditData, ...posData].sort((a, b) =>
+    const filteredAuditData = auditData.filter(item => item.action !== "POS_LOG");
+    const all = [...filteredAuditData, ...posData].sort((a, b) =>
         new Date(b.createdAt || b.date || 0) - new Date(a.createdAt || a.date || 0)
     );
 
@@ -489,6 +611,7 @@ function _generateMyActivitiesPdf() {
     });
 
     let totalIncome = 0, totalExpense = 0;
+    let cashIncome = 0, cashExpense = 0, expenseAdd = 0;
     let rowsHtml = "";
 
     const orderedGroups = [
@@ -509,7 +632,7 @@ function _generateMyActivitiesPdf() {
             const _dv2 = item.createdAt || item.date || item.requestedAt || null;
             const dateStr = _dv2 ? formatDateTime(_dv2) : "—";
             const amt = Number(item.amount || 0);
-            const isInc = _isIncomeAction(item.action);
+            const isInc = _isIncome(item);
             if (!isChReq) {
                 if (isInc) {
                     totalIncome += amt;
@@ -518,6 +641,9 @@ function _generateMyActivitiesPdf() {
                     totalExpense += amt;
                     groupExpense += amt;
                 }
+                if (item.action === "CASH_INCOME")  cashIncome  += amt;
+                if (item.action === "CASH_EXPENSE") cashExpense += amt;
+                if (item.action === "EXPENSE_ADD")  expenseAdd  += amt;
             }
             const amtStr   = isChReq ? "—" : (isInc ? "+" : "-") + fmtMoney(amt) + " TL";
             const amtColor = isChReq ? "#666" : (isInc ? "#16a34a" : "#dc2626");
@@ -538,6 +664,7 @@ function _generateMyActivitiesPdf() {
     });
 
     const net = totalIncome - totalExpense;
+    const netNakit = cashIncome - cashExpense - expenseAdd;
     const html = `<!DOCTYPE html>
 <html lang="tr"><head><meta charset="UTF-8"><title>İşlem Raporu</title>
 <style>
@@ -565,6 +692,10 @@ function _generateMyActivitiesPdf() {
   <tr><th>Toplam Giriş</th><td style="color:#16a34a">+${fmtMoney(totalIncome)} TL</td></tr>
   <tr><th>Toplam Çıkış</th><td style="color:#dc2626">-${fmtMoney(totalExpense)} TL</td></tr>
   <tr><th>Net</th><td style="color:${net>=0?"#16a34a":"#dc2626"}">${net>=0?"+":"-"}${fmtMoney(Math.abs(net))} TL</td></tr>
+  <tr style="border-top:2px solid #1e3a5f">
+    <th style="font-size:14px">Toplam Net Nakit</th>
+    <td style="color:${netNakit>=0?"#16a34a":"#dc2626"};font-size:15px;font-weight:800">${netNakit>=0?"+":"-"}${fmtMoney(Math.abs(netNakit))} TL</td>
+  </tr>
 </table>
 <script>setTimeout(()=>window.print(),400);</script>
 </body></html>`;
@@ -586,12 +717,16 @@ async function initMyActivitiesPage() {
         document.getElementById("myActFilterType").value  = "";
         document.getElementById("myActFilterStart").value = "";
         document.getElementById("myActFilterEnd").value   = "";
-        const mt = document.getElementById("myActMasrafTuru");  if (mt) mt.value = "";
-        const mo = document.getElementById("myActMasrafOdemeSekli");  if (mo) mo.value = "";
-        const pt = document.getElementById("myActPosTipi");     if (pt) pt.value = "";
-        const mw = document.getElementById("myActMasrafWrapper");   if (mw) mw.style.display = "none";
+        const mt  = document.getElementById("myActMasrafTuru");        if (mt)  mt.value  = "";
+        const mo  = document.getElementById("myActMasrafOdemeSekli"); if (mo)  mo.value  = "";
+        const tt  = document.getElementById("myActTahsilatTuru");      if (tt)  tt.value  = "";
+        const pt  = document.getElementById("myActPosTipi");            if (pt)  pt.value  = "";
+        const pterm = document.getElementById("myActPosTerminal");      if (pterm) { pterm.value = ""; pterm.innerHTML = '<option value="">Tümü</option>'; }
+        const mw  = document.getElementById("myActMasrafWrapper");     if (mw)  mw.style.display  = "none";
         const mpw = document.getElementById("myActMasrafOdemeWrapper"); if (mpw) mpw.style.display = "none";
-        const pw = document.getElementById("myActPosTipiWrapper");  if (pw) pw.style.display = "none";
+        const tw  = document.getElementById("myActTahsilatWrapper");   if (tw)  tw.style.display  = "none";
+        const pw  = document.getElementById("myActPosTipiWrapper");    if (pw)  pw.style.display  = "none";
+        const ptw = document.getElementById("myActPosTerminalWrapper"); if (ptw) ptw.style.display = "none";
         loadMyActivitiesAndPos();
     });
 
@@ -610,32 +745,37 @@ function openEditModal(item) {
     currentEditId   = item.entityId || item.id;
     currentEditType = item.action;
 
-    const isCheck = CHECK_ACTIONS.has(item.action);
-    const isNote  = NOTE_ACTIONS.has(item.action);
+    const isCheck  = CHECK_ACTIONS.has(item.action);
+    const isNote   = NOTE_ACTIONS.has(item.action);
+    const isPosLog = item.action === "POS_LOG";
 
-    // Başlık
     const title = document.getElementById("editModalTitle");
-    if (title) title.textContent = isCheck ? "Çek Düzenle" : isNote ? "Senet Düzenle" : "İşlem Düzenle";
+    if (title) title.textContent = isCheck ? "Çek Düzenle" : isNote ? "Senet Düzenle" : isPosLog ? "POS İşlemi Düzenle" : "İşlem Düzenle";
 
-    // Alanları göster/gizle
-    document.getElementById("editCheckFields").style.display = isCheck ? "" : "none";
-    document.getElementById("editNoteFields").style.display  = isNote  ? "" : "none";
+    document.getElementById("editCheckFields").style.display = isCheck  ? "" : "none";
+    document.getElementById("editNoteFields").style.display  = isNote   ? "" : "none";
+    document.getElementById("editPosFields").style.display   = isPosLog ? "" : "none";
 
-    // Ortak alanlar
     document.getElementById("editAmount").value = item.amount ? formatMoney(item.amount) : "";
-    document.getElementById("editDesc").value   = item.description || "";
+    document.getElementById("editDesc").value   = isPosLog ? (item._rawDesc || "") : (item.description || "");
 
-    // Çek alanları
     if (isCheck) {
-        document.getElementById("editCheckNo").value  = item.checkNo  || "";
-        document.getElementById("editBank").value     = item.bank     || "";
-        document.getElementById("editDueDate").value  = item.dueDate  || "";
+        document.getElementById("editCheckNo").value  = item.checkNo || "";
+        document.getElementById("editBank").value     = item.bank    || "";
+        document.getElementById("editDueDate").value  = item.dueDate || "";
     }
 
-    // Senet alanları
     if (isNote) {
-        document.getElementById("editNoteNo").value       = item.noteNo  || "";
-        document.getElementById("editNoteDueDate").value  = item.dueDate || "";
+        document.getElementById("editNoteNo").value      = item.noteNo  || "";
+        document.getElementById("editNoteDueDate").value = item.dueDate || "";
+    }
+
+    if (isPosLog) {
+        const posTypeSel = document.getElementById("editPosType");
+        if (posTypeSel) { posTypeSel.value = item.posType || ""; onEditPosTypeChange(); }
+        const termSel = document.getElementById("editPosTerminal");
+        if (termSel) termSel.value = item.terminal || "";
+        document.getElementById("editPosDate").value = "";
     }
 
     document.getElementById("editModal").classList.add("active");
@@ -655,44 +795,84 @@ async function submitEditRequest() {
         return;
     }
 
+    const submitBtn = document.querySelector("#editModal .btn-modern");
+
+    // POS LOG düzenleme — ayrı endpoint
+    if (currentEditType === "POS_LOG") {
+        const posType  = document.getElementById("editPosType")?.value.trim()    || "";
+        const terminal = document.getElementById("editPosTerminal")?.value.trim() || "";
+        const posDate  = document.getElementById("editPosDate")?.value            || "";
+        if (!posType || !terminal) { showToast("POS tipi ve terminal seçiniz", "error"); return; }
+        const posData = { posType, terminal, amount, description: desc };
+        if (posDate) posData.logDate = posDate.length === 16 ? posDate + ":00" : posDate;
+        try {
+            await withLoadingBtn(submitBtn, async () => {
+                await posApi.submitChangeRequest(currentEditId, posData);
+                showToast("Düzenleme talebi gönderildi, onay bekleniyor", "success");
+                closeEditModal();
+                loadMyActivitiesAndPos(_getMyActParams());
+            });
+        } catch (err) {
+            showToast(err.message || "Hata oluştu", "error");
+        }
+        return;
+    }
+
     const isCheck = CHECK_ACTIONS.has(currentEditType);
     const isNote  = NOTE_ACTIONS.has(currentEditType);
 
     let data = { amount, description: desc };
-
     if (isCheck) {
         data.checkNo = document.getElementById("editCheckNo").value.trim();
         data.bank    = document.getElementById("editBank").value.trim();
         data.dueDate = document.getElementById("editDueDate").value;
     }
-
     if (isNote) {
         data.noteNo  = document.getElementById("editNoteNo").value.trim();
         data.dueDate = document.getElementById("editNoteDueDate").value;
     }
 
     try {
-        await myActivityApi.submitUpdateRequest(currentEditId, currentEditType, data);
-        showToast("İstek gönderildi, onay bekleniyor", "success");
-        closeEditModal();
-
-        // Sadece o satırın butonunu "Onay Bekliyor" badge'ine çevir — full reload yok
-        const editedBtn = document.querySelector(
-            `button[data-entity-id="${currentEditId}"][data-action="${currentEditType}"]`
-        );
-        if (editedBtn) {
-            editedBtn.replaceWith(
-                Object.assign(document.createElement("span"), {
-                    className: "badge badge-warning",
-                    style:     "font-size:11px",
-                    textContent: "Onay Bekliyor"
-                })
+        await withLoadingBtn(submitBtn, async () => {
+            await myActivityApi.submitUpdateRequest(currentEditId, currentEditType, data);
+            showToast("İstek gönderildi, onay bekleniyor", "success");
+            closeEditModal();
+            const editedBtn = document.querySelector(
+                `button[data-entity-id="${currentEditId}"][data-action="${currentEditType}"]`
             );
-        }
+            if (editedBtn) {
+                editedBtn.replaceWith(
+                    Object.assign(document.createElement("span"), {
+                        className: "badge badge-warning",
+                        style:     "font-size:11px",
+                        textContent: "Onay Bekliyor"
+                    })
+                );
+            }
+        });
     } catch (err) {
         console.error("[submitEditRequest] Hata:", err);
         showToast(err.message || "Hata oluştu", "error");
     }
 }
+
+function onEditPosTypeChange() {
+    const posType = document.getElementById("editPosType")?.value || "";
+    const termSel = document.getElementById("editPosTerminal");
+    if (!termSel) return;
+    if (!posType) {
+        termSel.innerHTML = `<option value="">Önce POS Tipi Seçiniz...</option>`;
+        return;
+    }
+    const list = (typeof _getPosTerminalList === "function")
+        ? _getPosTerminalList(posType)
+        : (_POS_TERMINALS[posType] || []);
+    const placeholder = posType === "ALTIKARDESLER_POS" ? "Banka Seçiniz..."
+                      : posType === "TEDARIKCI_POS"      ? "Tedarikçi Seçiniz..."
+                      : "Terminal Seçiniz...";
+    termSel.innerHTML = `<option value="">${placeholder}</option>` +
+        list.map(t => `<option value="${t.v}">${t.l}</option>`).join("");
+}
+window.onEditPosTypeChange = onEditPosTypeChange;
 
 window.initMyActivitiesPage = initMyActivitiesPage;

@@ -115,16 +115,19 @@ async function _hesapKaydet() {
   }
 
   const bakiye = bakiyeRaw ? parseMoney(bakiyeRaw) : 0;
+  const btn = document.getElementById("btnHesapKaydet");
 
   try {
-    await bankaApi.createHesap({ hesapKodu, bankaAdi, hesapNo, bakiye });
-    showToast("Hesap eklendi", "success");
-    _formTemizle();
-    const form = document.getElementById("yeniHesapForm");
-    const btnAc = document.getElementById("btnYeniHesapAc");
-    if (form) form.style.display = "none";
-    if (btnAc) btnAc.style.display = "";
-    await _renderHesaplar();
+    await withLoadingBtn(btn, async () => {
+      await bankaApi.createHesap({ hesapKodu, bankaAdi, hesapNo, bakiye });
+      showToast("Hesap eklendi", "success");
+      _formTemizle();
+      const form = document.getElementById("yeniHesapForm");
+      const btnAc = document.getElementById("btnYeniHesapAc");
+      if (form) form.style.display = "none";
+      if (btnAc) btnAc.style.display = "";
+      await _renderHesaplar();
+    });
   } catch (e) {
     showToast(e.message || "Hesap kaydedilemedi", "error");
   }
@@ -686,44 +689,38 @@ function _bindIslemKodlariPanel() {
 
   if (kaydetBtn) {
     kaydetBtn.addEventListener("click", async () => {
-      const kod     = document.getElementById("yeniKodKod")?.value.trim();
+      const kod      = document.getElementById("yeniKodKod")?.value.trim();
       const aciklama = document.getElementById("yeniKodAciklama")?.value.trim();
       const direction = document.getElementById("yeniKodYon")?.value || "OUT";
 
       if (!kod) { showToast("İşlem kodu zorunludur", "error"); return; }
 
-      kaydetBtn.disabled = true;
       try {
-        await bankaApi.createIslemKodu({ kod, aciklama, direction });
-        showToast("Kod eklendi", "success");
-        document.getElementById("yeniKodKod").value      = "";
-        document.getElementById("yeniKodAciklama").value = "";
-        await _renderIslemKodlariAdmin();
+        await withLoadingBtn(kaydetBtn, async () => {
+          await bankaApi.createIslemKodu({ kod, aciklama, direction });
+          showToast("Kod eklendi", "success");
+          document.getElementById("yeniKodKod").value      = "";
+          document.getElementById("yeniKodAciklama").value = "";
+          await _renderIslemKodlariAdmin();
+        });
       } catch (e) {
         showToast(e.message || "Kod eklenemedi", "error");
-      } finally {
-        kaydetBtn.disabled = false;
       }
     });
   }
 
   if (hazirBtn) {
     hazirBtn.addEventListener("click", async () => {
-      hazirBtn.disabled = true;
-      hazirBtn.innerHTML = '<i class="zmdi zmdi-refresh zmdi-hc-spin"></i> Ekleniyor...';
-      let basari = 0, hata = 0;
-      for (const k of _HAZIR_KODLAR) {
-        try {
-          await bankaApi.createIslemKodu(k);
-          basari++;
-        } catch {
-          hata++;
-        }
-      }
-      showToast(`${basari} kod eklendi${hata ? `, ${hata} hata` : ""}`, hata ? "warning" : "success");
-      await _renderIslemKodlariAdmin();
-      hazirBtn.disabled = false;
-      hazirBtn.innerHTML = '<i class="zmdi zmdi-playlist-plus"></i> 309.xx Kodlarını Toplu Ekle';
+      try {
+        await withLoadingBtn(hazirBtn, async () => {
+          let basari = 0, hata = 0;
+          for (const k of _HAZIR_KODLAR) {
+            try { await bankaApi.createIslemKodu(k); basari++; } catch { hata++; }
+          }
+          showToast(`${basari} kod eklendi${hata ? `, ${hata} hata` : ""}`, hata ? "warning" : "success");
+          await _renderIslemKodlariAdmin();
+        });
+      } catch { /* withLoadingBtn zaten butonu geri açtı */ }
     });
   }
 }

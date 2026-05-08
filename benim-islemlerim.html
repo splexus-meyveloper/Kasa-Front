@@ -50,6 +50,8 @@
                       <option value="ATINC_ALTIKARDESLER">ATINÇ ALTIKARDEŞLER</option>
                       <option value="KIVANC_ALTIKARDESLER">KIVANÇ ALTIKARDEŞLER</option>
                       <option value="PERVIN_ALTIKARDESLER">PERVİN ALTIKARDEŞLER</option>
+                      <option value="VERGI_ODEMESI">VERGİ ÖDEMESİ</option>
+                      <option value="KIRA">KİRA</option>
                       <option value="CEZA">CEZA</option>
                       <option value="YAKIT">YAKIT</option>
                       <option value="DIGER">DİĞER</option>
@@ -66,13 +68,33 @@
                     </select>
                   </div>
 
+                  <!-- Tahsilat Türü alt filtre -->
+                  <div id="myActTahsilatWrapper" style="display:none;flex-direction:column;gap:4px">
+                    <label style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.4px">Tahsilat Türü</label>
+                    <select id="myActTahsilatTuru" style="height:36px;min-width:160px;font-size:13px;padding:0 10px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:#0f172a;color:#e2e8f0;outline:none">
+                      <option value="">Tümü</option>
+                      <option value="CASH">Kasaya Tahsil</option>
+                      <option value="BANK">Bankaya Tahsil</option>
+                      <option value="COLLATERAL">Teminata Çıktı</option>
+                    </select>
+                  </div>
+
                   <!-- POS Tipi alt filtre -->
                   <div id="myActPosTipiWrapper" style="display:none;flex-direction:column;gap:4px">
                     <label style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.4px">POS Tipi</label>
-                    <select id="myActPosTipi" style="height:36px;min-width:160px;font-size:13px;padding:0 10px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:#0f172a;color:#e2e8f0;outline:none">
+                    <select id="myActPosTipi" onchange="onMyActPosTypeChange()" style="height:36px;min-width:160px;font-size:13px;padding:0 10px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:#0f172a;color:#e2e8f0;outline:none">
                       <option value="">Tümü</option>
                       <option value="ALTIKARDESLER_POS">ALTIKARDEŞLER POS</option>
                       <option value="TEDARIKCI_POS">TEDARİKÇİ POS</option>
+                      <option value="YAZARKASA_POS">Yazarkasa POS</option>
+                    </select>
+                  </div>
+
+                  <!-- Terminal alt filtre -->
+                  <div id="myActPosTerminalWrapper" style="display:none;flex-direction:column;gap:4px">
+                    <label style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.4px">Terminal</label>
+                    <select id="myActPosTerminal" style="height:36px;min-width:160px;font-size:13px;padding:0 10px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:#0f172a;color:#e2e8f0;outline:none">
+                      <option value="">Tümü</option>
                     </select>
                   </div>
 
@@ -196,6 +218,29 @@
       <div class="kasa-form-group">
         <label for="editNoteDueDate">Vade Tarihi</label>
         <input id="editNoteDueDate" class="kasa-modal-input" type="date">
+      </div>
+    </div>
+
+    <!-- POS alanları -->
+    <div id="editPosFields" style="display:none">
+      <div class="kasa-form-group">
+        <label for="editPosType">POS Tipi</label>
+        <select id="editPosType" class="kasa-modal-input" onchange="onEditPosTypeChange()">
+          <option value="">Seçiniz...</option>
+          <option value="ALTIKARDESLER_POS">ALTIKARDEŞLER POS</option>
+          <option value="TEDARIKCI_POS">TEDARİKÇİ POS</option>
+          <option value="YAZARKASA_POS">Yazarkasa POS</option>
+        </select>
+      </div>
+      <div class="kasa-form-group">
+        <label for="editPosTerminal">Terminal</label>
+        <select id="editPosTerminal" class="kasa-modal-input">
+          <option value="">Önce POS Tipi Seçiniz...</option>
+        </select>
+      </div>
+      <div class="kasa-form-group">
+        <label for="editPosDate">İşlem Tarihi <span style="color:#64748b;font-size:11px">(opsiyonel)</span></label>
+        <input id="editPosDate" class="kasa-modal-input" type="datetime-local">
       </div>
     </div>
 

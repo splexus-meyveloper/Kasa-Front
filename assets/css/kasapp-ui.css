@@ -872,6 +872,11 @@ opacity:1;
   color:#fff;
 }
 
+.check-status.status-collateral{
+  background:#f59e0b;
+  color:#fff;
+}
+
 .check-status.status-overdue{
   background:#dc3545;
   color:#fff;

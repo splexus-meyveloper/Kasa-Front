@@ -37,7 +37,12 @@ NOTE_UPDATE_REQUEST_REJECTED:   '<span class="badge badge-danger">Senet Düzenle
 LOAN_UPDATE_REQUEST:            '<span class="badge badge-warning">Kredi Düzenleme</span>',
 LOAN_UPDATE_REQUEST_CREATED:    '<span class="badge badge-warning">Kredi Düzenleme Talebi</span>',
 LOAN_UPDATE_REQUEST_APPROVED:   '<span class="badge badge-success">Kredi Düzenleme Onaylandı</span>',
-LOAN_UPDATE_REQUEST_REJECTED:   '<span class="badge badge-danger">Kredi Düzenleme Reddedildi</span>'
+LOAN_UPDATE_REQUEST_REJECTED:   '<span class="badge badge-danger">Kredi Düzenleme Reddedildi</span>',
+
+POS_UPDATE_REQUEST:             '<span class="badge badge-warning">POS Düzenleme</span>',
+POS_UPDATE_REQUEST_CREATED:     '<span class="badge badge-warning">POS Düzenleme Talebi</span>',
+POS_UPDATE_REQUEST_APPROVED:    '<span class="badge badge-success">POS Düzenleme Onaylandı</span>',
+POS_UPDATE_REQUEST_REJECTED:    '<span class="badge badge-danger">POS Düzenleme Reddedildi</span>'
 
 };
 
@@ -74,7 +79,7 @@ function translateAction(action){
 
 
 
-async function loadMovements(page = 0, start = "", end = "", action = "", username = "", q = "", masrafTuru = "", masrafOdemeSekli = ""){
+async function loadMovements(page = 0, start = "", end = "", action = "", username = "", q = "", masrafTuru = "", masrafOdemeSekli = "", tahsilatTuru = ""){
 
     const token   = sessionStorage.getItem("token");
     const isAdmin = sessionStorage.getItem("role") === "ADMIN";
@@ -86,8 +91,9 @@ async function loadMovements(page = 0, start = "", end = "", action = "", userna
 
     // POS filtresi → ayrı render
     if(action === "POS_LOG"){
-        const posTipi = document.getElementById("filterPosTipi")?.value || "";
-        return loadAndRenderPosLogs({ startDate: start, endDate: end, user: username, posTipi });
+        const posTipi     = document.getElementById("filterPosTipi")?.value     || "";
+        const posTerminal = document.getElementById("filterPosTerminal")?.value  || "";
+        return loadAndRenderPosLogs({ startDate: start, endDate: end, user: username, posTipi, posTerminal });
     }
 
     if(action === "LOAN_INSTALLMENT"){
@@ -123,6 +129,10 @@ async function loadMovements(page = 0, start = "", end = "", action = "", userna
                 if (masrafOdemeSekli && meta.paymentMethod !== masrafOdemeSekli) return false;
                 return true;
             });
+        }
+        // Tahsilat türü filtresi (CHECK_COLLECT / NOTE_COLLECT)
+        if ((action === "CHECK_COLLECT" || action === "NOTE_COLLECT") && tahsilatTuru) {
+            filtered = filtered.filter(item => extractCollectType(item) === tahsilatTuru);
         }
 
         renderTable(filtered);
@@ -184,6 +194,7 @@ async function loadChangeRequests(token){
 const POS_TYPE_LABELS = {
     ALTIKARDESLER_POS: "ALTIKARDEŞLER POS",
     TEDARIKCI_POS:     "TEDARİKÇİ POS",
+    YAZARKASA_POS:     "Yazarkasa POS",
 };
 
 const PLAKA_LABELS = {
@@ -205,13 +216,24 @@ function prettifyDesc(desc) {
 
 function buildDisplayDesc(item) {
     const action = item.action || "";
+    if (action === "CHECK_COLLECT") {
+        const ct = extractCollectType(item);
+        let desc = ct === "COLLATERAL" ? "Çek teminata çıktı"
+                 : ct === "BANK"       ? "Çek bankaya tahsil edildi"
+                 : "Çek kasaya tahsil edildi";
+        if (item.checkNo) desc += " • " + item.checkNo;
+        return desc;
+    }
     if (action === "NOTE_IN") {
         let desc = "Senet alındı";
         if (item.noteNo) desc += " • " + item.noteNo;
         return desc;
     }
     if (action === "NOTE_COLLECT") {
-        let desc = "Senet tahsil edildi";
+        const ct = extractCollectType(item);
+        let desc = ct === "COLLATERAL" ? "Senet teminata çıktı"
+                 : ct === "BANK"       ? "Senet bankaya tahsil edildi"
+                 : "Senet kasaya tahsil edildi";
         if (item.noteNo) desc += " • " + item.noteNo;
         return desc;
     }
@@ -278,6 +300,49 @@ function extractExpenseMeta(item) {
     };
 }
 
+function extractCollectType(item) {
+    const dj = parseMaybeJson(item.detailsJson || item.details || {});
+    const payload  = parseMaybeJson(dj?.payload);
+    const request  = parseMaybeJson(dj?.request);
+    const data     = parseMaybeJson(dj?.data);
+    const candidates = [payload, request, data, dj, item].filter(Boolean);
+
+    const deepFind = (source, key, seen = new Set()) => {
+        if (!source || typeof source !== "object" || seen.has(source)) return "";
+        seen.add(source);
+        if (source[key] !== undefined && source[key] !== null && source[key] !== "") return String(source[key]);
+        for (const value of Object.values(source)) {
+            const parsed = parseMaybeJson(value);
+            const found  = deepFind(parsed, key, seen);
+            if (found !== "") return found;
+        }
+        return "";
+    };
+
+    for (const source of candidates) {
+        const found = deepFind(source, "collectType");
+        if (found) return found;
+    }
+    // Açıklama metninden fallback
+    const desc = (item.description || "").toLowerCase();
+    if (desc.includes("teminat") || desc.includes("collateral")) return "COLLATERAL";
+    if (desc.includes("banka")   || desc.includes("bank"))       return "BANK";
+    return "CASH";
+}
+
+function _collectActionBadge(item) {
+    const action  = item.action || "";
+    const isCheck = action === "CHECK_COLLECT";
+    const isNote  = action === "NOTE_COLLECT";
+    if (!isCheck && !isNote) return actionBadge(action);
+
+    const prefix = isCheck ? "Çek" : "Senet";
+    const ct = extractCollectType(item);
+    if (ct === "BANK")       return `<span class="badge" style="background:#3b82f6;color:#fff">${prefix} Bankaya Tahsil</span>`;
+    if (ct === "COLLATERAL") return `<span class="badge" style="background:#f59e0b;color:#fff">${prefix} Teminata Çıktı</span>`;
+    return `<span class="badge badge-success">${prefix} Kasaya Tahsil</span>`;
+}
+
 function paymentMethodBadge(item) {
     if ((item.action || "") !== "EXPENSE_ADD") return "";
     const method = extractExpenseMeta(item).paymentMethod;
@@ -326,14 +391,17 @@ list.forEach(item => {
     const entityType  = item.entityType || detailsJson.entityType || item._entityType || null;
     const hasDetail   = !!(oldData || newData);
 
-    const isIncome = !isChangeReq && (
-              item.action === "CASH_INCOME"
-              || item.action === "CHECK_IN"
-              || item.action === "CHECK_COLLECT"
-              || item.action === "NOTE_IN"
-              || item.action === "NOTE_COLLECT"
-              || item.action === "LOAN_CREATE"
-              || item.action === "POS_LOG");
+    const isIncome = !isChangeReq && (() => {
+        if (item.direction === "IN")  return true;
+        if (item.direction === "OUT" || item.direction === "NONE") return false;
+        return item.action === "CASH_INCOME"
+            || item.action === "CHECK_IN"
+            || item.action === "CHECK_COLLECT"
+            || item.action === "NOTE_IN"
+            || item.action === "NOTE_COLLECT"
+            || item.action === "LOAN_CREATE"
+            || item.action === "POS_LOG";
+    })();
 
     if (!isChangeReq) {
         const amount = Number(item.amount || 0);
@@ -362,7 +430,7 @@ list.forEach(item => {
     tr.innerHTML = `
         <td style="vertical-align:middle">${date}</td>
         ${showUser ? `<td style="vertical-align:middle">${escapeHtml(item.username)}</td>` : ""}
-        <td class="text-center" style="vertical-align:middle">${actionBadge(item.action)}</td>
+        <td class="text-center" style="vertical-align:middle">${_collectActionBadge(item)}</td>
         <td style="vertical-align:middle">${descCell}</td>
         <td class="text-end" style="vertical-align:middle">
             <span class="${isChangeReq ? "" : amountClass}" style="font-weight:600">${amountCell}</span>
@@ -419,9 +487,10 @@ const VALUE_LABELS = {
     APPROVED:  "Onaylandı",
     REJECTED:  "Reddedildi",
     PORTFOYDE: "Kasada",
-    TAHSIL_EDILDI: "Tahsil Edildi",
-    CIRO_EDILDI:   "Ciro Edildi",
-    ODENDI:        "Ödendi",
+    TAHSIL_EDILDI:  "Tahsil Edildi",
+    CIRO_EDILDI:    "Ciro Edildi",
+    TEMINATA_CIKTI: "Teminata Çıktı",
+    ODENDI:         "Ödendi",
     MUSTERI: "Müşteri",
     KENDI:   "Kendi",
 };
@@ -574,19 +643,21 @@ function applyFilter(){
     const endDate    = document.getElementById("filterEndDate").value;
     const type       = document.getElementById("filterType").value;
     const user       = document.getElementById("filterUser").value;
-    const masrafTuru = document.getElementById("filterMasrafTuru")?.value || "";
+    const masrafTuru    = document.getElementById("filterMasrafTuru")?.value    || "";
     const masrafOdemeSekli = document.getElementById("filterMasrafOdemeSekli")?.value || "";
-    const posTipi    = document.getElementById("filterPosTipi")?.value   || "";
+    const tahsilatTuru  = document.getElementById("filterTahsilatTuru")?.value  || "";
+    const posTipi       = document.getElementById("filterPosTipi")?.value       || "";
+    const posTerminal   = document.getElementById("filterPosTerminal")?.value   || "";
 
     if (!type) {
         loadMovementsAndPos(startDate, endDate, user);
         return;
     }
     if (type === "POS_LOG") {
-        loadAndRenderPosLogs({ startDate, endDate, user, posTipi });
+        loadAndRenderPosLogs({ startDate, endDate, user, posTipi, posTerminal });
         return;
     }
-    loadMovements(0, startDate, endDate, type, user, "", masrafTuru, masrafOdemeSekli);
+    loadMovements(0, startDate, endDate, type, user, "", masrafTuru, masrafOdemeSekli, tahsilatTuru);
 }
 
 function clearFilter(){
@@ -601,27 +672,82 @@ function clearFilter(){
     if (masrafEl) masrafEl.value = "";
     const masrafOdemeEl = document.getElementById("filterMasrafOdemeSekli");
     if (masrafOdemeEl) masrafOdemeEl.value = "";
+    const tahsilatEl = document.getElementById("filterTahsilatTuru");
+    if (tahsilatEl) tahsilatEl.value = "";
     const posTipiEl = document.getElementById("filterPosTipi");
     if (posTipiEl) posTipiEl.value = "";
+    const posTerminalEl = document.getElementById("filterPosTerminal");
+    if (posTerminalEl) { posTerminalEl.value = ""; posTerminalEl.innerHTML = '<option value="">Tümü</option>'; }
 
     const masrafWrapper = document.getElementById("masrafTuruWrapper");
     if (masrafWrapper) masrafWrapper.style.display = "none";
     const masrafOdemeWrapper = document.getElementById("masrafOdemeWrapper");
     if (masrafOdemeWrapper) masrafOdemeWrapper.style.display = "none";
+    const tahsilatWrapper = document.getElementById("tahsilatTuruWrapper");
+    if (tahsilatWrapper) tahsilatWrapper.style.display = "none";
     const posTipiWrapper = document.getElementById("posTipiWrapper");
     if (posTipiWrapper) posTipiWrapper.style.display = "none";
+    const posTerminalWrapper = document.getElementById("posTerminalWrapper");
+    if (posTerminalWrapper) posTerminalWrapper.style.display = "none";
 
     loadMovementsAndPos();
 }
 
+function _getAdminTerminalList(posType) {
+    if (typeof _getPosTerminalList === "function") return _getPosTerminalList(posType);
+    const fallback = {
+        ALTIKARDESLER_POS: [
+            { v: "VAKIFBANK", l: "VAKIFBANK" }, { v: "GARANTIBBVA", l: "GARANTİBBVA" },
+            { v: "IS_BANKASI", l: "İŞ BANKASI" }, { v: "YAPI_KREDI", l: "YAPI KREDİ" },
+            { v: "HALKBANK", l: "HALKBANK" }, { v: "TEB", l: "TEB" },
+        ],
+        TEDARIKCI_POS: [
+            { v: "SAMPA", l: "SAMPA" }, { v: "HD_KAUCUK", l: "HD KAUÇUK" },
+            { v: "INCITAS", l: "İNCİTAŞ" }, { v: "MAYSAN", l: "MAYSAN" },
+            { v: "MAKPARSAN", l: "MAKPARSAN" }, { v: "ROTA", l: "ROTA" },
+            { v: "OTO_KARAMAN", l: "OTO KARAMAN" },
+        ],
+        YAZARKASA_POS: [
+            { v: "YAZARKASA_ZIRAAT", l: "Ziraat Bankası" }, { v: "YAZARKASA_TEB", l: "TEB" },
+        ],
+    };
+    return fallback[posType] || [];
+}
+
+function onAdminPosTypeChange() {
+    const posType = document.getElementById("filterPosTipi")?.value || "";
+    const tw      = document.getElementById("posTerminalWrapper");
+    const sel     = document.getElementById("filterPosTerminal");
+    if (!tw || !sel) return;
+    if (!posType) {
+        tw.style.display = "none";
+        sel.innerHTML = '<option value="">Tümü</option>';
+        return;
+    }
+    const terminals = _getAdminTerminalList(posType);
+    sel.innerHTML = '<option value="">Tümü</option>' +
+        terminals.map(t => `<option value="${t.v}">${t.l}</option>`).join("");
+    tw.style.display = "";
+}
+window.onAdminPosTypeChange = onAdminPosTypeChange;
+
 function onAdminFilterTypeChange() {
-    const type          = document.getElementById("filterType")?.value || "";
-    const masrafWrapper = document.getElementById("masrafTuruWrapper");
+    const type               = document.getElementById("filterType")?.value || "";
+    const masrafWrapper      = document.getElementById("masrafTuruWrapper");
     const masrafOdemeWrapper = document.getElementById("masrafOdemeWrapper");
-    const posTipiWrapper = document.getElementById("posTipiWrapper");
-    if (masrafWrapper)  masrafWrapper.style.display  = type === "EXPENSE_ADD" ? "" : "none";
+    const tahsilatWrapper    = document.getElementById("tahsilatTuruWrapper");
+    const posTipiWrapper     = document.getElementById("posTipiWrapper");
+    const posTerminalWrapper = document.getElementById("posTerminalWrapper");
+    const isCollect          = type === "CHECK_COLLECT" || type === "NOTE_COLLECT";
+    if (masrafWrapper)      masrafWrapper.style.display      = type === "EXPENSE_ADD" ? "" : "none";
     if (masrafOdemeWrapper) masrafOdemeWrapper.style.display = type === "EXPENSE_ADD" ? "" : "none";
-    if (posTipiWrapper) posTipiWrapper.style.display = type === "POS_LOG"     ? "" : "none";
+    if (tahsilatWrapper)    tahsilatWrapper.style.display    = isCollect              ? "" : "none";
+    if (posTipiWrapper)     posTipiWrapper.style.display     = type === "POS_LOG"     ? "" : "none";
+    if (posTerminalWrapper) posTerminalWrapper.style.display = "none";
+    const posTipiSel = document.getElementById("filterPosTipi");
+    if (posTipiSel) posTipiSel.value = "";
+    const termSel = document.getElementById("filterPosTerminal");
+    if (termSel) termSel.innerHTML = '<option value="">Tümü</option>';
 }
 
 window.onAdminFilterTypeChange = onAdminFilterTypeChange;
@@ -657,6 +783,9 @@ function _posToRow(l) {
         createdAt:   isoDate || null,
         username:    l.username || l.user || "-",
         action:      "POS_LOG",
+        posType:     l.posType  || "",
+        terminal:    l.terminal || "",
+        entityId:    l.id       || null,
         description: [posLabel, l.terminal].filter(Boolean).join(" — ") + (l.description ? " | " + prettifyDesc(l.description) : ""),
         amount:      l.amount || 0,
     };
@@ -675,8 +804,9 @@ async function _fetchPosRows(filters = {}) {
     const data = await res.json();
     let logs = Array.isArray(data) ? data : (data.content || data.data || []);
 
-    if (filters.posTipi) logs = logs.filter(l => l.posType === filters.posTipi);
-    if (filters.user)    logs = logs.filter(l => (l.username || l.user || "") === filters.user);
+    if (filters.posTipi)     logs = logs.filter(l => l.posType  === filters.posTipi);
+    if (filters.posTerminal) logs = logs.filter(l => l.terminal === filters.posTerminal);
+    if (filters.user)        logs = logs.filter(l => (l.username || l.user || "") === filters.user);
 
     return logs.map(_posToRow);
 }

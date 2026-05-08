@@ -9,9 +9,10 @@ const EXPENSE_LABELS = {
   ILETISIM: "İletişim",
   KARGO:    "Kargo",
   YAKIT:    "Yakıt",
-  KIRA:     "Kira",
-  MAAS:     "Maaş",
-  DIGER:    "Diğer",
+  KIRA:          "Kira",
+  VERGI_ODEMESI: "Vergi Ödemesi",
+  MAAS:          "Maaş",
+  DIGER:         "Diğer",
 };
 
 const _R_PAYMENT_METHOD_LABELS = {

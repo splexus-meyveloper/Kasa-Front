@@ -37,6 +37,8 @@ const EXPENSE_TYPE_LABELS = {
   ATINC_ALTIKARDESLER: "ATINÇ ALTIKARDEŞLER",
   KIVANC_ALTIKARDESLER: "KIVANÇ ALTIKARDEŞLER",
   PERVIN_ALTIKARDESLER: "PERVİN ALTIKARDEŞLER",
+  VERGI_ODEMESI: "Vergi Ödemesi",
+  KIRA: "Kira",
   CEZA: "CEZA",
   YAKIT: "YAKIT",
   DIGER: "DİĞER",
@@ -97,11 +99,14 @@ async function addExpense() {
 
   if (plaka) payload.plaka = plaka;
 
+  const btn = document.getElementById("expenseSaveBtn");
   try {
-    await expenseStore.addExpense(payload);
-    showToast("Masraf eklendi", "success");
-    _resetExpenseForm();
-    setTimeout(() => loadPage("dashboard.html"), 1200);
+    await withLoadingBtn(btn, async () => {
+      await expenseStore.addExpense(payload);
+      showToast("Masraf eklendi", "success");
+      _resetExpenseForm();
+      setTimeout(() => loadPage("dashboard.html"), 1200);
+    });
   } catch (e) {
     console.error("EXPENSE ERROR:", e);
     showToast("Masraf eklenemedi: " + e.message, "error");

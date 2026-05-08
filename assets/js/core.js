@@ -134,6 +134,57 @@ function animateValue(el, endValue) {
 
 
 // ==============================
+// SUBMIT BUTTON GUARD
+// ==============================
+
+/**
+ * Butonu disabled yaparak verilen async işlevi çalıştırır.
+ * İşlev başarıyla tamamlanırsa buton disabled kalır (modal kapanır / liste yenilenir).
+ * Hata oluşursa butonu eski haline getirir.
+ * 409 → çift gönderim mesajı, 400 bekleyen talep mesajı otomatik gösterilir.
+ */
+async function withLoadingBtn(btn, asyncFn) {
+    if (!btn || btn.disabled) return;
+    const originalHTML = btn.innerHTML;
+    const originalWidth = btn.offsetWidth;
+    btn.disabled = true;
+    btn.style.minWidth = originalWidth + "px";
+    btn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px">'
+        + '<svg style="animation:spin .8s linear infinite;width:14px;height:14px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>'
+        + 'İşleniyor...</span>';
+
+    const _restore = () => {
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+        btn.style.minWidth = "";
+    };
+
+    try {
+        await asyncFn();
+        _restore();
+    } catch (err) {
+        _restore();
+        const status = err?.status || err?.statusCode;
+        if (status === 409) {
+            showToast("Bu işlem zaten gönderildi, lütfen sonucu bekleyin.", "error");
+        } else if (status === 400 && (err?.message || "").includes("bekleyen")) {
+            showToast("Bu kayıt için bekleyen bir düzenleme talebi zaten var.", "error");
+        } else {
+            throw err;
+        }
+    }
+}
+
+// CSS spin keyframe (sadece 1 kez enjekte edilir)
+(function () {
+    if (document.getElementById("__spin_kf")) return;
+    const s = document.createElement("style");
+    s.id = "__spin_kf";
+    s.textContent = "@keyframes spin{to{transform:rotate(360deg)}}";
+    document.head.appendChild(s);
+})();
+
+// ==============================
 // PROGRESS BAR
 // ==============================
 function setAutoBar(barId, value, maxValue) {
