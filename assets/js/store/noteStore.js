@@ -7,8 +7,7 @@ const noteStore = {
   },
 
   async fetchPortfolioNotes() {
-    this.notes = await noteApi.getPortfolio();
-    return this.notes;
+    return await noteApi.getPortfolio();
   },
 
   async createNote(data) {
@@ -17,6 +16,11 @@ const noteStore = {
 
   removeNote(id) {
     this.notes = this.notes.filter(n => String(n.id) !== String(id));
+  },
+
+  patchNote(id, data) {
+    const idx = this.notes.findIndex(n => String(n.id) === String(id));
+    if (idx !== -1) this.notes[idx] = { ...this.notes[idx], ...data };
   }
 };
 

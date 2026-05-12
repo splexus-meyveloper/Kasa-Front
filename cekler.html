@@ -1,25 +1,53 @@
 <h3 class="mb-20">Çek Portföyü</h3>
 
-<div class="check-tab-bar">
-  <button class="check-tab-btn active" data-tab="musteri">
+<!-- ÜST SEKME: Müşteri / Kendi -->
+<div class="check-tab-bar" id="checkMainTabBar">
+  <button class="check-tab-btn active" data-main-tab="musteri">
     <i class="zmdi zmdi-accounts"></i> Müşteri Çekleri
   </button>
-  <button class="check-tab-btn" data-tab="kendi">
+  <button class="check-tab-btn" data-main-tab="kendi">
     <i class="zmdi zmdi-receipt"></i> Çeklerim
   </button>
 </div>
 
-
-
-    <div id="checkTab-musteri" class="check-tab-panel active">
-      <div class="row" id="checkContainer-musteri">
-      </div>
-    </div>
-
-    <div id="checkTab-kendi" class="check-tab-panel">
-      <div class="row" id="checkContainer-kendi">
-      </div>
-    </div>
-
+<!-- MÜŞTERİ ÇEKLERİ PANELİ -->
+<div id="mainTab-musteri" class="check-main-panel active">
+  <div class="check-sub-tab-bar">
+    <button class="check-sub-btn active" data-sub="musteri-portfoyde">
+      <span class="sub-dot dot-blue"></span> Portföyde
+      <span class="sub-count" id="cnt-musteri-portfoyde">0</span>
+    </button>
+    <button class="check-sub-btn" data-sub="musteri-tamamlanan">
+      <span class="sub-dot dot-green"></span> Tamamlanan
+      <span class="sub-count" id="cnt-musteri-tamamlanan">0</span>
+    </button>
+    <button class="check-sub-btn" data-sub="musteri-sorunlu">
+      <span class="sub-dot dot-red"></span> Sorunlu
+      <span class="sub-count" id="cnt-musteri-sorunlu">0</span>
+    </button>
   </div>
+  <div id="musteri-portfoyde" class="check-sub-panel active"><div class="row" id="checkContainer-musteri-portfoyde"></div></div>
+  <div id="musteri-tamamlanan" class="check-sub-panel"><div class="row" id="checkContainer-musteri-tamamlanan"></div></div>
+  <div id="musteri-sorunlu"   class="check-sub-panel"><div class="row" id="checkContainer-musteri-sorunlu"></div></div>
+</div>
+
+<!-- ÇEKLERİM PANELİ -->
+<div id="mainTab-kendi" class="check-main-panel">
+  <div class="check-sub-tab-bar">
+    <button class="check-sub-btn active" data-sub="kendi-portfoyde">
+      <span class="sub-dot dot-blue"></span> Portföyde
+      <span class="sub-count" id="cnt-kendi-portfoyde">0</span>
+    </button>
+    <button class="check-sub-btn" data-sub="kendi-tamamlanan">
+      <span class="sub-dot dot-green"></span> Tamamlanan
+      <span class="sub-count" id="cnt-kendi-tamamlanan">0</span>
+    </button>
+    <button class="check-sub-btn" data-sub="kendi-sorunlu">
+      <span class="sub-dot dot-red"></span> Sorunlu
+      <span class="sub-count" id="cnt-kendi-sorunlu">0</span>
+    </button>
+  </div>
+  <div id="kendi-portfoyde" class="check-sub-panel active"><div class="row" id="checkContainer-kendi-portfoyde"></div></div>
+  <div id="kendi-tamamlanan" class="check-sub-panel"><div class="row" id="checkContainer-kendi-tamamlanan"></div></div>
+  <div id="kendi-sorunlu"   class="check-sub-panel"><div class="row" id="checkContainer-kendi-sorunlu"></div></div>
 </div>

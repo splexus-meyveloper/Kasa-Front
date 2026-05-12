@@ -20,6 +20,8 @@ function getPageKey(page) {
   if (normalized.includes("rapor")) return "reports";
   if (normalized.includes("banka-hesaplari")) return "bankaHesaplar";
   if (normalized.includes("banka-detay")) return "bankaDetay";
+  if (normalized.includes("transfer-olustur")) return "transferOlustur";
+  if (normalized.includes("transfer-listesi")) return "transferListesi";
 
   return "default";
 }
@@ -139,6 +141,14 @@ bankaDetay: () => {
 
 adminLogs: () => {
   if (window.initAdminLogs) window.initAdminLogs();
+},
+
+transferOlustur: () => {
+  if (window.initTransferOlustur) window.initTransferOlustur();
+},
+
+transferListesi: () => {
+  if (window.loadTransferListesi) window.loadTransferListesi();
 },
 
   default: () => {

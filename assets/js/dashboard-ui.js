@@ -408,9 +408,11 @@ async function loadDashboard(selectedUserId = null) {
     setAutoBar("barAylikGiris",  d.monthlyNet     || 0, 500000);
     setAutoBar("barKredi",       d.totalLoanDebt  || 0, 1000000);
 
-    // Portföy grafiği sadece admin için (normal kullanıcı portfolio endpoint'lerine erişemez)
+    // Portföy grafiği sadece admin için
     if (sessionStorage.getItem("role") === "ADMIN") {
       loadPortfolio(d);
+      _renderOtherBranch(d.otherBranchSummary);
+      _updateTransferBadge(d.pendingTransferCount);
     }
 
   } catch (e) {
@@ -518,3 +520,31 @@ document.addEventListener("darkModeChanged", () => {
 window.loadDashboard  = loadDashboard;
 window.loadChart      = loadChart;
 window.initDashboard  = initDashboard;
+
+function _renderOtherBranch(summary) {
+  const card = document.getElementById("otherBranchCard");
+  if (!card) return;
+  if (!summary) { card.style.display = "none"; return; }
+
+  card.style.display = "block";
+  const name    = document.getElementById("otherBranchName");
+  const balance = document.getElementById("otherBranchBalance");
+  const checks  = document.getElementById("otherBranchChecks");
+  const pending = document.getElementById("otherBranchPending");
+
+  if (name)    name.textContent    = "Adapazarı Şube";
+  if (balance) animateValue(balance, Number(summary.balance || 0));
+  if (checks)  animateValue(checks,  Number(summary.checkPortfolioTotal || 0));
+  if (pending) pending.textContent = summary.pendingTransferCount || "0";
+}
+
+function _updateTransferBadge(count) {
+  const badge = document.getElementById("menuTransferBadge");
+  if (!badge) return;
+  if (count && count > 0) {
+    badge.textContent    = count;
+    badge.style.display  = "inline";
+  } else {
+    badge.style.display  = "none";
+  }
+}

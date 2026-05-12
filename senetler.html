@@ -1,13 +1,21 @@
-<h3 class="mb-30">Senet Portföyü</h3>
+<h3 class="mb-20">Senet Portföyü</h3>
 
-<div class="col-12">
-    <div class="box-body">
-
-        <div class="row" id="noteContainer">
-
-            <!-- Senet kartları buraya gelecek -->
-
-        </div>
-
-    </div>
+<!-- ALT SEKMELER -->
+<div class="check-sub-tab-bar" id="noteSubTabBar">
+  <button class="check-sub-btn active" data-sub="note-portfoyde">
+    <span class="sub-dot dot-blue"></span> Portföyde
+    <span class="sub-count" id="cnt-note-portfoyde">0</span>
+  </button>
+  <button class="check-sub-btn" data-sub="note-tamamlanan">
+    <span class="sub-dot dot-green"></span> Tamamlanan
+    <span class="sub-count" id="cnt-note-tamamlanan">0</span>
+  </button>
+  <button class="check-sub-btn" data-sub="note-sorunlu">
+    <span class="sub-dot dot-red"></span> Sorunlu
+    <span class="sub-count" id="cnt-note-sorunlu">0</span>
+  </button>
 </div>
+
+<div id="note-portfoyde" class="check-sub-panel active"><div class="row" id="noteContainer-portfoyde"></div></div>
+<div id="note-tamamlanan" class="check-sub-panel"><div class="row" id="noteContainer-tamamlanan"></div></div>
+<div id="note-sorunlu"   class="check-sub-panel"><div class="row" id="noteContainer-sorunlu"></div></div>

@@ -2865,3 +2865,207 @@ body.dark-mode .top-report.dashboard-card[style*="border-left"] {
 [data-tooltip]:first-child::after  { left: 12px; transform: translateX(0); }
 [data-tooltip]:last-child::before  { left: auto; right: 0; transform: translateX(0); }
 [data-tooltip]:last-child::after   { left: auto; right: 12px; transform: translateX(0); }
+
+/* ==============================
+   ÇEK / SENET SEKMELİ SİSTEM
+============================== */
+
+.check-main-panel {
+  display: none;
+}
+.check-main-panel.active {
+  display: block;
+}
+
+.check-sub-tab-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.check-sub-btn {
+  background: #1e1e1e;
+  border: 1.5px solid #333;
+  color: #888;
+  padding: 8px 18px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  transition: all 0.18s ease;
+}
+
+.check-sub-btn:hover {
+  color: #fff;
+  border-color: #555;
+}
+
+.check-sub-btn.active {
+  background: #2a2a2a;
+  border-color: #3a7bd5;
+  color: #fff;
+}
+
+.check-sub-panel {
+  display: none;
+}
+.check-sub-panel.active {
+  display: block;
+}
+
+.sub-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.dot-blue  { background: #3a7bd5; }
+.dot-green { background: #28a745; }
+.dot-red   { background: #dc3545; }
+
+.sub-count {
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 18px;
+  text-align: center;
+}
+
+.check-sub-btn.active .sub-count {
+  background: rgba(58,123,213,0.25);
+  color: #7ab3ff;
+}
+
+/* Yeni statü badge renkleri */
+.check-status.status-paid {
+  background: #6c757d;
+  color: #fff;
+}
+.check-status.status-bad-debt {
+  background: #dc3545;
+  color: #fff;
+}
+.check-status.status-protested {
+  background: #c0392b;
+  color: #fff;
+}
+.check-status.status-returned {
+  background: #17a2b8;
+  color: #fff;
+}
+.check-status.status-legal {
+  background: #6f42c1;
+  color: #fff;
+}
+
+/* collect-option buton stili */
+.collect-option {
+  width: 100%;
+  padding: 16px 18px;
+  border-radius: 12px;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  transition: background 0.2s, border-color 0.2s;
+  color: #f1f5f9;
+}
+.collect-option:hover {
+  filter: brightness(1.2);
+}
+
+/* ==============================
+   TRANSFER SİSTEMİ
+============================== */
+
+.transfer-type-btn {
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: 1.5px solid #333;
+  background: #1e1e1e;
+  color: #888;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.18s;
+}
+.transfer-type-btn.active,
+.transfer-type-btn:hover {
+  border-color: #3a7bd5;
+  color: #fff;
+  background: rgba(58,123,213,.15);
+}
+
+.transfer-select-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1.5px solid #2a2a2a;
+  background: #1a1a1a;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.transfer-select-item:hover {
+  border-color: #3a7bd5;
+}
+.transfer-select-item.selected {
+  border-color: #3a7bd5;
+  background: rgba(58,123,213,.1);
+}
+.transfer-select-check {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: transparent;
+  transition: all 0.15s;
+}
+.transfer-select-item.selected .transfer-select-check {
+  background: #3a7bd5;
+  border-color: #3a7bd5;
+  color: #fff;
+}
+
+.transfer-tab-panel {
+  display: none;
+}
+.transfer-tab-panel.active {
+  display: block;
+}
+
+.transfer-badge {
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.badge-pending  { background: rgba(245,158,11,.15); color: #f59e0b; }
+.badge-approved { background: rgba(22,163,74,.15);  color: #22c55e; }
+.badge-rejected { background: rgba(220,38,38,.15);  color: #ef4444; }
+
+.dot-amber { background: #f59e0b; }
+
+/* Admin: Diğer şube özet kartı */
+.branch-summary-card {
+  padding: 16px 20px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(58,123,213,.3);
+  background: rgba(58,123,213,.05);
+  margin-bottom: 20px;
+}

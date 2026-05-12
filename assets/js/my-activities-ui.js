@@ -88,9 +88,10 @@ function _isIncomeAction(action) {
 }
 
 function _isIncome(item) {
-    if (item.direction === "IN")  return true;
-    if (item.direction === "OUT" || item.direction === "NONE") return false;
-    return _isIncomeAction(item.action);
+    if (item.direction === "IN")   return true;
+    if (item.direction === "OUT")  return false;
+    if (item.direction === "NONE") return null;  // tarafsız — toplama dahil edilmez
+    return _isIncomeAction(item.action) ? true : false;
 }
 
 function _getMyUsername() {
@@ -193,20 +194,23 @@ function renderMyActivities(list) {
         const isApproved  = isChangeReq && (item.status === "APPROVED" || (item.action || "").includes("APPROVED"));
         const isRejected  = isChangeReq && (item.status === "REJECTED" || (item.action || "").includes("REJECTED"));
 
-        const isIncome = _isIncome(item);
+        const isIncome = _isIncome(item); // true=giriş, false=çıkış, null=tarafsız
 
         if (!isChangeReq) {
             const amount = Number(item.amount || 0);
-            if (isIncome) totalIncome += amount;
-            else totalExpense += amount;
+            if (isIncome === true)  totalIncome  += amount;
+            if (isIncome === false) totalExpense += amount;
+            // null: toplama dahil edilmez
         }
 
         // Düzenleme isteklerinde tutar gösterme — 0 TL sırıtmasın
         const amountCell = isChangeReq
             ? '<span style="color:#94a3b8;font-size:12px">—</span>'
-            : `<span class="${isIncome ? "text-success" : "text-danger"}">
-                 ${(isIncome ? "+" : "-") + Number(item.amount || 0).toLocaleString("tr-TR", { minimumFractionDigits: 2 })} TL
-               </span>`;
+            : isIncome === null
+                ? `<span style="color:#94a3b8">${Number(item.amount || 0).toLocaleString("tr-TR", { minimumFractionDigits: 2 })} TL</span>`
+                : `<span class="${isIncome ? "text-success" : "text-danger"}">
+                     ${(isIncome ? "+" : "-") + Number(item.amount || 0).toLocaleString("tr-TR", { minimumFractionDigits: 2 })} TL
+                   </span>`;
 
         const _dv = item.createdAt || item.date || item.requestedAt;
         const date = _dv ? formatDateTime(_dv) : "—";
@@ -632,21 +636,16 @@ function _generateMyActivitiesPdf() {
             const _dv2 = item.createdAt || item.date || item.requestedAt || null;
             const dateStr = _dv2 ? formatDateTime(_dv2) : "—";
             const amt = Number(item.amount || 0);
-            const isInc = _isIncome(item);
+            const isInc = _isIncome(item); // true | false | null
             if (!isChReq) {
-                if (isInc) {
-                    totalIncome += amt;
-                    groupIncome += amt;
-                } else {
-                    totalExpense += amt;
-                    groupExpense += amt;
-                }
+                if (isInc === true)  { totalIncome  += amt; groupIncome  += amt; }
+                if (isInc === false) { totalExpense += amt; groupExpense += amt; }
                 if (item.action === "CASH_INCOME")  cashIncome  += amt;
                 if (item.action === "CASH_EXPENSE") cashExpense += amt;
                 if (item.action === "EXPENSE_ADD")  expenseAdd  += amt;
             }
-            const amtStr   = isChReq ? "—" : (isInc ? "+" : "-") + fmtMoney(amt) + " TL";
-            const amtColor = isChReq ? "#666" : (isInc ? "#16a34a" : "#dc2626");
+            const amtStr   = isChReq ? "—" : isInc === null ? fmtMoney(amt) + " TL" : (isInc ? "+" : "-") + fmtMoney(amt) + " TL";
+            const amtColor = isChReq ? "#666" : isInc === null ? "#64748b" : (isInc ? "#16a34a" : "#dc2626");
             const desc     = _myBuildDisplayDesc(item);
             rowsHtml += `<tr>
               <td>${dateStr}</td>

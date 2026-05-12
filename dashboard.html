@@ -190,6 +190,36 @@
 
 </div>
 
+<!-- DİĞER ŞUBE ÖZET KARTI (sadece admin görür) -->
+<div id="otherBranchCard" style="display:none;margin-bottom:30px">
+  <div class="branch-summary-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:.5px;color:#3b82f6;text-transform:uppercase;margin-bottom:4px">
+          <i class="zmdi zmdi-pin"></i> Diğer Şube
+        </div>
+        <div id="otherBranchName" style="font-size:17px;font-weight:700">—</div>
+      </div>
+      <div style="display:flex;gap:24px;flex-wrap:wrap">
+        <div style="text-align:center">
+          <div style="font-size:11px;color:#64748b">Kasa Bakiye</div>
+          <div id="otherBranchBalance" style="font-size:18px;font-weight:800;color:#22c55e">0 ₺</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:11px;color:#64748b">Portföy</div>
+          <div id="otherBranchChecks" style="font-size:18px;font-weight:800;color:#f59e0b">0 ₺</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:11px;color:#64748b">Bekleyen Transfer</div>
+          <div id="otherBranchPending" style="font-size:18px;font-weight:800;color:#ef4444">0</div>
+        </div>
+      </div>
+      <button onclick="loadPage('transfer-listesi.html')" style="padding:8px 16px;border-radius:8px;border:1.5px solid rgba(58,123,213,.4);background:rgba(58,123,213,.1);color:#7ab3ff;cursor:pointer;font-size:13px;font-weight:600">
+        <i class="zmdi zmdi-list"></i> Transferleri Gör
+      </button>
+    </div>
+  </div>
+</div>
 
     <!-- GRAFIK -->
 <div class="row mbn-30" style="margin-bottom:30px">
