@@ -2,14 +2,10 @@ const adminApi = {
   getProfiles: () => apiClient.request("/admin/profiles"),
 
   deactivateUser: (id) =>
-    apiClient.request(`/admin/users/${id}`, {
-      method: "DELETE",
-    }),
+    apiClient.request(`/admin/users/${id}`, { method: "DELETE" }),
 
   updateUserRole: (id, role) =>
-    apiClient.request(`/admin/users/${id}/role?role=${encodeURIComponent(role)}`, {
-      method: "PUT",
-    }),
+    apiClient.request(`/admin/users/${id}/role?role=${encodeURIComponent(role)}`, { method: "PUT" }),
 
   getUserPermissions: (userId) =>
     apiClient.request(`/admin/users/${userId}/permissions`),
@@ -20,11 +16,13 @@ const adminApi = {
       body: JSON.stringify({ permissions }),
     }),
 
-    createUser: (data) =>
-  apiClient.request("/admin/users", {
-    method: "POST",
-    body: JSON.stringify(data),
-  }),
+  createUser: (data) =>
+    apiClient.request("/admin/users", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  getCompanies: () => apiClient.request("/admin/companies"),
 };
 
 window.adminApi = adminApi;

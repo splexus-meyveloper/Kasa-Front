@@ -7,6 +7,20 @@ if (!authStore.isLoggedIn()) {
   window.location.href = "login.html";
 }
 
+// Şube cache
+let _companyMap = {}; // { id: name }
+
+async function _loadCompanyMap() {
+  try {
+    const companies = await adminApi.getCompanies();
+    if (companies && companies.length) {
+      companies.forEach(c => { _companyMap[c.id] = c.name; });
+    }
+  } catch (e) {
+    console.warn("Şubeler yüklenemedi:", e.message);
+  }
+}
+
 /*********************************
  * LOAD USERS
  *********************************/
@@ -53,8 +67,10 @@ async function loadUsersSafe() {
       const username = u.username || u.userName || "-";
       const role = u.role || "USER";
 
+      const subeName = _companyMap[u.companyId] || `Şube #${u.companyId || "?"}`;
       tr.innerHTML = `
         <td class="user-name">${escapeHtml(username)}</td>
+        <td style="font-size:12px;color:#94a3b8">${escapeHtml(subeName)}</td>
         <td>
           <select class="roleSelect" data-id="${u.id}">
             <option value="USER" ${role === "USER" ? "selected" : ""}>USER</option>
@@ -107,37 +123,41 @@ async function loadUsersSafe() {
  * ADD USER
  *********************************/
 async function addUser() {
-  const username = document.getElementById("newUsername")?.value;
-  const password = document.getElementById("newUserPassword")?.value;
+  const username  = document.getElementById("newUsername")?.value?.trim();
+  const password  = document.getElementById("newUserPassword")?.value?.trim();
+  const companyId = document.getElementById("newUserCompany")?.value;
 
   if (!username || !password) {
-    showToast("Alanlar boş", "error");
+    showToast("Kullanıcı adı ve şifre zorunludur", "error");
+    return;
+  }
+
+  if (!/^[0-9]{4}$/.test(password)) {
+    showToast("Şifre tam olarak 4 rakam olmalıdır", "error");
     return;
   }
 
   try {
     await adminStore.createUser({
-  username,
-  password,
-  role: "USER"
-});
+      username,
+      password,
+      role: "USER",
+      companyId: companyId ? Number(companyId) : null
+    });
 
     showToast("Kullanıcı eklendi", "success");
-
     document.getElementById("newUsername").value = "";
     document.getElementById("newUserPassword").value = "";
-
     loadUsersSafe();
 
   } catch (e) {
-  const msg = e?.message || "";
-
-  if (msg.includes("USER_ALREADY_EXISTS")) {
-    showToast("Bu kullanıcı adı zaten var", "error");
-  } else {
-    showToast("Kullanıcı eklenemedi", "error");
+    const msg = e?.message || "";
+    if (msg.includes("USER_ALREADY_EXISTS")) {
+      showToast("Bu kullanıcı adı zaten var", "error");
+    } else {
+      showToast("Kullanıcı eklenemedi: " + msg, "error");
+    }
   }
-}
 }
 
 /*********************************
@@ -205,30 +225,20 @@ if (existing.dataset.userid == id) {
 
     const perms = await adminStore.fetchUserPermissions(id);
 
-    let targetRow = null;
+    // data-id ile bul — innerText eşleşme sorunu olmaz
+    const targetRow = tbody.querySelector(`tr[data-id="${id}"]`);
 
-    rows.forEach((r) => {
-      if (r.querySelector(".user-name")?.innerText === username) {
-        targetRow = r;
-      }
-    });
-
-    // 🔥 tüm satırlardan active kaldır
-rows.forEach(r => r.classList.remove("active"));
-
-// 🔥 seçilen satıra active ekle
-if (targetRow) {
-  targetRow.classList.add("active");
-}
-
+    // Tüm satırlardan active kaldır
+    tbody.querySelectorAll("tr").forEach(r => r.classList.remove("active"));
     if (!targetRow) return;
+    targetRow.classList.add("active");
 
     const permRow = document.createElement("tr");
     permRow.className = "permission-row";
     permRow.dataset.userid = id;
 
     permRow.innerHTML = `
-<td colspan="3">
+<td colspan="4">
   <div class="permission-content">
     <div class="permission-grid">
       ${checkbox("KASA", perms)}
@@ -339,15 +349,30 @@ function bindUserEnterHandler() {
 /*********************************
  * INIT
  *********************************/
-function initUsersPage() {
+async function initUsersPage() {
   console.log("initUsersPage ÇALIŞTI");
 
+  await _loadCompanyMap();
+  await _loadCompanyDropdown();
   loadUsersSafe();
   bindUserEnterHandler();
 
   if (window.initUserFilter) {
     initUserFilter();
   }
+}
+
+async function _loadCompanyDropdown() {
+  const select = document.getElementById("newUserCompany");
+  if (!select) return;
+  const companies = Object.entries(_companyMap);
+  if (companies.length === 0) {
+    select.innerHTML = "<option value=''>Şube yüklenemedi</option>";
+    return;
+  }
+  select.innerHTML = companies.map(([id, name]) =>
+    `<option value="${id}">${escapeHtml(name)}</option>`
+  ).join("");
 }
 
 /*********************************

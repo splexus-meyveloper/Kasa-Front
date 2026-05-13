@@ -7,9 +7,9 @@
   <div class="box-body">
 
     <!-- Transfer tipi -->
-    <div class="kasa-form-group">
+    <div class="kasa-form-group" style="gap:12px;margin-bottom:24px">
       <label>Transfer Tipi</label>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
         <button class="transfer-type-btn active" data-type="NAKIT_GONDERIM">
           <i class="zmdi zmdi-money"></i> Nakit Gönderim
         </button>
@@ -25,7 +25,7 @@
 
     <!-- Nakit / Banka alanı -->
     <div id="nakitAlani">
-      <div class="kasa-form-group">
+      <div class="kasa-form-group" style="gap:12px;margin-bottom:24px">
         <label>Tutar (TL)</label>
         <input id="transferTutar" class="kasa-form-input" type="text"
                placeholder="0,00" oninput="formatMoneyInput(this)">
@@ -34,26 +34,26 @@
 
     <!-- Çek / Senet seçimi -->
     <div id="cekSenetAlani" style="display:none">
-      <div class="kasa-form-group">
+      <div class="kasa-form-group" style="gap:12px;margin-bottom:24px">
         <label>Portföydeki Çekler</label>
         <div id="transferCheckList" style="display:flex;flex-direction:column;gap:8px;max-height:240px;overflow-y:auto;padding:4px 0">
           <div style="color:#64748b;font-size:13px">Yükleniyor...</div>
         </div>
       </div>
-      <div class="kasa-form-group" style="margin-top:16px">
+      <div class="kasa-form-group" style="gap:12px;margin-bottom:24px">
         <label>Portföydeki Senetler</label>
         <div id="transferNoteList" style="display:flex;flex-direction:column;gap:8px;max-height:180px;overflow-y:auto;padding:4px 0">
           <div style="color:#64748b;font-size:13px">Yükleniyor...</div>
         </div>
       </div>
-      <div style="margin-top:10px;padding:10px 14px;background:rgba(59,130,246,.08);border-radius:8px;border:1px solid rgba(59,130,246,.2)">
+      <div style="margin-bottom:24px;padding:10px 14px;background:rgba(59,130,246,.08);border-radius:8px;border:1px solid rgba(59,130,246,.2)">
         <span style="font-size:13px;color:#94a3b8">Seçili toplam: </span>
         <span id="transferSeciliToplam" style="font-weight:700;color:#3b82f6">0,00 ₺</span>
       </div>
     </div>
 
     <!-- Açıklama -->
-    <div class="kasa-form-group">
+    <div class="kasa-form-group" style="gap:12px;margin-bottom:28px">
       <label>Açıklama</label>
       <textarea id="transferAciklama" class="kasa-modal-textarea"
                 placeholder="Transfer hakkında not (opsiyonel)" rows="3"></textarea>

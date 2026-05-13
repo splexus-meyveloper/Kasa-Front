@@ -228,6 +228,14 @@ function checkPagePermission() {
   if (path.includes("KULLANICI")) deny("KULLANICI_YONETIMI");
 }
 
+function formatMoneyInput(input) {
+  let val = input.value.replace(/[^0-9,]/g, "");
+  const parts = val.split(",");
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  if (parts.length > 2) parts.splice(2);
+  input.value = parts.join(",");
+}
+
 function parseMoney(val) {
   if (!val) return 0;
 
@@ -318,3 +326,4 @@ window.formatMoney = formatMoney;
 window.logout = logout;
 window.checkPagePermission = checkPagePermission;
 window.parseMoney = parseMoney;
+window.formatMoneyInput = formatMoneyInput;

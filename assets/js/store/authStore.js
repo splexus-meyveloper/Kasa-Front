@@ -24,20 +24,18 @@ const authStore = {
   },
 
   setSession(data) {
-    sessionStorage.setItem("token", data.token || "");
-    sessionStorage.setItem("username", data.username || "");
-    sessionStorage.setItem("role", data.role || "");
-    sessionStorage.setItem(
-      "permissions",
-      JSON.stringify(data.permissions || [])
-    );
+    sessionStorage.setItem("token",       data.token       || "");
+    sessionStorage.setItem("username",    data.username    || "");
+    sessionStorage.setItem("role",        data.role        || "");
+    sessionStorage.setItem("permissions", JSON.stringify(data.permissions || []));
+    sessionStorage.setItem("branchType",  data.branchType  || "");
+    sessionStorage.setItem("companyId",   data.companyId   != null ? String(data.companyId) : "");
+    sessionStorage.setItem("companyName", data.companyName || "");
   },
 
   clearSession() {
-    sessionStorage.removeItem("token");
-    sessionStorage.removeItem("username");
-    sessionStorage.removeItem("role");
-    sessionStorage.removeItem("permissions");
+    ["token", "username", "role", "permissions",
+     "branchType", "companyId", "companyName"].forEach(k => sessionStorage.removeItem(k));
   },
 
   async login(credentials) {

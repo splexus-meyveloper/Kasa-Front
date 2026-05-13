@@ -11,7 +11,39 @@ const isAdmin = () => sessionStorage.getItem("role") === "ADMIN";
 let _selectedCheckIds = new Set();
 let _selectedNoteIds  = new Set();
 
+function _isMerkezUser() {
+  // branchType yoksa (eski token) güvenli taraf: transfer oluşturmayı kapat
+  const branchType = sessionStorage.getItem("branchType");
+  return branchType !== "SUBE";
+}
+
 async function initTransferOlustur() {
+  // Merkez kullanıcıları transfer oluşturamaz
+  if (_isMerkezUser()) {
+    const body = document.querySelector("#pageContent .box-body");
+    if (body) {
+      body.insertAdjacentHTML("afterbegin", `
+        <div style="padding:14px 16px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);
+                    border-radius:8px;color:#fbbf24;font-size:14px;margin-bottom:20px">
+          <i class="zmdi zmdi-info-outline"></i>
+          Bu ekran sadece <strong>şube kullanıcıları</strong> tarafından kullanılabilir.
+          Merkez kullanıcıları transfer oluşturamaz; transfer listesini ve onay ekranını kullanın.
+        </div>`);
+    }
+    const submitBtn = document.getElementById("btnTransferOlustur");
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.style.opacity = "0.45";
+      submitBtn.style.cursor  = "not-allowed";
+    }
+    document.querySelectorAll(".transfer-type-btn, #transferTutar, #transferAciklama").forEach(el => {
+      el.disabled = true;
+      el.style.pointerEvents = "none";
+      el.style.opacity = "0.45";
+    });
+    return;
+  }
+
   // Tip buton toggle
   document.querySelectorAll(".transfer-type-btn").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -291,14 +323,14 @@ function _buildTransferCard(t) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function approveTransfer(id) {
-  if (!confirm("Bu transferi onaylamak istediğinize emin misiniz?")) return;
-  try {
-    await transferApi.approve(id);
-    showToast("Transfer onaylandı, işlemler gerçekleşti", "success");
-    await loadTransferListesi();
-    // Dashboard'u da güncelle
-    initDashboard?.();
-  } catch (e) { showToast("Onay başarısız: " + (e.message || ""), "error"); }
+  showConfirmToast("Bu transferi onaylamak istediğinize emin misiniz?", async () => {
+    try {
+      await transferApi.approve(id);
+      showToast("Transfer onaylandı, işlemler gerçekleşti", "success");
+      await loadTransferListesi();
+      initDashboard?.();
+    } catch (e) { showToast("Onay başarısız: " + (e.message || ""), "error"); }
+  });
 }
 
 let _rejectTransferId = null;

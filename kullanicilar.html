@@ -2,24 +2,33 @@
 
 <h3 class="mb-30">Kullanıcı Yönetimi</h3>
 
-<!-- EKLE -->
+<!-- YENİ KULLANICI EKLE -->
 <div class="box dashboard-card mb-30">
     <div class="box-head"><h4>Yeni Kullanıcı Ekle</h4></div>
     <div class="box-body">
         <div class="row">
 
             <div class="col-md-4 mb-20">
-                <label>Kullanıcı Adı</label>
-                <input type="text" id="newUsername" class="form-control">
+                <label>Kullanıcı Adı <span style="color:#ef4444">*</span></label>
+                <input type="text" id="newUsername" class="form-control" placeholder="kullanici_adi">
             </div>
 
             <div class="col-md-4 mb-20">
-                <label>Şifre (4 Haneli)</label>
+                <label>Şifre (4 Haneli) <span style="color:#ef4444">*</span></label>
                 <input type="text" id="newUserPassword" class="form-control" maxlength="4" placeholder="1234">
             </div>
 
+            <div class="col-md-4 mb-20">
+                <label>Şube <span style="color:#ef4444">*</span></label>
+                <select id="newUserCompany" class="form-control">
+                    <option value="">Yükleniyor...</option>
+                </select>
+            </div>
+
             <div class="col-12">
-                <button class="button button-primary" onclick="addUser()">Kullanıcı Oluştur</button>
+                <button class="button button-primary" onclick="addUser()">
+                    <i class="zmdi zmdi-account-add"></i> Kullanıcı Oluştur
+                </button>
             </div>
 
         </div>
@@ -35,6 +44,7 @@
                 <thead>
                 <tr>
                     <th>Kullanıcı</th>
+                    <th>Şube</th>
                     <th>Rol</th>
                     <th style="width:80px">Sil</th>
                 </tr>
