@@ -78,11 +78,17 @@ async function loadUsers() {
             tr.setAttribute("data-id", u.id);
 
             const role = u.role || "USER";
-            const subeName = _companies.find(c => c.id === u.companyId)?.name || `Şube #${u.companyId}`;
+            const companyOptions = _companies.map(c =>
+                `<option value="${c.id}" ${c.id === u.companyId ? "selected" : ""}>${escapeHtml(c.name)}</option>`
+            ).join("");
 
             tr.innerHTML = `
                 <td class="user-name">${escapeHtml(u.username) || "-"}</td>
-                <td style="font-size:12px;color:#94a3b8">${escapeHtml(subeName)}</td>
+                <td>
+                    <select class="companySelect" data-id="${u.id}">
+                        ${companyOptions || `<option value="${u.companyId}">Şube #${u.companyId}</option>`}
+                    </select>
+                </td>
                 <td>
                     <select class="roleSelect" data-id="${u.id}">
                         <option value="USER" ${role === "USER" ? "selected" : ""}>USER</option>
@@ -93,6 +99,18 @@ async function loadUsers() {
                     <button type="button" class="btn-delete deleteUserBtn">Sil</button>
                 </td>
             `;
+
+            tr.querySelector(".companySelect").addEventListener("change", async (e) => {
+                const newCompanyId = Number(e.target.value);
+                const userId = e.target.dataset.id;
+                try {
+                    await adminApi.updateUserCompany(userId, newCompanyId);
+                    showToast("Şube güncellendi. Kullanıcı yeniden giriş yapmalı.", "success");
+                } catch (err) {
+                    showToast("Şube güncellenemedi: " + (err.message || ""), "error");
+                    loadUsers();
+                }
+            });
 
             tr.querySelector(".roleSelect").addEventListener("change", async (e) => {
                 try {
@@ -111,6 +129,7 @@ async function loadUsers() {
 
             tr.addEventListener("click", (e) => {
                 if (e.target.closest(".roleSelect")) return;
+                if (e.target.closest(".companySelect")) return;
                 if (e.target.closest(".deleteUserBtn")) return;
                 editUser(u.id, u.username);
             });

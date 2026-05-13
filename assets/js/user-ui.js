@@ -67,10 +67,17 @@ async function loadUsersSafe() {
       const username = u.username || u.userName || "-";
       const role = u.role || "USER";
 
-      const subeName = _companyMap[u.companyId] || `Şube #${u.companyId || "?"}`;
+      const companyOptions = Object.entries(_companyMap).map(([id, name]) =>
+        `<option value="${id}" ${Number(id) === u.companyId ? "selected" : ""}>${escapeHtml(name)}</option>`
+      ).join("") || `<option value="${u.companyId}">Şube #${u.companyId || "?"}</option>`;
+
       tr.innerHTML = `
         <td class="user-name">${escapeHtml(username)}</td>
-        <td style="font-size:12px;color:#94a3b8">${escapeHtml(subeName)}</td>
+        <td>
+          <select class="companySelect" data-id="${u.id}">
+            ${companyOptions}
+          </select>
+        </td>
         <td>
           <select class="roleSelect" data-id="${u.id}">
             <option value="USER" ${role === "USER" ? "selected" : ""}>USER</option>
@@ -81,6 +88,19 @@ async function loadUsersSafe() {
           <button type="button" class="btn-delete deleteUserBtn">Sil</button>
         </td>
       `;
+
+      // 🏢 Şube değiştir
+      tr.querySelector(".companySelect").addEventListener("change", async (e) => {
+        const newCompanyId = Number(e.target.value);
+        const userId = e.target.dataset.id;
+        try {
+          await adminApi.updateUserCompany(userId, newCompanyId);
+          showToast("Şube güncellendi. Kullanıcı yeniden giriş yapmalı.", "success");
+        } catch (err) {
+          showToast("Şube güncellenemedi: " + (err.message || ""), "error");
+          loadUsersSafe();
+        }
+      });
 
       // 🎯 Rol değiştir
       tr.querySelector(".roleSelect").addEventListener("change", async (e) => {
@@ -105,6 +125,7 @@ async function loadUsersSafe() {
       // 👁️ Detay (yetkiler)
       tr.addEventListener("click", (e) => {
         if (e.target.closest(".roleSelect")) return;
+        if (e.target.closest(".companySelect")) return;
         if (e.target.closest(".deleteUserBtn")) return;
 
         editUser(u.id, username);

@@ -23,6 +23,12 @@ const adminApi = {
     }),
 
   getCompanies: () => apiClient.request("/admin/companies"),
+
+  updateUserCompany: (userId, companyId) =>
+    apiClient.request(`/admin/users/${userId}/company`, {
+      method: "PUT",
+      body: JSON.stringify({ companyId }),
+    }),
 };
 
 window.adminApi = adminApi;

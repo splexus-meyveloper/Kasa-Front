@@ -2251,6 +2251,21 @@ body.dark-mode .users-table tbody tr.user-row:hover td {
   background: rgba(59,130,246,.1) !important;
 }
 
+/* COMPANY SELECT — users table */
+.companySelect {
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(99,118,160,.4);
+  font-size: 12px;
+  cursor: pointer;
+  max-width: 200px;
+}
+body.dark-mode .companySelect {
+  background: rgba(15,23,42,.85) !important;
+  border-color: rgba(148,163,184,.4) !important;
+  color: #e2e8f0 !important;
+}
+
 body.dark-mode .users-table thead th,
 body.dark-mode .table thead th {
   color: #64748b !important;
