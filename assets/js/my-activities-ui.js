@@ -77,21 +77,10 @@ function _myBuildDisplayDesc(item) {
     return _myPrettifyDesc(item.description || item.newDescription || "");
 }
 
-function _isIncomeAction(action) {
-    return action === "CASH_INCOME"
-        || action === "CHECK_IN"
-        || action === "CHECK_COLLECT"
-        || action === "NOTE_IN"
-        || action === "NOTE_COLLECT"
-        || action === "LOAN_CREATE"
-        || action === "POS_LOG";
-}
-
 function _isIncome(item) {
-    if (item.direction === "IN")   return true;
-    if (item.direction === "OUT")  return false;
-    if (item.direction === "NONE") return null;  // tarafsız — toplama dahil edilmez
-    return _isIncomeAction(item.action) ? true : false;
+    if (item.direction === "IN")  return true;
+    if (item.direction === "OUT") return false;
+    return null; // "NONE" veya eksik → toplama dahil edilmez
 }
 
 function _getMyUsername() {
@@ -506,6 +495,7 @@ async function _fetchMyPosRows(filters = {}) {
         return {
             createdAt:   iso,
             action:      "POS_LOG",
+            direction:   "IN",          // POS işlemleri her zaman gelir
             posType:     l.posType    || "",
             terminal:    l.terminal   || "",
             entityId:    l.id         || null,

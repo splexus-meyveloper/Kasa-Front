@@ -386,6 +386,8 @@ async function loadDashboard(selectedUserId = null) {
     gi.innerText = "..."; gc.innerText = "...";
     an.innerText = "..."; kb.innerText = "...";
     if (krediBorc) krediBorc.innerText = "...";
+    const _gna = document.getElementById("gunlukNetAdmin");
+    if (_gna) _gna.innerText = "...";
 
     const d = await dashboardStore.fetchSummary(selectedUserId);
     if (!d) return;
@@ -396,6 +398,15 @@ async function loadDashboard(selectedUserId = null) {
       animateValue(an, Number(d.monthlyNet   || 0));
       animateValue(kb, Number(d.balance      || 0));
       if (krediBorc) animateValue(krediBorc, Number(d.totalLoanDebt || 0));
+
+      const gna = document.getElementById("gunlukNetAdmin");
+      if (gna) {
+        const net = Number(d.dailyNetBalance || 0);
+        animateValue(gna, net);
+        gna.className = net >= 0 ? "text-success" : "text-danger";
+        gna.style.marginBottom = "8px";
+      }
+
       _applyUserDashboardCards(d);
     };
 
@@ -517,9 +528,10 @@ document.addEventListener("darkModeChanged", () => {
   }
 });
 
-window.loadDashboard  = loadDashboard;
-window.loadChart      = loadChart;
-window.initDashboard  = initDashboard;
+window.loadDashboard           = loadDashboard;
+window.loadChart               = loadChart;
+window.initDashboard           = initDashboard;
+window.refreshOtherBranchCard  = refreshOtherBranchCard;
 
 function _renderOtherBranch(summary) {
   const card = document.getElementById("otherBranchCard");
@@ -527,15 +539,54 @@ function _renderOtherBranch(summary) {
   if (!summary) { card.style.display = "none"; return; }
 
   card.style.display = "block";
-  const name    = document.getElementById("otherBranchName");
-  const balance = document.getElementById("otherBranchBalance");
-  const checks  = document.getElementById("otherBranchChecks");
-  const pending = document.getElementById("otherBranchPending");
 
-  if (name)    name.textContent    = "Adapazarı Şube";
-  if (balance) animateValue(balance, Number(summary.balance || 0));
-  if (checks)  animateValue(checks,  Number(summary.checkPortfolioTotal || 0));
-  if (pending) pending.textContent = summary.pendingTransferCount || "0";
+  const get = (id) => document.getElementById(id);
+
+  const name = get("otherBranchName");
+  if (name) name.textContent = summary.companyName || "Diğer Şube";
+
+  const balance    = get("otherBranchBalance");
+  const dailyIn    = get("otherBranchDailyIn");
+  const dailyOut   = get("otherBranchDailyOut");
+  const dailyNet   = get("otherBranchDailyNet");
+  const monthlyNet = get("otherBranchMonthlyNet");
+  const checks     = get("otherBranchChecks");
+  const pending    = get("otherBranchPending");
+
+  if (balance)    animateValue(balance,    Number(summary.balance              || 0));
+  if (dailyIn)    animateValue(dailyIn,    Number(summary.todayIncome          || 0));
+  if (dailyOut)   animateValue(dailyOut,   Number(summary.todayExpense         || 0));
+  if (monthlyNet) animateValue(monthlyNet, Number(summary.monthlyNet           || 0));
+  if (checks)     animateValue(checks,     Number(summary.checkPortfolioTotal  || 0));
+
+  if (dailyNet) {
+    const net = Number(summary.dailyNetBalance || 0);
+    animateValue(dailyNet, net);
+    dailyNet.style.color = net >= 0 ? "#3b82f6" : "#ef4444";
+  }
+
+  if (pending) {
+    const cnt = Number(summary.pendingTransferCount || 0);
+    pending.textContent = cnt;
+    pending.style.color = cnt > 0 ? "#ef4444" : "#22c55e";
+  }
+}
+
+async function refreshOtherBranchCard() {
+  const card = document.getElementById("otherBranchCard");
+  if (!card) return;
+  const icon = document.getElementById("obRefreshIcon");
+  if (icon) icon.classList.add("zmdi-hc-spin");
+  try {
+    const d = await dashboardStore.fetchSummary();
+    if (!d) return;
+    _renderOtherBranch(d.otherBranchSummary);
+    _updateTransferBadge(d.pendingTransferCount);
+  } catch (e) {
+    console.warn("Şube kartı güncellenemedi:", e.message);
+  } finally {
+    if (icon) icon.classList.remove("zmdi-hc-spin");
+  }
 }
 
 function _updateTransferBadge(count) {

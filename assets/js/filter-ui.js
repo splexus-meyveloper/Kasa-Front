@@ -24,7 +24,13 @@ async function initUserFilter() {
   box.style.display = "block";
 
   try {
-    const users = await adminStore.fetchProfiles();
+    const allUsers = await adminStore.fetchProfiles();
+
+    // Sadece aynı şubedeki kullanıcıları göster
+    const myCompanyId = Number(sessionStorage.getItem("companyId") || "0");
+    const users = myCompanyId
+      ? allUsers.filter(u => Number(u.companyId) === myCompanyId)
+      : allUsers;
 
     select.innerHTML = `<option value="">Tüm Kullanıcılar</option>`;
 

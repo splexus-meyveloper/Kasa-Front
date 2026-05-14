@@ -2957,6 +2957,57 @@ body.dark-mode .top-report.dashboard-card[style*="border-left"] {
   color: #7ab3ff;
 }
 
+/* ==============================
+   ŞUBE SEKMELERİ (Merkez / Diğer)
+============================== */
+
+.check-branch-tab-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.check-branch-btn {
+  background: #242424;
+  border: 2px solid #333;
+  color: #888;
+  padding: 9px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.18s ease;
+}
+
+.check-branch-btn:hover {
+  color: #ccc;
+  border-color: #555;
+}
+
+.check-branch-btn.active {
+  background: linear-gradient(135deg, #1e3a5f, #2d5a96);
+  border-color: #3a7bd5;
+  color: #fff;
+}
+
+.branch-count {
+  background: rgba(255,255,255,0.12);
+  border-radius: 12px;
+  padding: 1px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 20px;
+  text-align: center;
+}
+
+.check-branch-btn.active .branch-count {
+  background: rgba(255,255,255,0.25);
+}
+
 /* Yeni statü badge renkleri */
 .check-status.status-paid {
   background: #6c757d;
@@ -3076,6 +3127,382 @@ body.dark-mode .top-report.dashboard-card[style*="border-left"] {
 
 .dot-amber { background: #f59e0b; }
 
+/* ================================================
+   NOTLARIM MODULE — iOS Notes tarzı iki panel
+   ================================================ */
+
+.notes-app {
+  display: flex;
+  height: calc(100vh - 145px);
+  min-height: 480px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(30,41,59,.12);
+  background: #fff;
+  box-shadow: 0 4px 24px rgba(0,0,0,.07);
+}
+body.dark-mode .notes-app {
+  background: #0a0f1f;
+  border-color: rgba(255,255,255,.07);
+  box-shadow: 0 4px 24px rgba(0,0,0,.35);
+}
+
+/* --- SOL PANEL --- */
+.notes-panel {
+  width: 270px;
+  min-width: 270px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid rgba(30,41,59,.1);
+  background: #f1f5f9;
+  overflow: hidden;
+}
+body.dark-mode .notes-panel {
+  background: #070c1a;
+  border-color: rgba(255,255,255,.07);
+}
+
+.notes-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 16px 10px;
+  flex-shrink: 0;
+}
+.notes-panel-title {
+  font-size: 19px;
+  font-weight: 700;
+  margin: 0;
+  color: #1e293b;
+}
+body.dark-mode .notes-panel-title { color: #f1f5f9; }
+
+.notes-new-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: none;
+  background: #3b82f6;
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .2s, transform .1s;
+  flex-shrink: 0;
+}
+.notes-new-btn:hover  { background: #2563eb; }
+.notes-new-btn:active { transform: scale(.9); }
+
+/* Arama */
+.notes-search-wrap {
+  position: relative;
+  padding: 0 12px 10px;
+  flex-shrink: 0;
+}
+.notes-search-icon {
+  position: absolute;
+  left: 22px;
+  top: 50%;
+  transform: translateY(-60%);
+  color: #94a3b8;
+  font-size: 14px;
+  pointer-events: none;
+}
+.notes-search-input {
+  width: 100%;
+  padding: 7px 10px 7px 28px;
+  border-radius: 8px;
+  border: 1px solid rgba(30,41,59,.12);
+  background: rgba(255,255,255,.7);
+  font-size: 12px;
+  color: #1e293b;
+  outline: none;
+  transition: border-color .2s;
+}
+.notes-search-input:focus { border-color: rgba(59,130,246,.45); }
+body.dark-mode .notes-search-input {
+  background: rgba(255,255,255,.06) !important;
+  border-color: rgba(255,255,255,.1) !important;
+  color: #e2e8f0 !important;
+}
+
+/* Not listesi */
+.notes-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2px 0;
+}
+.notes-list::-webkit-scrollbar { width: 4px; }
+.notes-list::-webkit-scrollbar-thumb { background: rgba(100,116,139,.25); border-radius: 4px; }
+
+.notes-empty {
+  text-align: center;
+  padding: 36px 16px;
+  color: #94a3b8;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.note-item {
+  padding: 10px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(30,41,59,.06);
+  transition: background .15s;
+}
+.note-item:hover { background: rgba(59,130,246,.07); }
+.note-item.active { background: rgba(59,130,246,.14); }
+body.dark-mode .note-item { border-color: rgba(255,255,255,.05); }
+body.dark-mode .note-item:hover { background: rgba(255,255,255,.05); }
+body.dark-mode .note-item.active { background: rgba(59,130,246,.2); }
+
+.note-item-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+body.dark-mode .note-item-title { color: #f1f5f9; }
+
+.note-item-bottom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.note-item-date {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+.note-item-preview {
+  font-size: 11px;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+/* --- SAĞ EDITOR --- */
+.notes-editor-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #fff;
+}
+body.dark-mode .notes-editor-area { background: #0d1325; }
+
+.notes-no-selection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+}
+
+.notes-editor-inner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Toolbar */
+.notes-editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 20px;
+  border-bottom: 1px solid rgba(30,41,59,.09);
+  flex-shrink: 0;
+}
+body.dark-mode .notes-editor-toolbar { border-color: rgba(255,255,255,.07); }
+
+.notes-back-btn {
+  display: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid rgba(59,130,246,.3);
+  background: rgba(59,130,246,.08);
+  color: #3b82f6;
+  font-size: 15px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.notes-editor-meta {
+  flex: 1;
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+.notes-editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.notes-save-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border-radius: 8px;
+  border: none;
+  background: #3b82f6;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s;
+  white-space: nowrap;
+}
+.notes-save-btn:hover { background: #2563eb; }
+.notes-save-btn:disabled { opacity: .55; cursor: not-allowed; }
+
+/* Düzenle butonu */
+.notes-edit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border-radius: 8px;
+  border: 1.5px solid rgba(59,130,246,.35);
+  background: rgba(59,130,246,.08);
+  color: #3b82f6;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s;
+  white-space: nowrap;
+}
+.notes-edit-btn:hover { background: rgba(59,130,246,.16); }
+body.dark-mode .notes-edit-btn { color: #93c5fd; border-color: rgba(147,197,253,.3); }
+
+/* İptal butonu */
+.notes-cancel-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(100,116,139,.3);
+  background: transparent;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s;
+}
+.notes-cancel-btn:hover { background: rgba(100,116,139,.1); }
+body.dark-mode .notes-cancel-btn { color: #94a3b8; border-color: rgba(148,163,184,.25); }
+
+/* Readonly görünüm */
+.notes-title-input[readonly],
+.notes-content-input[readonly] {
+  cursor: default;
+  opacity: 1;
+}
+body.dark-mode .notes-title-input[readonly],
+body.dark-mode .notes-content-input[readonly] {
+  color: #e2e8f0;
+}
+
+.notes-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid rgba(239,68,68,.3);
+  background: rgba(239,68,68,.08);
+  color: #ef4444;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background .2s;
+  flex-shrink: 0;
+}
+.notes-delete-btn:hover { background: rgba(239,68,68,.18); }
+
+/* Başlık */
+.notes-title-input {
+  font-size: 21px;
+  font-weight: 700;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #1e293b;
+  padding: 14px 24px 6px;
+  width: 100%;
+  flex-shrink: 0;
+  font-family: 'Poppins', sans-serif;
+}
+body.dark-mode .notes-title-input { color: #f1f5f9; }
+.notes-title-input::placeholder { color: #cbd5e1; }
+body.dark-mode .notes-title-input::placeholder { color: #475569; }
+
+/* İçerik */
+.notes-content-input {
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.75;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #334155;
+  padding: 4px 24px 12px;
+  width: 100%;
+  resize: none;
+  font-family: 'Poppins', sans-serif;
+}
+body.dark-mode .notes-content-input { color: #cbd5e1; }
+.notes-content-input::placeholder { color: #cbd5e1; }
+body.dark-mode .notes-content-input::placeholder { color: #475569; }
+
+/* Karakter sayacı */
+.notes-char-count {
+  font-size: 11px;
+  color: #94a3b8;
+  text-align: right;
+  padding: 0 24px 10px;
+  flex-shrink: 0;
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+  .notes-app { flex-direction: column; height: calc(100vh - 100px); }
+  .notes-panel { width: 100%; min-width: unset; max-height: 100%; border-right: none; border-bottom: 1px solid rgba(30,41,59,.1); }
+  body.dark-mode .notes-panel { border-color: rgba(255,255,255,.07); }
+  .notes-panel.hidden-mobile { display: none; }
+  .notes-editor-area { display: none; }
+  .notes-editor-area.visible-mobile { display: flex; }
+  .notes-back-btn { display: inline-flex !important; }
+}
+
+/* Net Bakiye kartı footer ikincil metrik */
+.top-report-secondary {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.top-report-secondary .text-info {
+  font-size: 12px;
+  font-weight: 700;
+}
+body.dark-mode .top-report-secondary { color: #94a3b8; }
+
 /* Admin: Diğer şube özet kartı */
 .branch-summary-card {
   padding: 16px 20px;
@@ -3084,3 +3511,112 @@ body.dark-mode .top-report.dashboard-card[style*="border-left"] {
   background: rgba(58,123,213,.05);
   margin-bottom: 20px;
 }
+
+/* Diğer Şube genişletilmiş kart */
+.ob-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.ob-card-badge {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  color: #3b82f6;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.ob-transfer-btn {
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: 1.5px solid rgba(58,123,213,.4);
+  background: rgba(58,123,213,.1);
+  color: #7ab3ff;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background .2s, border-color .2s;
+}
+.ob-transfer-btn:hover {
+  background: rgba(58,123,213,.2);
+  border-color: rgba(58,123,213,.6);
+}
+.ob-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+}
+.ob-stat-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(30,41,59,.04);
+  border: 1px solid rgba(30,41,59,.07);
+  transition: background .2s;
+}
+.ob-stat-cell:hover { background: rgba(30,41,59,.07); }
+.ob-stat-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.ob-stat-body { flex: 1; min-width: 0; }
+.ob-stat-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  margin-bottom: 2px;
+}
+.ob-stat-value {
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Dark mode */
+body.dark-mode .ob-stat-cell {
+  background: rgba(255,255,255,.04);
+  border-color: rgba(255,255,255,.07);
+}
+body.dark-mode .ob-stat-cell:hover { background: rgba(255,255,255,.08); }
+body.dark-mode .ob-stat-label { color: #94a3b8; }
+body.dark-mode .ob-transfer-btn {
+  color: #93c5fd;
+  background: rgba(59,130,246,.12);
+  border-color: rgba(59,130,246,.35);
+}
+body.dark-mode .ob-transfer-btn:hover {
+  background: rgba(59,130,246,.22);
+  border-color: rgba(59,130,246,.55);
+}
+.ob-refresh-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1.5px solid rgba(100,116,139,.3);
+  background: transparent;
+  color: #64748b;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .2s, color .2s;
+}
+.ob-refresh-btn:hover { background: rgba(100,116,139,.1); color: #3b82f6; }
+body.dark-mode .ob-refresh-btn { color: #94a3b8; border-color: rgba(148,163,184,.2); }
+body.dark-mode .ob-refresh-btn:hover { background: rgba(255,255,255,.08); color: #93c5fd; }

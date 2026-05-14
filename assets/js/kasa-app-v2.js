@@ -10,6 +10,7 @@ function getPageKey(page) {
   if (normalized.includes("cek")) return "checks";
   if (normalized.includes("admin-kasa")) return "adminLogs";
   if (normalized.includes("kasa")) return "cash";
+  if (normalized.includes("notlarim")) return "myNotes";
   if (normalized.includes("not") || normalized.includes("senet")) return "notes";
   if (normalized.includes("takvim")) return "calendar";
   if (normalized.includes("kredi")) return "loans";
@@ -27,6 +28,10 @@ function getPageKey(page) {
 }
 
 const pageInitMap = {
+  myNotes: () => {
+    if (window.initMyNotesPage) window.initMyNotesPage();
+  },
+
   users: () => {
     if (window.initUsersPage) {
       window.initUsersPage();

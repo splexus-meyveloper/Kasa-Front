@@ -1,0 +1,80 @@
+<div id="notlarimPage">
+  <div class="notes-app">
+
+    <!-- SOL: NOT LİSTESİ -->
+    <div class="notes-panel" id="notesPanel">
+
+      <div class="notes-panel-head">
+        <h3 class="notes-panel-title">Notlarım</h3>
+        <button class="notes-new-btn" onclick="newNote()" title="Yeni Not">
+          <i class="zmdi zmdi-plus"></i>
+        </button>
+      </div>
+
+      <div class="notes-search-wrap">
+        <i class="zmdi zmdi-search notes-search-icon"></i>
+        <input type="text" id="notesSearchInput" class="notes-search-input" placeholder="Notlarda ara...">
+      </div>
+
+      <div class="notes-list" id="notesList">
+        <div class="notes-empty">Yükleniyor...</div>
+      </div>
+
+    </div>
+
+    <!-- SAĞ: EDITOR -->
+    <div class="notes-editor-area" id="notesEditorArea">
+
+      <!-- Seçim yok durumu -->
+      <div class="notes-no-selection" id="notesNoSelection">
+        <i class="zmdi zmdi-assignment-o" style="font-size:52px;color:#94a3b8;margin-bottom:14px;display:block"></i>
+        <p style="color:#94a3b8;font-size:14px;margin:0">
+          Bir not seçin veya
+          <a href="#" onclick="newNote();return false;" style="color:#3b82f6;font-weight:600">yeni not oluşturun</a>
+        </p>
+      </div>
+
+      <!-- Editor -->
+      <div class="notes-editor-inner" id="notesEditorInner" style="display:none">
+
+        <div class="notes-editor-toolbar">
+
+          <button class="notes-back-btn" onclick="showNotesList()">
+            <i class="zmdi zmdi-arrow-left"></i>
+          </button>
+
+          <span class="notes-editor-meta" id="mnEditorMeta">Yeni not</span>
+
+          <div class="notes-editor-actions">
+            <button class="notes-edit-btn"   id="mnEditBtn"   onclick="startEditNote()"  style="display:none"><i class="zmdi zmdi-edit"></i> Düzenle</button>
+            <button class="notes-save-btn"   id="mnSaveBtn"   onclick="saveNote()"       style="display:none"><i class="zmdi zmdi-check"></i> Kaydet</button>
+            <button class="notes-cancel-btn" id="mnCancelBtn" onclick="cancelEditNote()" style="display:none">İptal</button>
+            <button class="notes-delete-btn" id="mnDeleteBtn" onclick="deleteNote()"     style="display:none" title="Notu Sil"><i class="zmdi zmdi-delete"></i></button>
+          </div>
+
+        </div>
+
+        <input
+          type="text"
+          id="mnTitleInput"
+          class="notes-title-input"
+          placeholder="Başlık..."
+          maxlength="120"
+          readonly
+        >
+
+        <textarea
+          id="mnContentInput"
+          class="notes-content-input"
+          placeholder="Notunuzu buraya yazın..."
+          maxlength="20000"
+          readonly
+        ></textarea>
+
+        <div class="notes-char-count" id="mnCharCount">0 / 20.000</div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

@@ -328,6 +328,7 @@ async function approveTransfer(id) {
       await transferApi.approve(id);
       showToast("Transfer onaylandı, işlemler gerçekleşti", "success");
       await loadTransferListesi();
+      refreshOtherBranchCard?.();
       initDashboard?.();
     } catch (e) { showToast("Onay başarısız: " + (e.message || ""), "error"); }
   });

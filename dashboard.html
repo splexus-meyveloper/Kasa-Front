@@ -1,10 +1,10 @@
 <!-- TOP REPORT -->
 <div class="row">
 
-    <!-- Günlük Giriş -->
+    <!-- Günlük Nakit Giriş -->
     <div class="col-xl-3 col-md-6 col-12 mb-30" data-perm="KASA">
         <div class="top-report dashboard-card">
-            <div class="head"><h4>Günlük Giriş</h4></div>
+            <div class="head"><h4>Günlük Nakit Giriş</h4></div>
             <div class="content">
                 <h5>Bugün</h5>
                 <h2 id="gunlukGiris" class="text-end money-plus">0 TL</h2>
@@ -17,10 +17,10 @@
         </div>
     </div>
 
-    <!-- Günlük Çıkış -->
+    <!-- Günlük Nakit Çıkış -->
     <div class="col-xl-3 col-md-6 col-12 mb-30" data-perm="KASA">
         <div class="top-report dashboard-card">
-            <div class="head"><h4>Günlük Çıkış</h4></div>
+            <div class="head"><h4>Günlük Nakit Çıkış</h4></div>
             <div class="content">
                 <h5>Bugün</h5>
                 <h2 id="gunlukCikis" class="text-end money-minus">0 TL</h2>
@@ -33,13 +33,16 @@
         </div>
     </div>
 
-    <!-- Aylık Net -->
+    <!-- Net Bakiye (Günlük ana, Aylık head'de) -->
     <div class="col-xl-3 col-md-6 col-12 mb-30" data-perm="KULLANICI_YONETIMI">
         <div class="top-report dashboard-card">
-            <div class="head"><h4>Aylık Net</h4></div>
+            <div class="head" style="display:flex;align-items:center;justify-content:space-between">
+                <h4>Net Bakiye</h4>
+                <span style="font-size:11px;color:#64748b;font-weight:600">Aylık: <span id="aylikNet" class="text-info" style="font-weight:700">0 TL</span></span>
+            </div>
             <div class="content">
-                <h5>Bu Ay</h5>
-                <h2 id="aylikNet" class="text-info">0 TL</h2>
+                <h5>Günlük Net</h5>
+                <h2 id="gunlukNetAdmin" class="text-success">0 TL</h2>
             </div>
             <div class="footer">
                 <div class="progess">
@@ -192,31 +195,95 @@
 
 <!-- DİĞER ŞUBE ÖZET KARTI (sadece admin görür) -->
 <div id="otherBranchCard" style="display:none;margin-bottom:30px">
-  <div class="branch-summary-card">
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+  <div class="box dashboard-card">
+    <div class="box-head ob-card-head">
       <div>
-        <div style="font-size:11px;font-weight:700;letter-spacing:.5px;color:#3b82f6;text-transform:uppercase;margin-bottom:4px">
-          <i class="zmdi zmdi-pin"></i> Diğer Şube
-        </div>
-        <div id="otherBranchName" style="font-size:17px;font-weight:700">—</div>
+        <div class="ob-card-badge"><i class="zmdi zmdi-pin"></i> Diğer Şube</div>
+        <h4 id="otherBranchName" class="title mb-0">—</h4>
       </div>
-      <div style="display:flex;gap:24px;flex-wrap:wrap">
-        <div style="text-align:center">
-          <div style="font-size:11px;color:#64748b">Kasa Bakiye</div>
-          <div id="otherBranchBalance" style="font-size:18px;font-weight:800;color:#22c55e">0 ₺</div>
-        </div>
-        <div style="text-align:center">
-          <div style="font-size:11px;color:#64748b">Portföy</div>
-          <div id="otherBranchChecks" style="font-size:18px;font-weight:800;color:#f59e0b">0 ₺</div>
-        </div>
-        <div style="text-align:center">
-          <div style="font-size:11px;color:#64748b">Bekleyen Transfer</div>
-          <div id="otherBranchPending" style="font-size:18px;font-weight:800;color:#ef4444">0</div>
-        </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button onclick="refreshOtherBranchCard()" class="ob-refresh-btn" title="Yenile">
+          <i class="zmdi zmdi-refresh" id="obRefreshIcon"></i>
+        </button>
+        <button onclick="loadPage('transfer-listesi.html')" class="ob-transfer-btn">
+          <i class="zmdi zmdi-swap"></i> Transferleri Gör
+        </button>
       </div>
-      <button onclick="loadPage('transfer-listesi.html')" style="padding:8px 16px;border-radius:8px;border:1.5px solid rgba(58,123,213,.4);background:rgba(58,123,213,.1);color:#7ab3ff;cursor:pointer;font-size:13px;font-weight:600">
-        <i class="zmdi zmdi-list"></i> Transferleri Gör
-      </button>
+    </div>
+    <div class="box-body" style="padding-top:12px">
+      <div class="ob-stats-grid">
+
+        <div class="ob-stat-cell">
+          <div class="ob-stat-icon" style="background:rgba(34,197,94,.12);color:#22c55e">
+            <i class="zmdi zmdi-balance"></i>
+          </div>
+          <div class="ob-stat-body">
+            <div class="ob-stat-label">Kasa Bakiye</div>
+            <div id="otherBranchBalance" class="ob-stat-value" style="color:#22c55e">0 TL</div>
+          </div>
+        </div>
+
+        <div class="ob-stat-cell">
+          <div class="ob-stat-icon" style="background:rgba(16,185,129,.12);color:#10b981">
+            <i class="zmdi zmdi-arrow-right-top"></i>
+          </div>
+          <div class="ob-stat-body">
+            <div class="ob-stat-label">Günlük Giriş</div>
+            <div id="otherBranchDailyIn" class="ob-stat-value" style="color:#10b981">0 TL</div>
+          </div>
+        </div>
+
+        <div class="ob-stat-cell">
+          <div class="ob-stat-icon" style="background:rgba(239,68,68,.12);color:#ef4444">
+            <i class="zmdi zmdi-arrow-right-bottom"></i>
+          </div>
+          <div class="ob-stat-body">
+            <div class="ob-stat-label">Günlük Çıkış</div>
+            <div id="otherBranchDailyOut" class="ob-stat-value" style="color:#ef4444">0 TL</div>
+          </div>
+        </div>
+
+        <div class="ob-stat-cell">
+          <div class="ob-stat-icon" style="background:rgba(59,130,246,.12);color:#3b82f6">
+            <i class="zmdi zmdi-trending-up"></i>
+          </div>
+          <div class="ob-stat-body">
+            <div class="ob-stat-label">Günlük Net</div>
+            <div id="otherBranchDailyNet" class="ob-stat-value" style="color:#3b82f6">0 TL</div>
+          </div>
+        </div>
+
+        <div class="ob-stat-cell">
+          <div class="ob-stat-icon" style="background:rgba(139,92,246,.12);color:#8b5cf6">
+            <i class="zmdi zmdi-calendar-alt"></i>
+          </div>
+          <div class="ob-stat-body">
+            <div class="ob-stat-label">Aylık Net</div>
+            <div id="otherBranchMonthlyNet" class="ob-stat-value" style="color:#8b5cf6">0 TL</div>
+          </div>
+        </div>
+
+        <div class="ob-stat-cell">
+          <div class="ob-stat-icon" style="background:rgba(245,158,11,.12);color:#f59e0b">
+            <i class="zmdi zmdi-copy"></i>
+          </div>
+          <div class="ob-stat-body">
+            <div class="ob-stat-label">Çek/Senet Portföy</div>
+            <div id="otherBranchChecks" class="ob-stat-value" style="color:#f59e0b">0 TL</div>
+          </div>
+        </div>
+
+        <div class="ob-stat-cell ob-stat-pending">
+          <div class="ob-stat-icon" style="background:rgba(239,68,68,.12);color:#ef4444">
+            <i class="zmdi zmdi-time-restore"></i>
+          </div>
+          <div class="ob-stat-body">
+            <div class="ob-stat-label">Bekleyen Transfer</div>
+            <div id="otherBranchPending" class="ob-stat-value" style="color:#ef4444">0</div>
+          </div>
+        </div>
+
+      </div>
     </div>
   </div>
 </div>

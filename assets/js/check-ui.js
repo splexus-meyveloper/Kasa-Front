@@ -39,15 +39,23 @@ function _initTabs() {
     if (panel) panel.classList.add("active");
   });
 
+  // Şube sekmeleri (Merkez / Adapazarı)
+  document.addEventListener("click", function (e) {
+    const btn = e.target.closest("[data-branch]");
+    if (!btn) return;
+    btn.closest(".check-branch-tab-bar").querySelectorAll("[data-branch]").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    document.querySelectorAll(".branch-panel").forEach(p => { p.style.display = "none"; });
+    const panel = document.getElementById("branchPanel-" + btn.dataset.branch);
+    if (panel) panel.style.display = "block";
+  });
+
   // Alt sekmeler (Portföyde / Tamamlanan / Sorunlu)
   document.addEventListener("click", function (e) {
     const btn = e.target.closest("[data-sub]");
     if (!btn) return;
     const sub = btn.dataset.sub;
-    // Aynı parent içindeki sub butonlarını sıfırla
-    const parent = btn.closest(".check-main-panel, #noteSubTabBar")?.parentElement || btn.parentElement;
     btn.closest(".check-sub-tab-bar").querySelectorAll("[data-sub]").forEach(b => b.classList.remove("active"));
-    // Aynı parent'taki panelleri kapat
     document.querySelectorAll(".check-sub-panel").forEach(p => {
       if (p.id && sub.startsWith(p.id.split("-")[0])) p.classList.remove("active");
     });
@@ -55,6 +63,13 @@ function _initTabs() {
     const panel = document.getElementById(sub);
     if (panel) panel.classList.add("active");
   });
+}
+
+// Şube tab etiketlerini şirket adıyla güncelle
+function _setBranchLabels() {
+  const myName    = sessionStorage.getItem("companyName") || "Kendi Şubemiz";
+  const labelOwn  = document.getElementById("branchTabLabel-merkez");
+  if (labelOwn) labelOwn.textContent = myName + " Çekleri";
 }
 
 _initTabs();
@@ -469,13 +484,19 @@ function submitDynamicModal() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function loadChecks({ silent = false } = {}) {
-  // Sekme container'ları var mı?
-  const hasTabbed = !!document.getElementById("checkContainer-musteri-portfoyde");
+  const hasTabbed = !!document.getElementById("checkContainer-merkez-portfoyde");
   if (!hasTabbed) return;
 
+  const myCompanyId = Number(sessionStorage.getItem("companyId") || "0");
+
+  const allKeys = [
+    "merkez-portfoyde",   "merkez-tamamlanan",   "merkez-sorunlu",
+    "adapazari-portfoyde","adapazari-tamamlanan","adapazari-sorunlu",
+    "kendi-portfoyde",    "kendi-tamamlanan",    "kendi-sorunlu",
+  ];
+
   if (!silent) {
-    ["musteri-portfoyde","musteri-tamamlanan","musteri-sorunlu",
-     "kendi-portfoyde","kendi-tamamlanan","kendi-sorunlu"].forEach(id => {
+    allKeys.forEach(id => {
       const el = document.getElementById("checkContainer-" + id);
       if (el) el.innerHTML = "<div style='padding:20px'>Yükleniyor...</div>";
     });
@@ -489,39 +510,44 @@ async function loadChecks({ silent = false } = {}) {
     return;
   }
 
-  // Tüm container'ları temizle
-  ["musteri-portfoyde","musteri-tamamlanan","musteri-sorunlu",
-   "kendi-portfoyde","kendi-tamamlanan","kendi-sorunlu"].forEach(id => {
+  allKeys.forEach(id => {
     const el = document.getElementById("checkContainer-" + id);
     if (el) el.innerHTML = "";
   });
 
-  const counts = {
-    "musteri-portfoyde": 0, "musteri-tamamlanan": 0, "musteri-sorunlu": 0,
-    "kendi-portfoyde":   0, "kendi-tamamlanan":   0, "kendi-sorunlu":   0,
-  };
+  const counts = {};
+  allKeys.forEach(k => { counts[k] = 0; });
 
   checks.forEach(c => {
-    const tip     = c.checkType === "KENDI" ? "kendi" : "musteri";
     const kategori = SORUNLU.has(c.status) ? "sorunlu"
                    : TAMAMLANAN.has(c.status) ? "tamamlanan"
                    : "portfoyde";
-    const key     = `${tip}-${kategori}`;
-    counts[key]   = (counts[key] || 0) + 1;
-
+    let key;
+    if (c.checkType === "KENDI") {
+      key = `kendi-${kategori}`;
+    } else {
+      const branch = (!c.companyId || !myCompanyId || Number(c.companyId) === myCompanyId) ? "merkez" : "adapazari";
+      key = `${branch}-${kategori}`;
+    }
+    counts[key] = (counts[key] || 0) + 1;
     const container = document.getElementById(`checkContainer-${key}`);
     if (container) container.insertAdjacentHTML("beforeend", _buildCheckCard(c));
   });
 
-  // Sayaçları güncelle
   Object.entries(counts).forEach(([key, val]) => {
     const el = document.getElementById("cnt-" + key);
     if (el) el.textContent = val || "";
   });
 
-  // Boş panel mesajları
-  ["musteri-portfoyde","musteri-tamamlanan","musteri-sorunlu",
-   "kendi-portfoyde","kendi-tamamlanan","kendi-sorunlu"].forEach(id => {
+  // Şube buton toplam sayaçları
+  const merkezTotal   = counts["merkez-portfoyde"]   + counts["merkez-tamamlanan"]   + counts["merkez-sorunlu"];
+  const adapazariTotal = counts["adapazari-portfoyde"] + counts["adapazari-tamamlanan"] + counts["adapazari-sorunlu"];
+  const cntMerkez = document.getElementById("cnt-branch-merkez");
+  const cntAdap   = document.getElementById("cnt-branch-adapazari");
+  if (cntMerkez) cntMerkez.textContent = merkezTotal || "";
+  if (cntAdap)   cntAdap.textContent   = adapazariTotal || "";
+
+  allKeys.forEach(id => {
     const el = document.getElementById("checkContainer-" + id);
     if (el && !el.children.length) {
       el.innerHTML = "<p style='padding:20px;color:#aaa'>Kayıt bulunamadı.</p>";
@@ -603,12 +629,12 @@ async function loadCheckSummary() {
   if (!tutarEl || !adetEl) return;
   try {
     tutarEl.innerText = "..."; adetEl.innerText = "...";
-    const checks    = await checkStore.fetchChecks();
-    const portfolio = (checks || []).filter(c => c.status === "PORTFOYDE");
-    const total     = portfolio.reduce((s, c) => s + Number(c.amount || 0), 0);
+    // /checks/portfolio returns only own-branch portfolio checks (backend-filtered)
+    const portfolio = await checkApi.getPortfolio();
+    const total     = (portfolio || []).reduce((s, c) => s + Number(c.amount || 0), 0);
     animateValue(tutarEl, total);
-    adetEl.innerText = `${portfolio.length} adet`;
-    setAutoBar("barCekler", Math.min(portfolio.length * 10, 100), 100);
+    adetEl.innerText = `${(portfolio || []).length} adet`;
+    setAutoBar("barCekler", Math.min((portfolio || []).length * 10, 100), 100);
   } catch (e) {
     tutarEl.innerText = "0"; adetEl.innerText = "0";
   }
@@ -646,10 +672,14 @@ function _removeNoteCard(id) {
 }
 
 function _refreshCheckSummaryFromCache() {
-  const portfolio = (checkStore.checks || []).filter(c => c.status === "PORTFOYDE");
-  const total     = portfolio.reduce((s, c) => s + Number(c.amount || 0), 0);
-  const tutarEl   = document.getElementById("cekToplamTutar");
-  const adetEl    = document.getElementById("cekAdet");
+  const myCompanyId = Number(sessionStorage.getItem("companyId") || "0");
+  const portfolio = (checkStore.checks || []).filter(c =>
+    c.status === "PORTFOYDE" &&
+    (c.checkType === "KENDI" || !c.companyId || !myCompanyId || Number(c.companyId) === myCompanyId)
+  );
+  const total   = portfolio.reduce((s, c) => s + Number(c.amount || 0), 0);
+  const tutarEl = document.getElementById("cekToplamTutar");
+  const adetEl  = document.getElementById("cekAdet");
   if (tutarEl) animateValue(tutarEl, total);
   if (adetEl)  adetEl.innerText = `${portfolio.length} adet`;
 }
@@ -741,9 +771,19 @@ document.addEventListener("click", async function (e) {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// SAYFA INIT
+// ─────────────────────────────────────────────────────────────────────────────
+
+function initCheckPage() {
+  _setBranchLabels();
+  loadChecks();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // GLOBAL EXPORT
 // ─────────────────────────────────────────────────────────────────────────────
 
+window.initCheckPage        = initCheckPage;
 window.loadChecks           = loadChecks;
 window.loadNotes            = loadNotes;
 window.loadCheckSummary     = loadCheckSummary;
