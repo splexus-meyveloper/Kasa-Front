@@ -31,10 +31,12 @@ async function request(url, options = {}) {
   }
 
   if (response.status === 401) {
-    sessionStorage.removeItem("token");
-    sessionStorage.removeItem("username");
-    sessionStorage.removeItem("role");
-    sessionStorage.removeItem("permissions");
+    if (window.authStore) {
+      window.authStore.clearSession();
+    } else {
+      ["token","username","role","permissions","branchType","companyId","companyName"]
+        .forEach(k => sessionStorage.removeItem(k));
+    }
     window.location.href = "login.html";
     return null;
   }
